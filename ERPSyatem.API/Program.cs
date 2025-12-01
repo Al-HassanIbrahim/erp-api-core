@@ -1,5 +1,5 @@
 
-namespace ERPSystem_API
+namespace ERPSyatem.API
 {
     public class Program
     {

@@ -487,9 +487,9 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\projects\\ERPSystem-API\\ERPSystem-API\\ERPSystem.API.csproj",
-      "projectName": "ERPSystem.API",
-      "projectPath": "D:\\projects\\ERPSystem-API\\ERPSystem-API\\ERPSystem.API.csproj",
+      "projectUniqueName": "D:\\projects\\ERPSystem-API\\ERPSystem-API\\ERPSystem.API1.csproj",
+      "projectName": "ERPSystem.API1",
+      "projectPath": "D:\\projects\\ERPSystem-API\\ERPSystem-API\\ERPSystem.API1.csproj",
       "packagesPath": "C:\\Users\\mohamed\\.nuget\\packages\\",
       "outputPath": "D:\\projects\\ERPSystem-API\\ERPSystem-API\\obj\\",
       "projectStyle": "PackageReference",
