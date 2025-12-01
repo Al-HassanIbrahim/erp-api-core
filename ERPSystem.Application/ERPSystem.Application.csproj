@@ -7,12 +7,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\DataAccess\DataAccess.csproj" />
-    <ProjectReference Include="..\ERPSystem-API\ERPSystem-API.csproj" />
+    <ProjectReference Include="..\ERPSystem.Domain\ERPSystem.Domain.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="InterfaceServices\" />
+    <Folder Include="Interfaces\" />
+    <Folder Include="DTOs\" />
+    <Folder Include="Mapping\" />
     <Folder Include="Services\" />
   </ItemGroup>
 

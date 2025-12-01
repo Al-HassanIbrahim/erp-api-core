@@ -1,13 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.14.36301.6 d17.14
+VisualStudioVersion = 17.14.36301.6
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ERPSystem-API", "ERPSystem-API\ERPSystem-API.csproj", "{17E8DAF4-385B-4BF0-9808-D573ABF31464}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ERPSystem.API", "ERPSystem-API\ERPSystem.API.csproj", "{17E8DAF4-385B-4BF0-9808-D573ABF31464}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataAccess", "DataAccess\DataAccess.csproj", "{C1CA2169-D621-4F5C-8DEF-9A95C378B1E0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ERPSystem.Domain", "ERPSystem.Domain\ERPSystem.Domain.csproj", "{0D443170-A959-464D-8820-CF85ED8039FD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BusinessLayer", "BusinessLayer\BusinessLayer.csproj", "{CE8C1DDA-DB72-4993-ABA0-EC985CB9BB9E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ERPSystem.Application", "ERPSystem.Application\ERPSystem.Application.csproj", "{967C8972-53D4-45B8-804A-E5E5682F0276}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ERPSystem.Infrastructure", "ERPSystem.Infrastructure\ERPSystem.Infrastructure.csproj", "{C5B29E57-869C-49C2-87A4-CB07B9299E32}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -19,14 +21,18 @@ Global
 		{17E8DAF4-385B-4BF0-9808-D573ABF31464}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{17E8DAF4-385B-4BF0-9808-D573ABF31464}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{17E8DAF4-385B-4BF0-9808-D573ABF31464}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C1CA2169-D621-4F5C-8DEF-9A95C378B1E0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C1CA2169-D621-4F5C-8DEF-9A95C378B1E0}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C1CA2169-D621-4F5C-8DEF-9A95C378B1E0}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C1CA2169-D621-4F5C-8DEF-9A95C378B1E0}.Release|Any CPU.Build.0 = Release|Any CPU
-		{CE8C1DDA-DB72-4993-ABA0-EC985CB9BB9E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CE8C1DDA-DB72-4993-ABA0-EC985CB9BB9E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CE8C1DDA-DB72-4993-ABA0-EC985CB9BB9E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CE8C1DDA-DB72-4993-ABA0-EC985CB9BB9E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0D443170-A959-464D-8820-CF85ED8039FD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0D443170-A959-464D-8820-CF85ED8039FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0D443170-A959-464D-8820-CF85ED8039FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0D443170-A959-464D-8820-CF85ED8039FD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{967C8972-53D4-45B8-804A-E5E5682F0276}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{967C8972-53D4-45B8-804A-E5E5682F0276}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{967C8972-53D4-45B8-804A-E5E5682F0276}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{967C8972-53D4-45B8-804A-E5E5682F0276}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C5B29E57-869C-49C2-87A4-CB07B9299E32}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C5B29E57-869C-49C2-87A4-CB07B9299E32}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C5B29E57-869C-49C2-87A4-CB07B9299E32}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C5B29E57-869C-49C2-87A4-CB07B9299E32}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
