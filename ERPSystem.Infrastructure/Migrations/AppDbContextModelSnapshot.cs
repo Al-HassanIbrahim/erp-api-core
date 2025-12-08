@@ -22,6 +22,208 @@ namespace ERPSystem.Infrastructure.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("ERPSystem.Domain.Entities.Inventory.InventoryDocument", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("BranchId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("CompanyId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CreatedByUserId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("DefaultWarehouseId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("DocDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DocNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("DocType")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("PostedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("PostedByUserId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("SourceId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("SourceType")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DefaultWarehouseId");
+
+                    b.ToTable("InventoryDocuments");
+                });
+
+            modelBuilder.Entity("ERPSystem.Domain.Entities.Inventory.InventoryDocumentLine", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("InventoryDocumentId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("LineType")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Quantity")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("UnitCost")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("UnitId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("WarehouseId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("InventoryDocumentId");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("WarehouseId");
+
+                    b.ToTable("InventoryDocumentLines");
+                });
+
+            modelBuilder.Entity("ERPSystem.Domain.Entities.Inventory.StockItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("LastUpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal?>("MaxQuantity")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("MinQuantity")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("QuantityOnHand")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("WarehouseId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("WarehouseId");
+
+                    b.ToTable("StockItems");
+                });
+
+            modelBuilder.Entity("ERPSystem.Domain.Entities.Inventory.Warehouse", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Address")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("BranchId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("CompanyId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Warehouses");
+                });
+
             modelBuilder.Entity("ERPSystem.Domain.Entities.Products.Category", b =>
                 {
                     b.Property<int>("Id")
@@ -138,6 +340,61 @@ namespace ERPSystem.Infrastructure.Migrations
                     b.ToTable("UnitsOfMeasure");
                 });
 
+            modelBuilder.Entity("ERPSystem.Domain.Entities.Inventory.InventoryDocument", b =>
+                {
+                    b.HasOne("ERPSystem.Domain.Entities.Inventory.Warehouse", "DefaultWarehouse")
+                        .WithMany("InventoryDocuments")
+                        .HasForeignKey("DefaultWarehouseId");
+
+                    b.Navigation("DefaultWarehouse");
+                });
+
+            modelBuilder.Entity("ERPSystem.Domain.Entities.Inventory.InventoryDocumentLine", b =>
+                {
+                    b.HasOne("ERPSystem.Domain.Entities.Inventory.InventoryDocument", "Document")
+                        .WithMany("Lines")
+                        .HasForeignKey("InventoryDocumentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ERPSystem.Domain.Entities.Products.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ERPSystem.Domain.Entities.Inventory.Warehouse", "Warehouse")
+                        .WithMany("InventoryDocumentLines")
+                        .HasForeignKey("WarehouseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Document");
+
+                    b.Navigation("Product");
+
+                    b.Navigation("Warehouse");
+                });
+
+            modelBuilder.Entity("ERPSystem.Domain.Entities.Inventory.StockItem", b =>
+                {
+                    b.HasOne("ERPSystem.Domain.Entities.Products.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ERPSystem.Domain.Entities.Inventory.Warehouse", "Warehouse")
+                        .WithMany("StockItems")
+                        .HasForeignKey("WarehouseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+
+                    b.Navigation("Warehouse");
+                });
+
             modelBuilder.Entity("ERPSystem.Domain.Entities.Products.Category", b =>
                 {
                     b.HasOne("ERPSystem.Domain.Entities.Products.Category", "ParentCategory")
@@ -162,6 +419,20 @@ namespace ERPSystem.Infrastructure.Migrations
                     b.Navigation("Category");
 
                     b.Navigation("UnitOfMeasure");
+                });
+
+            modelBuilder.Entity("ERPSystem.Domain.Entities.Inventory.InventoryDocument", b =>
+                {
+                    b.Navigation("Lines");
+                });
+
+            modelBuilder.Entity("ERPSystem.Domain.Entities.Inventory.Warehouse", b =>
+                {
+                    b.Navigation("InventoryDocumentLines");
+
+                    b.Navigation("InventoryDocuments");
+
+                    b.Navigation("StockItems");
                 });
 
             modelBuilder.Entity("ERPSystem.Domain.Entities.Products.Category", b =>
