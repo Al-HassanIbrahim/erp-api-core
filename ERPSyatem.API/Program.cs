@@ -1,4 +1,6 @@
 
+using ERPSystem.Application.Interfaces;
+using ERPSystem.Application.Services;
 using ERPSystem.Domain.Abstractions;
 using ERPSystem.Infrastructure.Data;
 using ERPSystem.Infrastructure.Repositories;
@@ -20,6 +22,8 @@ namespace ERPSyatem.API
             builder.Services.AddScoped<IProductRepository, ProductRepository>();
             builder.Services.AddScoped<IUnitOfMeasureRepository, UnitOfMeasureRepository>();
             builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+
+            builder.Services.AddScoped<IProductService, ProductService>();
 
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
