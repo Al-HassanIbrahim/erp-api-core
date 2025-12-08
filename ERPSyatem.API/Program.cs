@@ -1,5 +1,8 @@
 
+using ERPSystem.Domain.Abstractions;
 using ERPSystem.Infrastructure.Data;
+using ERPSystem.Infrastructure.Repositories;
+using ERPSystem.Infrastructure.Repositories.ERPSystem.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace ERPSyatem.API
@@ -14,8 +17,11 @@ namespace ERPSyatem.API
             builder.Services.AddDbContext<AppDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+            builder.Services.AddScoped<IProductRepository, ProductRepository>();
+            builder.Services.AddScoped<IUnitOfMeasureRepository, UnitOfMeasureRepository>();
+            builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+
             builder.Services.AddControllers();
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
