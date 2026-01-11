@@ -6,7 +6,13 @@ using System.Threading.Tasks;
 
 namespace ERPSystem.Application.DTOs.Inventory
 {
-    internal class CreateWarehouseDTO
+    public class CreateWarehouseDto
     {
+        public int CompanyId { get; set; }      
+        public int? BranchId { get; set; }
+
+        public string Code { get; set; } = default!;
+        public string Name { get; set; } = default!;
+        public string? Address { get; set; }
     }
 }
