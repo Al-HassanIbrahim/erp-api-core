@@ -30,8 +30,10 @@ namespace ERPSyatem.API
 
             //Inventory
             builder.Services.AddScoped<IWarehouseRepository, WarehouseRepository>();
+            builder.Services.AddScoped<IInventoryRepository, InventoryRepository>();
 
             builder.Services.AddScoped<IWarehouseService, WarehouseService>();
+            builder.Services.AddScoped<IInventoryService, InventoryService>();
 
 
             builder.Services.AddControllers();
