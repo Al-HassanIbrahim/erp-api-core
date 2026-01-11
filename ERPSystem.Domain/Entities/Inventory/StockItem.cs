@@ -14,7 +14,9 @@ namespace ERPSystem.Domain.Entities.Inventory
 
         public DateTime LastUpdatedAt { get; set; } = DateTime.UtcNow;
 
-        
+        // Average cost per unit for this stock item (moving average)
+        public decimal AverageUnitCost { get; set; }
+
         public Warehouse Warehouse { get; set; } = default!;
         public Product Product { get; set; } = default!;
     }
