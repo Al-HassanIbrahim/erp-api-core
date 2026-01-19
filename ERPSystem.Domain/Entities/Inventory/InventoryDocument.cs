@@ -3,7 +3,7 @@ using ERPSystem.Domain.Enums;
 
 namespace ERPSystem.Domain.Entities.Inventory
 {
-    public class InventoryDocument : BaseEntity
+    public class InventoryDocument : AuditableEntity
     {
         public int CompanyId { get; set; }
         public int? BranchId { get; set; }
@@ -16,9 +16,7 @@ namespace ERPSystem.Domain.Entities.Inventory
 
         public int? DefaultWarehouseId { get; set; }
         public string? Notes { get; set; }
-
-        public int CreatedByUserId { get; set; }
-        public int? PostedByUserId { get; set; }
+        public Guid? PostedByUserId { get; set; }
         public DateTime? PostedAt { get; set; }
 
         public string? SourceType { get; set; }
