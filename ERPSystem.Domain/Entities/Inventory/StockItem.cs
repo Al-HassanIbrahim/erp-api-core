@@ -3,10 +3,12 @@ using ERPSystem.Domain.Entities.Products;
 
 namespace ERPSystem.Domain.Entities.Inventory
 {
-    public class StockItem : BaseEntity
+    public class StockItem : BaseEntity,ICompanyEntity
     {
         public int WarehouseId { get; set; }
         public int ProductId { get; set; }
+
+        public int CompanyId { get; set; }
 
         public decimal QuantityOnHand { get; set; }
         public decimal? MinQuantity { get; set; }   
