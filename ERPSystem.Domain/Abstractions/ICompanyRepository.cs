@@ -15,12 +15,9 @@ namespace ERPSystem.Domain.Abstractions
         Task AddAsync(Company company, CancellationToken ct = default);
         void Update(Company company);
 
-        /// <summary>
-        /// Soft delete + audit.
-        /// </summary>
         Task SoftDeleteAsync(int id, Guid deletedByUserId, CancellationToken ct = default);
-
         Task<bool> ExistsAsync(int id, CancellationToken ct = default);
+
         Task SaveChangesAsync(CancellationToken ct = default);
     }
 }
