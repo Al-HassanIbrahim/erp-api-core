@@ -162,8 +162,9 @@ namespace ERPSystem.Application.Services.Inventory
                 SourceType = request.SourceType,
                 SourceId = request.SourceId,
                 Notes = request.Notes,
-                CreatedByUserId = request.CreatedByUserId,
-                PostedByUserId = request.CreatedByUserId,
+                //Task
+                //CreatedByUserId = request.CreatedByUserId,
+                //PostedByUserId = request.CreatedByUserId,
                 PostedAt = DateTime.UtcNow,
                 Lines = new List<InventoryDocumentLine>()
             };
@@ -246,8 +247,9 @@ namespace ERPSystem.Application.Services.Inventory
                 SourceType = request.SourceType,
                 SourceId = request.SourceId,
                 Notes = request.Notes,
-                CreatedByUserId = request.CreatedByUserId,
-                PostedByUserId = request.CreatedByUserId,
+                //Task
+                //CreatedByUserId = request.CreatedByUserId,
+                //PostedByUserId = request.CreatedByUserId,
                 PostedAt = DateTime.UtcNow,
                 Lines = new List<InventoryDocumentLine>()
             };
@@ -333,8 +335,9 @@ namespace ERPSystem.Application.Services.Inventory
                 Status = InventoryDocumentStatus.Posted,
                 SourceType = request.SourceType,
                 Notes = request.Notes,
-                CreatedByUserId = request.CreatedByUserId,
-                PostedByUserId = request.CreatedByUserId,
+                //Task
+                //CreatedByUserId = request.CreatedByUserId,
+                //PostedByUserId = request.CreatedByUserId,
                 PostedAt = DateTime.UtcNow,
                 Lines = new List<InventoryDocumentLine>()
             };
@@ -450,8 +453,9 @@ namespace ERPSystem.Application.Services.Inventory
                 Status = InventoryDocumentStatus.Posted,
                 SourceType = "Opening",
                 Notes = request.Notes,
-                CreatedByUserId = request.CreatedByUserId,
-                PostedByUserId = request.CreatedByUserId,
+                //Task
+                //CreatedByUserId = request.CreatedByUserId,
+                //PostedByUserId = request.CreatedByUserId,
                 PostedAt = DateTime.UtcNow,
                 Lines = new List<InventoryDocumentLine>()
             };
@@ -534,8 +538,9 @@ namespace ERPSystem.Application.Services.Inventory
                 Status = InventoryDocumentStatus.Posted,
                 SourceType = "Adjustment",
                 Notes = request.Notes,
-                CreatedByUserId = request.CreatedByUserId,
-                PostedByUserId = request.CreatedByUserId,
+                //Task
+                //CreatedByUserId = request.CreatedByUserId,
+                //PostedByUserId = request.CreatedByUserId,
                 PostedAt = DateTime.UtcNow,
                 Lines = new List<InventoryDocumentLine>()
             };
