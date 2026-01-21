@@ -3,7 +3,7 @@ using ERPSystem.Domain.Enums;
 
 namespace ERPSystem.Domain.Entities.Inventory
 {
-    public class InventoryDocument : AuditableEntity
+    public class InventoryDocument : AuditableEntity, ICompanyEntity
     {
         public int CompanyId { get; set; }
         public int? BranchId { get; set; }
