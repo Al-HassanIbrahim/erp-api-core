@@ -12,5 +12,6 @@ namespace ERPSystem.Infrastructure.Identity
     {
         public int CompanyId { get; set; }
         public Company Company { get; set; } = default!;
+        public string FullName { get; set; } = default!;
     }
 }
