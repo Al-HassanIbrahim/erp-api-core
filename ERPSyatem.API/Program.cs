@@ -50,6 +50,9 @@ namespace ERPSyatem.API
                 .AddEntityFrameworkStores<AppDbContext>()
                 .AddDefaultTokenProviders();
 
+            builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
+            builder.Services.AddScoped<IAuthService, AuthService>();
+
             builder.Services.AddAuthentication(options => //How to validate
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
