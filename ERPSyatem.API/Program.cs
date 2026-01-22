@@ -1,8 +1,8 @@
-
 using System.Text;
 using ERPSystem.Application.Interfaces;
 using ERPSystem.Application.Services;
 using ERPSystem.Application.Services.Inventory;
+using ERPSystem.Application.Services.Products;
 using ERPSystem.Domain.Abstractions;
 using ERPSystem.Infrastructure.Data;
 using ERPSystem.Infrastructure.Identity;
@@ -32,6 +32,8 @@ namespace ERPSyatem.API
             builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 
             builder.Services.AddScoped<IProductService, ProductService>();
+            builder.Services.AddScoped<IUnitOfMeasureService, UnitOfMeasureService>();
+            builder.Services.AddScoped<ICategoryService, CategoryService>();
 
             //Inventory
             builder.Services.AddScoped<IWarehouseRepository, WarehouseRepository>();
