@@ -19,38 +19,42 @@ namespace ERPSystem.Infrastructure.Repositories
             _context = context;
         }
 
-        public async Task<Category?> GetByIdAsync(int id)
+        public async Task<Category?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
         {
             return await _context.Categories
-                .Include(c => c.Products)
-                .FirstOrDefaultAsync(c => c.Id == id);
+                .Include(c => c.ParentCategory)
+                .FirstOrDefaultAsync(c => c.Id == id && !c.IsDeleted, cancellationToken);
         }
 
-        public async Task<IEnumerable<Category>> GetAllAsync()
+        public async Task<List<Category>> GetAllByCompanyAsync(int companyId, CancellationToken cancellationToken = default)
         {
-            return await _context.Categories.ToListAsync();
+            return await _context.Categories
+                .AsNoTracking()
+                .Include(c => c.ParentCategory)
+                .Where(c => c.CompanyId == companyId && !c.IsDeleted)
+                .OrderBy(c => c.Name)
+                .ToListAsync(cancellationToken);
         }
 
-        public async Task AddAsync(Category category)
+        public async Task AddAsync(Category category, CancellationToken cancellationToken = default)
         {
-            await _context.Categories.AddAsync(category);
-            await _context.SaveChangesAsync();
+            await _context.Categories.AddAsync(category, cancellationToken);
         }
 
-        public async Task UpdateAsync(Category category)
+        public void Update(Category category)
         {
             _context.Categories.Update(category);
-            await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteAsync(int id)
+        public void Delete(Category category)
         {
-            var category = await _context.Categories.FindAsync(id);
-            if (category != null)
-            {
-                _context.Categories.Remove(category);
-                await _context.SaveChangesAsync();
-            }
+            category.IsDeleted = true;
+            _context.Categories.Update(category);
+        }
+
+        public async Task SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            await _context.SaveChangesAsync(cancellationToken);
         }
     }
 }
