@@ -14,6 +14,7 @@ namespace ERPSystem.Domain.Abstractions
         /// If both parameters are null, returns all stock items.
         /// </summary>
         Task<List<StockItem>> GetStockItemsAsync(
+            int companyId,
             int? productId,
             int? warehouseId,
             CancellationToken cancellationToken = default);
@@ -23,6 +24,7 @@ namespace ERPSystem.Domain.Abstractions
         /// If warehouseId is provided, filters by that warehouse.
         /// </summary>
         Task<List<StockItem>> GetLowStockItemsAsync(
+            int companyId,
             int? warehouseId,
             CancellationToken cancellationToken = default);
 
@@ -32,6 +34,7 @@ namespace ERPSystem.Domain.Abstractions
         /// and warehouse should be loaded (via includes) in the implementation.
         /// </summary>
         Task<List<InventoryDocumentLine>> GetMovementLinesAsync(
+            int companyId,
             int productId,
             int? warehouseId,
             DateTime fromDate,
