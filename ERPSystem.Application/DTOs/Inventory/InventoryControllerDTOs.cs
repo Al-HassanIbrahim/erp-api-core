@@ -8,16 +8,11 @@ namespace ERPSystem.Application.DTOs.Inventory
 {
     public class StockInRequest
     {
-        public int CompanyId { get; set; }
         public int? BranchId { get; set; }
         public DateTime DocDate { get; set; }
-
         public string SourceType { get; set; } = "Manual";
         public int? SourceId { get; set; }
         public string? Notes { get; set; }
-
-        public int CreatedByUserId { get; set; }
-
         public List<StockInLineRequest> Lines { get; set; } = new();
     }
 
@@ -34,16 +29,11 @@ namespace ERPSystem.Application.DTOs.Inventory
     // ---------- Stock Out ----------
     public class StockOutRequest
     {
-        public int CompanyId { get; set; }
         public int? BranchId { get; set; }
         public DateTime DocDate { get; set; }
-
         public string SourceType { get; set; } = "Manual";
         public int? SourceId { get; set; }
         public string? Notes { get; set; }
-
-        public int CreatedByUserId { get; set; }
-
         public List<StockOutLineRequest> Lines { get; set; } = new();
     }
 
@@ -59,15 +49,10 @@ namespace ERPSystem.Application.DTOs.Inventory
     // ---------- Transfer ----------
     public class StockTransferRequest
     {
-        public int CompanyId { get; set; }
         public int? BranchId { get; set; }
         public DateTime DocDate { get; set; }
-
         public string SourceType { get; set; } = "Manual";
         public string? Notes { get; set; }
-
-        public int CreatedByUserId { get; set; }
-
         public List<StockTransferLineRequest> Lines { get; set; } = new();
     }
 
@@ -84,13 +69,9 @@ namespace ERPSystem.Application.DTOs.Inventory
     // ---------- Opening Balance ----------
     public class OpeningBalanceRequest
     {
-        public int CompanyId { get; set; }
         public int? BranchId { get; set; }
         public DateTime DocDate { get; set; }
         public string? Notes { get; set; }
-
-        public int CreatedByUserId { get; set; }
-
         public List<OpeningBalanceLineRequest> Lines { get; set; } = new();
     }
 
@@ -107,12 +88,9 @@ namespace ERPSystem.Application.DTOs.Inventory
     // ---------- Adjustment ----------
     public class StockAdjustmentRequest
     {
-        public int CompanyId { get; set; }
         public int? BranchId { get; set; }
         public DateTime DocDate { get; set; }
         public string? Notes { get; set; }
-
-        public int CreatedByUserId { get; set; }
 
         public List<StockAdjustmentLineRequest> Lines { get; set; } = new();
     }

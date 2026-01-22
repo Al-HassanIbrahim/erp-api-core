@@ -12,20 +12,23 @@ using ERPSystem.Domain.Enums;
 
 namespace ERPSystem.Application.Services.Inventory
 {
-   public class InventoryService : IInventoryService
+    public class InventoryService : IInventoryService
     {
         private readonly IInventoryRepository _inventoryRepository;
         private readonly IProductRepository _productRepository;
         private readonly IWarehouseRepository _warehouseRepository;
+        private readonly ICurrentUserService _currentUser;
 
         public InventoryService(
             IInventoryRepository inventoryRepository,
             IProductRepository productRepository,
-            IWarehouseRepository warehouseRepository)
+            IWarehouseRepository warehouseRepository,
+            ICurrentUserService currentUser)
         {
             _inventoryRepository = inventoryRepository;
             _productRepository = productRepository;
             _warehouseRepository = warehouseRepository;
+            _currentUser = currentUser;
         }
 
         private string GenerateDocumentNumber(string prefix)
@@ -35,25 +38,27 @@ namespace ERPSystem.Application.Services.Inventory
         }
 
         /// <summary>
-        /// Loads a product and ensures it is active.
+        /// Loads a product and ensures it is active and belongs to the current user's company.
         /// </summary>
         private async Task<Product> GetValidProductAsync(int productId, CancellationToken cancellationToken)
         {
             var product = await _productRepository.GetByIdAsync(productId)
-                            ?? throw new InvalidOperationException("Product not found.");
+                          ?? throw new InvalidOperationException("Product not found.");
 
             if (!product.IsActive)
                 throw new InvalidOperationException("Product is not active.");
+
+            if (product.CompanyId != _currentUser.CompanyId)
+                throw new UnauthorizedAccessException("Product does not belong to your company.");
 
             return product;
         }
 
         /// <summary>
-        /// Loads a warehouse, ensures it is active and belongs to the given company/branch.
+        /// Loads a warehouse, ensures it is active and belongs to the current user's company.
         /// </summary>
         private async Task<Warehouse> GetValidWarehouseAsync(
             int warehouseId,
-            int companyId,
             int? branchId,
             CancellationToken cancellationToken)
         {
@@ -63,8 +68,8 @@ namespace ERPSystem.Application.Services.Inventory
             if (!warehouse.IsActive)
                 throw new InvalidOperationException("Warehouse is not active.");
 
-            if (warehouse.CompanyId != companyId)
-                throw new InvalidOperationException("Warehouse does not belong to the specified company.");
+            if (warehouse.CompanyId != _currentUser.CompanyId)
+                throw new UnauthorizedAccessException("Warehouse does not belong to your company.");
 
             if (branchId.HasValue && warehouse.BranchId.HasValue && warehouse.BranchId != branchId)
                 throw new InvalidOperationException("Warehouse does not belong to the specified branch.");
@@ -72,9 +77,6 @@ namespace ERPSystem.Application.Services.Inventory
             return warehouse;
         }
 
-        /// <summary>
-        /// Load a stock item from cache or repository; optionally create if missing.
-        /// </summary>
         private async Task<StockItem> GetOrCreateStockItemAsync(
             int productId,
             int warehouseId,
@@ -96,6 +98,7 @@ namespace ERPSystem.Application.Services.Inventory
 
                 stockItem = new StockItem
                 {
+                    CompanyId = _currentUser.CompanyId, 
                     WarehouseId = warehouseId,
                     ProductId = productId,
                     QuantityOnHand = 0,
@@ -110,9 +113,6 @@ namespace ERPSystem.Application.Services.Inventory
             return stockItem;
         }
 
-        /// <summary>
-        /// Recalculates moving average unit cost for a stock item when new quantity is received.
-        /// </summary>
         private void ApplyIncomingCost(StockItem stockItem, decimal qtyIn, decimal unitCostIn)
         {
             if (qtyIn <= 0)
@@ -122,21 +122,17 @@ namespace ERPSystem.Application.Services.Inventory
 
             var currentQty = stockItem.QuantityOnHand;
             var currentAvg = stockItem.AverageUnitCost;
-
             var newQty = currentQty + qtyIn;
 
             if (currentQty <= 0)
             {
-                // First quantity: use incoming cost
                 stockItem.AverageUnitCost = unitCostIn;
             }
             else
             {
                 var totalValueBefore = currentQty * currentAvg;
                 var totalValueIncoming = qtyIn * unitCostIn;
-                var newAvg = (totalValueBefore + totalValueIncoming) / newQty;
-
-                stockItem.AverageUnitCost = newAvg;
+                stockItem.AverageUnitCost = (totalValueBefore + totalValueIncoming) / newQty;
             }
 
             stockItem.QuantityOnHand = newQty;
@@ -154,7 +150,7 @@ namespace ERPSystem.Application.Services.Inventory
 
             var document = new InventoryDocument
             {
-                CompanyId = request.CompanyId,
+                CompanyId = _currentUser.CompanyId,
                 BranchId = request.BranchId,
                 DocDate = request.DocDate,
                 DocType = InventoryDocType.In,
@@ -162,9 +158,8 @@ namespace ERPSystem.Application.Services.Inventory
                 SourceType = request.SourceType,
                 SourceId = request.SourceId,
                 Notes = request.Notes,
-                //Task
-                //CreatedByUserId = request.CreatedByUserId,
-                //PostedByUserId = request.CreatedByUserId,
+                CreatedByUserId = _currentUser.UserId,
+                PostedByUserId = _currentUser.UserId,
                 PostedAt = DateTime.UtcNow,
                 Lines = new List<InventoryDocumentLine>()
             };
@@ -188,7 +183,7 @@ namespace ERPSystem.Application.Services.Inventory
 
                 if (!warehouseCache.TryGetValue(line.WarehouseId, out var warehouse))
                 {
-                    warehouse = await GetValidWarehouseAsync(line.WarehouseId, request.CompanyId, request.BranchId, cancellationToken);
+                    warehouse = await GetValidWarehouseAsync(line.WarehouseId, request.BranchId, cancellationToken);
                     warehouseCache[line.WarehouseId] = warehouse;
                 }
 
@@ -199,7 +194,6 @@ namespace ERPSystem.Application.Services.Inventory
                     createIfMissing: true,
                     cancellationToken);
 
-                // Moving average costing
                 ApplyIncomingCost(stockItem, line.Quantity, line.UnitCost);
 
                 var docLine = new InventoryDocumentLine
@@ -239,7 +233,7 @@ namespace ERPSystem.Application.Services.Inventory
 
             var document = new InventoryDocument
             {
-                CompanyId = request.CompanyId,
+                CompanyId = _currentUser.CompanyId,
                 BranchId = request.BranchId,
                 DocDate = request.DocDate,
                 DocType = InventoryDocType.Out,
@@ -247,9 +241,8 @@ namespace ERPSystem.Application.Services.Inventory
                 SourceType = request.SourceType,
                 SourceId = request.SourceId,
                 Notes = request.Notes,
-                //Task
-                //CreatedByUserId = request.CreatedByUserId,
-                //PostedByUserId = request.CreatedByUserId,
+                CreatedByUserId = _currentUser.UserId,
+                PostedByUserId = _currentUser.UserId,
                 PostedAt = DateTime.UtcNow,
                 Lines = new List<InventoryDocumentLine>()
             };
@@ -271,7 +264,7 @@ namespace ERPSystem.Application.Services.Inventory
 
                 if (!warehouseCache.TryGetValue(line.WarehouseId, out var warehouse))
                 {
-                    warehouse = await GetValidWarehouseAsync(line.WarehouseId, request.CompanyId, request.BranchId, cancellationToken);
+                    warehouse = await GetValidWarehouseAsync(line.WarehouseId, request.BranchId, cancellationToken);
                     warehouseCache[line.WarehouseId] = warehouse;
                 }
 
@@ -328,16 +321,15 @@ namespace ERPSystem.Application.Services.Inventory
 
             var document = new InventoryDocument
             {
-                CompanyId = request.CompanyId,
+                CompanyId = _currentUser.CompanyId,
                 BranchId = request.BranchId,
                 DocDate = request.DocDate,
                 DocType = InventoryDocType.Transfer,
                 Status = InventoryDocumentStatus.Posted,
                 SourceType = request.SourceType,
                 Notes = request.Notes,
-                //Task
-                //CreatedByUserId = request.CreatedByUserId,
-                //PostedByUserId = request.CreatedByUserId,
+                CreatedByUserId = _currentUser.UserId,
+                PostedByUserId = _currentUser.UserId,
                 PostedAt = DateTime.UtcNow,
                 Lines = new List<InventoryDocumentLine>()
             };
@@ -362,13 +354,13 @@ namespace ERPSystem.Application.Services.Inventory
 
                 if (!warehouseCache.TryGetValue(line.FromWarehouseId, out var fromWarehouse))
                 {
-                    fromWarehouse = await GetValidWarehouseAsync(line.FromWarehouseId, request.CompanyId, request.BranchId, cancellationToken);
+                    fromWarehouse = await GetValidWarehouseAsync(line.FromWarehouseId, request.BranchId, cancellationToken);
                     warehouseCache[line.FromWarehouseId] = fromWarehouse;
                 }
 
                 if (!warehouseCache.TryGetValue(line.ToWarehouseId, out var toWarehouse))
                 {
-                    toWarehouse = await GetValidWarehouseAsync(line.ToWarehouseId, request.CompanyId, request.BranchId, cancellationToken);
+                    toWarehouse = await GetValidWarehouseAsync(line.ToWarehouseId, request.BranchId, cancellationToken);
                     warehouseCache[line.ToWarehouseId] = toWarehouse;
                 }
 
@@ -446,16 +438,15 @@ namespace ERPSystem.Application.Services.Inventory
 
             var document = new InventoryDocument
             {
-                CompanyId = request.CompanyId,
+                CompanyId = _currentUser.CompanyId,
                 BranchId = request.BranchId,
                 DocDate = request.DocDate,
                 DocType = InventoryDocType.Opening,
                 Status = InventoryDocumentStatus.Posted,
                 SourceType = "Opening",
                 Notes = request.Notes,
-                //Task
-                //CreatedByUserId = request.CreatedByUserId,
-                //PostedByUserId = request.CreatedByUserId,
+                CreatedByUserId = _currentUser.UserId,
+                PostedByUserId = _currentUser.UserId,
                 PostedAt = DateTime.UtcNow,
                 Lines = new List<InventoryDocumentLine>()
             };
@@ -481,7 +472,7 @@ namespace ERPSystem.Application.Services.Inventory
 
                 if (!warehouseCache.TryGetValue(line.WarehouseId, out var warehouse))
                 {
-                    warehouse = await GetValidWarehouseAsync(line.WarehouseId, request.CompanyId, request.BranchId, cancellationToken);
+                    warehouse = await GetValidWarehouseAsync(line.WarehouseId, request.BranchId, cancellationToken);
                     warehouseCache[line.WarehouseId] = warehouse;
                 }
 
@@ -531,16 +522,15 @@ namespace ERPSystem.Application.Services.Inventory
 
             var document = new InventoryDocument
             {
-                CompanyId = request.CompanyId,
+                CompanyId = _currentUser.CompanyId,
                 BranchId = request.BranchId,
                 DocDate = request.DocDate,
                 DocType = InventoryDocType.Adjustment,
                 Status = InventoryDocumentStatus.Posted,
                 SourceType = "Adjustment",
                 Notes = request.Notes,
-                //Task
-                //CreatedByUserId = request.CreatedByUserId,
-                //PostedByUserId = request.CreatedByUserId,
+                CreatedByUserId = _currentUser.UserId,
+                PostedByUserId = _currentUser.UserId,
                 PostedAt = DateTime.UtcNow,
                 Lines = new List<InventoryDocumentLine>()
             };
@@ -562,7 +552,7 @@ namespace ERPSystem.Application.Services.Inventory
 
                 if (!warehouseCache.TryGetValue(line.WarehouseId, out var warehouse))
                 {
-                    warehouse = await GetValidWarehouseAsync(line.WarehouseId, request.CompanyId, request.BranchId, cancellationToken);
+                    warehouse = await GetValidWarehouseAsync(line.WarehouseId, request.BranchId, cancellationToken);
                     warehouseCache[line.WarehouseId] = warehouse;
                 }
 
