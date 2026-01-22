@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ERPSystem.Domain.Abstractions;
+﻿using ERPSystem.Domain.Abstractions;
 using ERPSystem.Domain.Entities.Inventory;
+using ERPSystem.Domain.Enums;
 using ERPSystem.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -20,6 +16,7 @@ namespace ERPSystem.Infrastructure.Repositories.Inventory
         }
 
         public async Task<List<StockItem>> GetStockItemsAsync(
+            int companyId,
             int? productId,
             int? warehouseId,
             CancellationToken cancellationToken = default)
@@ -31,22 +28,22 @@ namespace ERPSystem.Infrastructure.Repositories.Inventory
                 .Include(s => s.Product)
                     .ThenInclude(p => p.UnitOfMeasure)
                 .Include(s => s.Warehouse)
-                .AsQueryable();
+                .Where(s => s.CompanyId == companyId && !s.IsDeleted);
 
             if (productId.HasValue)
-            {
                 query = query.Where(s => s.ProductId == productId.Value);
-            }
 
             if (warehouseId.HasValue)
-            {
                 query = query.Where(s => s.WarehouseId == warehouseId.Value);
-            }
 
-            return await query.ToListAsync(cancellationToken);
+            return await query
+                .OrderBy(s => s.Product.Name)
+                .ThenBy(s => s.Warehouse.Name)
+                .ToListAsync(cancellationToken);
         }
 
         public async Task<List<StockItem>> GetLowStockItemsAsync(
+            int companyId,
             int? warehouseId,
             CancellationToken cancellationToken = default)
         {
@@ -57,18 +54,21 @@ namespace ERPSystem.Infrastructure.Repositories.Inventory
                 .Include(s => s.Product)
                     .ThenInclude(p => p.UnitOfMeasure)
                 .Include(s => s.Warehouse)
-                .Where(s => s.MinQuantity.HasValue && s.QuantityOnHand <= s.MinQuantity.Value)
-                .AsQueryable();
+                .Where(s => s.CompanyId == companyId
+                         && !s.IsDeleted
+                         && s.MinQuantity.HasValue
+                         && s.QuantityOnHand <= s.MinQuantity.Value);
 
             if (warehouseId.HasValue)
-            {
                 query = query.Where(s => s.WarehouseId == warehouseId.Value);
-            }
 
-            return await query.ToListAsync(cancellationToken);
+            return await query
+                .OrderBy(s => s.QuantityOnHand)
+                .ToListAsync(cancellationToken);
         }
 
         public async Task<List<InventoryDocumentLine>> GetMovementLinesAsync(
+            int companyId,
             int productId,
             int? warehouseId,
             DateTime fromDate,
@@ -80,18 +80,15 @@ namespace ERPSystem.Infrastructure.Repositories.Inventory
                 .Include(l => l.Document)
                 .Include(l => l.Product)
                 .Include(l => l.Warehouse)
-                .Where(l => l.ProductId == productId &&
-                            l.Document.DocDate >= fromDate &&
-                            l.Document.DocDate <= toDate)
-                .AsQueryable();
+                .Where(l => l.Document.CompanyId == companyId
+                         && !l.Document.IsDeleted
+                         && l.Document.Status == InventoryDocumentStatus.Posted
+                         && l.ProductId == productId
+                         && l.Document.DocDate >= fromDate
+                         && l.Document.DocDate <= toDate);
 
             if (warehouseId.HasValue)
-            {
                 query = query.Where(l => l.WarehouseId == warehouseId.Value);
-            }
-
-            // TODO filter only Posted documents
-            // e.g. l.Document.Status == InventoryDocumentStatus.Posted
 
             return await query
                 .OrderBy(l => l.Document.DocDate)
