@@ -43,8 +43,8 @@ namespace ERPSystem.Application.DTOs.Inventory
 
         public string LineType { get; set; } = default!;  // In / Out
         public decimal Quantity { get; set; }
-        public decimal UnitCost { get; set; }
-        public decimal TotalCost => Quantity * UnitCost;
+        public decimal? UnitCost { get; set; }
+        public decimal? TotalCost => Quantity * UnitCost;
     }
 
     // Used for low stock reports
