@@ -40,6 +40,9 @@ namespace ERPSyatem.API
             builder.Services.AddScoped<IWarehouseService, WarehouseService>();
             builder.Services.AddScoped<IInventoryService, InventoryService>();
 
+            // Inventory Reports
+            builder.Services.AddScoped<IInventoryReportsRepository, InventoryReportsRepository>();
+            builder.Services.AddScoped<IInventoryReportsService, InventoryReportsService>();
 
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
@@ -52,6 +55,9 @@ namespace ERPSyatem.API
 
             builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
             builder.Services.AddScoped<IAuthService, AuthService>();
+
+            builder.Services.AddHttpContextAccessor();
+            builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 
             builder.Services.AddAuthentication(options => //How to validate
             {
