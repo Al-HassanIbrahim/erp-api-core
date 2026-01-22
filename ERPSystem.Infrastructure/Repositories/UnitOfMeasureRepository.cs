@@ -19,36 +19,40 @@ namespace ERPSystem.Infrastructure.Repositories
             _context = context;
         }
 
-        public async Task<UnitOfMeasure?> GetByIdAsync(int id)
+        public async Task<UnitOfMeasure?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
         {
-            return await _context.UnitsOfMeasure.FindAsync(id);
+            return await _context.UnitsOfMeasure
+                .FirstOrDefaultAsync(u => u.Id == id && !u.IsDeleted, cancellationToken);
         }
 
-        public async Task<IEnumerable<UnitOfMeasure>> GetAllAsync()
+        public async Task<List<UnitOfMeasure>> GetAllByCompanyAsync(int companyId, CancellationToken cancellationToken = default)
         {
-            return await _context.UnitsOfMeasure.ToListAsync();
+            return await _context.UnitsOfMeasure
+                .AsNoTracking()
+                .Where(u => u.CompanyId == companyId && !u.IsDeleted)
+                .OrderBy(u => u.Name)
+                .ToListAsync(cancellationToken);
         }
 
-        public async Task AddAsync(UnitOfMeasure unitOfMeasure)
+        public async Task AddAsync(UnitOfMeasure unitOfMeasure, CancellationToken cancellationToken = default)
         {
-            await _context.UnitsOfMeasure.AddAsync(unitOfMeasure);
-            await _context.SaveChangesAsync();
+            await _context.UnitsOfMeasure.AddAsync(unitOfMeasure, cancellationToken);
         }
 
-        public async Task UpdateAsync(UnitOfMeasure unitOfMeasure)
+        public void Update(UnitOfMeasure unitOfMeasure)
         {
             _context.UnitsOfMeasure.Update(unitOfMeasure);
-            await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteAsync(int id)
+        public void Delete(UnitOfMeasure unitOfMeasure)
         {
-            var unitOfMeasure = await _context.UnitsOfMeasure.FindAsync(id);
-            if (unitOfMeasure != null)
-            {
-                _context.UnitsOfMeasure.Remove(unitOfMeasure);
-                await _context.SaveChangesAsync();
-            }
+            unitOfMeasure.IsDeleted = true;
+            _context.UnitsOfMeasure.Update(unitOfMeasure);
+        }
+
+        public async Task SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            await _context.SaveChangesAsync(cancellationToken);
         }
     }
 }
