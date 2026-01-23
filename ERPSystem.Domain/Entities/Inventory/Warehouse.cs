@@ -7,7 +7,7 @@ using ERPSystem.Domain.Abstractions;
 
 namespace ERPSystem.Domain.Entities.Inventory
 {
-    public class Warehouse : BaseEntity
+    public class Warehouse : BaseEntity, ICompanyEntity
     {
         public int CompanyId { get; set; }        
         public int? BranchId { get; set; } 

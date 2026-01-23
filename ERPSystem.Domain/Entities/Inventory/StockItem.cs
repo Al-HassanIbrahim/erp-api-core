@@ -3,10 +3,12 @@ using ERPSystem.Domain.Entities.Products;
 
 namespace ERPSystem.Domain.Entities.Inventory
 {
-    public class StockItem : BaseEntity
+    public class StockItem : BaseEntity,ICompanyEntity
     {
         public int WarehouseId { get; set; }
         public int ProductId { get; set; }
+
+        public int CompanyId { get; set; }
 
         public decimal QuantityOnHand { get; set; }
         public decimal? MinQuantity { get; set; }   
@@ -14,7 +16,9 @@ namespace ERPSystem.Domain.Entities.Inventory
 
         public DateTime LastUpdatedAt { get; set; } = DateTime.UtcNow;
 
-        
+        // Average cost per unit for this stock item (moving average)
+        public decimal AverageUnitCost { get; set; }
+
         public Warehouse Warehouse { get; set; } = default!;
         public Product Product { get; set; } = default!;
     }

@@ -7,9 +7,10 @@ using ERPSystem.Domain.Abstractions;
 
 namespace ERPSystem.Domain.Entities.Products
 {
-    public class UnitOfMeasure : BaseEntity
+    public class UnitOfMeasure : BaseEntity, ICompanyEntity
     {
         public string Name { get; set; } = default!;
+        public int CompanyId { get; set; }
 
         public string Symbol { get; set; } = default!;
 
