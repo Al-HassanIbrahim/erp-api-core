@@ -10,23 +10,30 @@ namespace ERPSystem.Domain.Entities.HR
 {
     public class Department
     {
-        public int Id { get; set; }
+        public Guid Id { get; set; }
+
+        [Required, MaxLength(20)]
+        public string Code { get; set; } = null!;
 
         [Required, MaxLength(100)]
-        public string Name { get; set; } = null!;              
+        public string Name { get; set; } = null!;
 
         [MaxLength(500)]
         public string? Description { get; set; }
 
+        // Relations
         [ForeignKey("Manager")]
-        public int? ManagerId { get; set; }
+        public Guid? ManagerId { get; set; }
         public Employee? Manager { get; set; }
-
-
-        public ICollection<Employee> Employees { get; set; } = new List<Employee>();
 
         public bool IsActive { get; set; } = true;
 
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        // Collections
+        public ICollection<Employee> Employees { get; set; } = new List<Employee>();
+        public ICollection<JobPosition> Positions { get; set; } = new List<JobPosition>();
+
+        // Audit
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime? ModifiedAt { get; set; }
     }
 }
