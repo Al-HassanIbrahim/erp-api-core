@@ -1,0 +1,51 @@
+﻿using ERPSystem.Application.Exceptions;
+using ERPSystem.Application.Interfaces;
+using ERPSystem.Application.Interfaces.ERPSystem.Application.Interfaces;
+using ERPSystem.Domain.Abstractions;
+
+namespace ERPSystem.Application.Services.Core
+{
+    public class ModuleAccessService : IModuleAccessService
+    {
+        private readonly ICompanyModuleRepository _companyModuleRepository;
+        private readonly ICurrentUserService _currentUser;
+
+        private const string SalesModuleCode = "SALES";
+        private const string InventoryModuleCode = "INVENTORY";
+
+        public ModuleAccessService(
+            ICompanyModuleRepository companyModuleRepository,
+            ICurrentUserService currentUser)
+        {
+            _companyModuleRepository = companyModuleRepository;
+            _currentUser = currentUser;
+        }
+
+        public async Task<bool> IsModuleEnabledAsync(int companyId, string moduleCode, CancellationToken cancellationToken = default)
+        {
+            return await _companyModuleRepository.IsModuleEnabledAsync(companyId, moduleCode, cancellationToken);
+        }
+
+        public async Task<bool> IsSalesEnabledAsync(CancellationToken cancellationToken = default)
+        {
+            return await IsModuleEnabledAsync(_currentUser.CompanyId, SalesModuleCode, cancellationToken);
+        }
+
+        public async Task<bool> IsInventoryEnabledAsync(CancellationToken cancellationToken = default)
+        {
+            return await IsModuleEnabledAsync(_currentUser.CompanyId, InventoryModuleCode, cancellationToken);
+        }
+
+        public async Task EnsureSalesEnabledAsync(CancellationToken cancellationToken = default)
+        {
+            if (!await IsSalesEnabledAsync(cancellationToken))
+                throw BusinessErrors.SalesModuleNotEnabled();
+        }
+
+        public async Task EnsureInventoryEnabledAsync(CancellationToken cancellationToken = default)
+        {
+            if (!await IsInventoryEnabledAsync(cancellationToken))
+                throw BusinessErrors.InventoryModuleNotEnabled();
+        }
+    }
+}
