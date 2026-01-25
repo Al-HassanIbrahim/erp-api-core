@@ -1,6 +1,5 @@
 using System.Text;
 using ERPSystem.Application.Interfaces;
-using ERPSystem.Application.Interfaces.ERPSystem.Application.Interfaces;
 using ERPSystem.Application.Services.Core;
 using ERPSystem.Application.Services.Inventory;
 using ERPSystem.Application.Services.Products;
@@ -10,7 +9,6 @@ using ERPSystem.Infrastructure.Data;
 using ERPSystem.Infrastructure.Identity;
 using ERPSystem.Infrastructure.Repositories;
 using ERPSystem.Infrastructure.Repositories.Core;
-using ERPSystem.Infrastructure.Repositories.ERPSystem.Infrastructure.Repositories;
 using ERPSystem.Infrastructure.Repositories.Inventory;
 using ERPSystem.Infrastructure.Repositories.Sales;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
