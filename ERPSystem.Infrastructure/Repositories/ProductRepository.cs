@@ -10,54 +10,90 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ERPSystem.Infrastructure.Repositories
 {
-    namespace ERPSystem.Infrastructure.Repositories
+    public class ProductRepository : IProductRepository
     {
-        public class ProductRepository : IProductRepository
+        private readonly AppDbContext _context;
+
+        public ProductRepository(AppDbContext context)
         {
-            private readonly AppDbContext _context;
+            _context = context;
+        }
 
-            public ProductRepository(AppDbContext context)
-            {
-                _context = context;
-            }
+        public async Task<Product?> GetByIdAsync(int id)
+        {
+            return await _context.Products
+                .Include(p => p.Category)
+                .Include(p => p.UnitOfMeasure)
+                .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted);
+        }
 
-            public async Task<Product?> GetByIdAsync(int id)
-            {
-                return await _context.Products
-                    .Include(p => p.Category)
-                    .Include(p => p.UnitOfMeasure)
-                    .FirstOrDefaultAsync(p => p.Id == id);
-            }
+        public async Task<Product?> GetByIdAsync(int id, int companyId)
+        {
+            return await _context.Products
+                .Include(p => p.Category)
+                .Include(p => p.UnitOfMeasure)
+                .FirstOrDefaultAsync(p => p.Id == id && p.CompanyId == companyId && !p.IsDeleted);
+        }
 
-            public async Task<IEnumerable<Product>> GetAllAsync()
-            {
-                return await _context.Products
-                    .Include(p => p.Category)
-                    .Include(p => p.UnitOfMeasure)
-                    .ToListAsync();
-            }
+        public async Task<IEnumerable<Product>> GetAllAsync()
+        {
+            return await _context.Products
+                .Include(p => p.Category)
+                .Include(p => p.UnitOfMeasure)
+                .Where(p => !p.IsDeleted)
+                .ToListAsync();
+        }
 
-            public async Task AddAsync(Product product)
-            {
-                await _context.Products.AddAsync(product);
-                await _context.SaveChangesAsync();
-            }
+        public async Task<IEnumerable<Product>> GetAllByCompanyAsync(int companyId)
+        {
+            return await _context.Products
+                .Include(p => p.Category)
+                .Include(p => p.UnitOfMeasure)
+                .Where(p => p.CompanyId == companyId && !p.IsDeleted)
+                .ToListAsync();
+        }
 
-            public async Task UpdateAsync(Product product)
-            {
-                _context.Products.Update(product);
-                await _context.SaveChangesAsync();
-            }
+        public async Task<bool> ExistsAsync(int id, int companyId)
+        {
+            return await _context.Products
+                .AnyAsync(p => p.Id == id && p.CompanyId == companyId && !p.IsDeleted);
+        }
 
-            public async Task DeleteAsync(int id)
+        public async Task<bool> CodeExistsAsync(string code, int companyId, int? excludeId = null)
+        {
+            var query = _context.Products
+                .Where(p => p.Code == code && p.CompanyId == companyId && !p.IsDeleted);
+
+            if (excludeId.HasValue)
+                query = query.Where(p => p.Id != excludeId.Value);
+
+            return await query.AnyAsync();
+        }
+
+        public async Task AddAsync(Product product)
+        {
+            await _context.Products.AddAsync(product);
+        }
+
+        public async Task UpdateAsync(Product product)
+        {
+            product.UpdatedAt = DateTime.UtcNow;
+            _context.Products.Update(product);
+        }
+
+        public async Task DeleteAsync(int id)
+        {
+            var product = await _context.Products.FindAsync(id);
+            if (product != null)
             {
-                var product = await _context.Products.FindAsync(id);
-                if (product != null)
-                {
-                    _context.Products.Remove(product);
-                    await _context.SaveChangesAsync();
-                }
+                product.IsDeleted = true;
+                product.UpdatedAt = DateTime.UtcNow;
             }
+        }
+
+        public async Task SaveChangesAsync()
+        {
+            await _context.SaveChangesAsync();
         }
     }
 }

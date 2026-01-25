@@ -1,4 +1,4 @@
-﻿namespace ERPSystem.Application.DTOs.Products
+﻿namespace ERPSystem.Application.DTOs
 {
     public class UpdateProductDto
     {
