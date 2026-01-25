@@ -29,6 +29,16 @@ public class Employee
     [Required]
     public DateTime DateOfBirth { get; set; }
 
+    // Bank Details
+    [Required, MaxLength(50)]
+    public string BankAccountNumber { get; set; } = null!;
+
+    [Required, MaxLength(100)]
+    public string BankName { get; set; } = null!;
+
+    [Required, MaxLength(100)]
+    public string BankBranch { get; set; } = null!;
+
     [Required]
     public Gender Gender { get; set; }
 
