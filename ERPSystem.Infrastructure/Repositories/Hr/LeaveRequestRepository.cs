@@ -65,7 +65,15 @@ namespace ERPSystem.Infrastructure.Repositories.Hr
 
             return await query.AnyAsync();
         }
-
+        public async Task<IEnumerable<LeaveRequest>> GetApprovedByEmployeeAndPeriodAsync(Guid employeeId, DateOnly startDate, DateOnly endDate)
+        {
+            return await _context.LeaveRequests
+                .Where(lr => lr.EmployeeId == employeeId &&
+                            lr.Status == LeaveRequestStatus.Approved &&
+                            lr.StartDate <= endDate &&
+                            lr.EndDate >= startDate)
+                .ToListAsync();
+        }
         public async Task AddAsync(LeaveRequest leaveRequest)
         {
             await _context.LeaveRequests.AddAsync(leaveRequest);
