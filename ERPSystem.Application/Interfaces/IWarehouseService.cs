@@ -9,7 +9,7 @@ namespace ERPSystem.Application.Interfaces
 {
     public interface IWarehouseService
     {
-        Task<List<WarehouseDto>> GetAllAsync(int? companyId = null, int? branchId = null);
+        Task<List<WarehouseDto>> GetAllAsync(int? branchId = null);
         Task<WarehouseDto?> GetByIdAsync(int id);
 
         Task<int> CreateAsync(CreateWarehouseDto dto);

@@ -4,8 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ERPSystem.Application.Interfaces
-{
+
     namespace ERPSystem.Application.Interfaces
     {
         public interface IModuleAccessService
@@ -17,4 +16,4 @@ namespace ERPSystem.Application.Interfaces
             Task EnsureInventoryEnabledAsync(CancellationToken cancellationToken = default);
         }
     }
-}
+

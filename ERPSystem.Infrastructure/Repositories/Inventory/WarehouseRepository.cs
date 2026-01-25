@@ -19,18 +19,16 @@ namespace ERPSystem.Infrastructure.Repositories.Inventory
             _context = context;
         }
 
-        public async Task<List<Warehouse>> GetAllAsync(int? companyId = null, int? branchId = null)
+        public async Task<List<Warehouse>> GetAllAsync(int companyId, int? branchId = null)
         {
-            IQueryable<Warehouse> query = _context.Warehouses;
-
-            if (companyId.HasValue)
-                query = query.Where(w => w.CompanyId == companyId.Value);
+            var query = _context.Warehouses
+                .Where(w => w.CompanyId == companyId && !w.IsDeleted);
 
             if (branchId.HasValue)
                 query = query.Where(w => w.BranchId == branchId.Value);
 
             return await query
-                .Where(w => !w.IsDeleted)
+                .OrderBy(w => w.Name)
                 .ToListAsync();
         }
 
@@ -40,17 +38,27 @@ namespace ERPSystem.Infrastructure.Repositories.Inventory
                 .FirstOrDefaultAsync(w => w.Id == id && !w.IsDeleted);
         }
 
-        public async Task<bool> CodeExistsAsync(string code, int? companyId = null, int? excludeId = null)
+        public async Task<Warehouse?> GetByIdAsync(int id, int companyId)
         {
-            IQueryable<Warehouse> query = _context.Warehouses;
+            return await _context.Warehouses
+                .FirstOrDefaultAsync(w => w.Id == id && w.CompanyId == companyId && !w.IsDeleted);
+        }
 
-            if (companyId.HasValue)
-                query = query.Where(w => w.CompanyId == companyId.Value);
+        public async Task<bool> ExistsAsync(int id, int companyId)
+        {
+            return await _context.Warehouses
+                .AnyAsync(w => w.Id == id && w.CompanyId == companyId && !w.IsDeleted);
+        }
+
+        public async Task<bool> CodeExistsAsync(string code, int companyId, int? excludeId = null)
+        {
+            var query = _context.Warehouses
+                .Where(w => w.Code == code && w.CompanyId == companyId && !w.IsDeleted);
 
             if (excludeId.HasValue)
                 query = query.Where(w => w.Id != excludeId.Value);
 
-            return await query.AnyAsync(w => w.Code == code && !w.IsDeleted);
+            return await query.AnyAsync();
         }
 
         public async Task AddAsync(Warehouse warehouse)

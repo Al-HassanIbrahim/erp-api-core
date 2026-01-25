@@ -1,11 +1,13 @@
 ﻿using ERPSystem.Application.DTOs.Inventory;
 using ERPSystem.Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ERPSyatem.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class WarehousesController : ControllerBase
     {
         private readonly IWarehouseService _warehouseService;
@@ -16,9 +18,9 @@ namespace ERPSyatem.API.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll([FromQuery] int? companyId, [FromQuery] int? branchId)
+        public async Task<IActionResult> GetAll([FromQuery] int? branchId)
         {
-            var result = await _warehouseService.GetAllAsync(companyId, branchId);
+            var result = await _warehouseService.GetAllAsync(branchId);
             return Ok(result);
         }
 
@@ -30,18 +32,17 @@ namespace ERPSyatem.API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(CreateWarehouseDto dto)
+        public async Task<IActionResult> Create([FromBody] CreateWarehouseDto dto)
         {
             var id = await _warehouseService.CreateAsync(dto);
             return CreatedAtAction(nameof(GetById), new { id }, new { id });
         }
 
         [HttpPut("{id:int}")]
-        public async Task<IActionResult> Update(int id, UpdateWarehouseDto dto)
+        public async Task<IActionResult> Update(int id, [FromBody] UpdateWarehouseDto dto)
         {
             var updated = await _warehouseService.UpdateAsync(id, dto);
             if (!updated) return NotFound();
-
             return NoContent();
         }
 
@@ -50,7 +51,6 @@ namespace ERPSyatem.API.Controllers
         {
             var deleted = await _warehouseService.DeleteAsync(id);
             if (!deleted) return NotFound();
-
             return NoContent();
         }
     }
