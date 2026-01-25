@@ -23,6 +23,10 @@ namespace ERPSystem.Application.DTOs.HR.Employee
         public string NationalId { get; set; } = null!;
         public string MaritalStatus { get; set; } = null!;
 
+        public string BankAccountNumber { get; set; } = null!;
+        public string BankName { get; set; } = null!;
+        public string BankBranch { get; set; } = null!;
+
         public DateTime HireDate { get; set; }
         public DateTime? ProbationEndDate { get; set; }
         public DateTime? TerminationDate { get; set; }

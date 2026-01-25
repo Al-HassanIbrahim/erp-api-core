@@ -41,6 +41,15 @@ namespace ERPSystem.Application.DTOs.HR.Employee
         public MaritalStatus MaritalStatus { get; set; }
 
         [Required]
+        public string BankAccountNumber { get; set; } = null!;
+
+        [Required]
+        public string BankName { get; set; } = null!;
+
+        [Required]
+        public string BankBranch { get; set; } = null!;
+
+        [Required]
         public DateTime HireDate { get; set; }
 
         public int ProbationPeriodMonths { get; set; } = 3;
