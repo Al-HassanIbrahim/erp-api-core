@@ -1,6 +1,5 @@
 ﻿using ERPSystem.Application.Exceptions;
 using ERPSystem.Application.Interfaces;
-using ERPSystem.Application.Interfaces.ERPSystem.Application.Interfaces;
 using ERPSystem.Domain.Abstractions;
 
 namespace ERPSystem.Application.Services.Core

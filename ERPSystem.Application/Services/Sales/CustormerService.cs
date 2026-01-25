@@ -1,7 +1,7 @@
 ﻿using ERPSystem.Application.DTOs.Sales;
 using ERPSystem.Application.Exceptions;
 using ERPSystem.Application.Interfaces;
-using ERPSystem.Application.Interfaces.ERPSystem.Application.Interfaces;
+using ERPSystem.Application.Interfaces;
 using ERPSystem.Domain.Abstractions;
 using ERPSystem.Domain.Entities.Sales;
 
