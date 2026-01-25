@@ -9,9 +9,10 @@ namespace ERPSystem.Domain.Entities.Core
 {
     public class Module : BaseEntity
     {
-        public string Key { get; set; } = default!;     // مثال: "Inventory"
+        public string Key { get; set; } = default!;     // ex: "Inventory"
         public string Name { get; set; } = default!;    // "Inventory Management"
         public string? Description { get; set; }
+        public bool IsActive { get; set; } = true;
 
         public ICollection<CompanyModule> CompanyModules { get; set; } = new List<CompanyModule>();
     }

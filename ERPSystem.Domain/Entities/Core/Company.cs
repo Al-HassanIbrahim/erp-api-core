@@ -10,7 +10,7 @@ namespace ERPSystem.Domain.Entities.Core
     public class Company : AuditableEntity
     {
         public string Name { get; set; } = default!;
-        public string? TaxNumber { get; set; }
+        public string? CommercialName { get; set; }
         public string? Address { get; set; }
         public bool IsActive { get; set; } = true;
 
