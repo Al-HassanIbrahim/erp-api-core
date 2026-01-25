@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace ERPSystem.Domain.Abstractions
 {
-    internal interface ILeaveBalanceRepository
+    public interface ILeaveBalanceRepository
     {
         Task<LeaveBalance?> GetByEmployeeYearAndTypeAsync(Guid employeeId, int year, LeaveType type);
         Task<IEnumerable<LeaveBalance>> GetByEmployeeAndYearAsync(Guid employeeId, int year);
