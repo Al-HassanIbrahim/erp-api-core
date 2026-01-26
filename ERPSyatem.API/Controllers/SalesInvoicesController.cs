@@ -6,6 +6,10 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ERPSyatem.API.Controllers
 {
+    /// <summary>
+    /// Manages sales invoices lifecycle including creation, modification,
+    /// posting (confirmation), cancellation, and deletion.
+    /// </summary>
     [ApiController]
     [Route("api/sales/invoices")]
     [Authorize]
@@ -18,6 +22,10 @@ namespace ERPSyatem.API.Controllers
             _service = service;
         }
 
+        /// <summary>
+        /// Retrieves a list of sales invoices for the current company.
+        /// Supports filtering by customer, invoice status, and date range.
+        /// </summary>
         [HttpGet]
         public async Task<IActionResult> GetAll(
             [FromQuery] int? customerId,
@@ -30,6 +38,10 @@ namespace ERPSyatem.API.Controllers
             return Ok(result);
         }
 
+        /// <summary>
+        /// Retrieves a specific sales invoice by its identifier,
+        /// including header and invoice lines.
+        /// </summary>
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken)
         {
@@ -39,6 +51,10 @@ namespace ERPSyatem.API.Controllers
             return Ok(result);
         }
 
+        /// <summary>
+        /// Creates a new sales invoice in Draft status.
+        /// The invoice can be modified until it is posted.
+        /// </summary>
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateSalesInvoiceRequest request, CancellationToken cancellationToken)
         {
@@ -46,6 +62,10 @@ namespace ERPSyatem.API.Controllers
             return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
         }
 
+        /// <summary>
+        /// Updates an existing sales invoice.
+        /// Only invoices in Draft status can be modified.
+        /// </summary>
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] UpdateSalesInvoiceRequest request, CancellationToken cancellationToken)
         {
@@ -53,12 +73,30 @@ namespace ERPSyatem.API.Controllers
             return Ok(result);
         }
 
+        /// <summary>
+        /// Posts (confirms) a sales invoice.
+        /// Once posted, the invoice becomes immutable and financially effective.
+        /// </summary>
         [HttpPost("{id}/post")]
         public async Task<IActionResult> Post(int id, CancellationToken cancellationToken)
         {
             var result = await _service.PostAsync(id, cancellationToken);
             return Ok(result);
         }
+
+        /// <summary>
+        /// Cancels a sales invoice.
+        /// </summary>
+        /// <remarks>
+        /// Cancellation represents a business decision, not a data removal.
+        /// The invoice remains in the system for audit and reporting purposes,
+        /// but its status is changed to <c>Cancelled</c>.
+        ///
+        /// Rules:
+        /// - Only invoices that belong to the current company can be cancelled.
+        /// - An invoice cannot be cancelled if it has related deliveries or financial transactions.
+        /// - Cancellation is irreversible.
+        /// </remarks>
 
         [HttpPost("{id}/cancel")]
         public async Task<IActionResult> Cancel(int id, CancellationToken cancellationToken)
@@ -67,6 +105,19 @@ namespace ERPSyatem.API.Controllers
             return Ok(result);
         }
 
+        /// <summary>
+        /// Soft-deletes a sales invoice.
+        /// </summary>
+        /// <remarks>
+        /// Deletion represents a technical or user input mistake.
+        /// The invoice is not physically removed from the database,
+        /// but is marked as deleted and excluded from future queries.
+        ///
+        /// Rules:
+        /// - Only draft invoices can be deleted.
+        /// - Deleted invoices must not have any business impact.
+        /// - Deletion should be used only when the invoice was created by mistake.
+        /// </remarks>
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         {
