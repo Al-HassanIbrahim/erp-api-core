@@ -6,6 +6,10 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ERPSyatem.API.Controllers
 {
+    /// <summary>
+    /// Manages sales returns including creation, posting,
+    /// and cancellation of returned goods.
+    /// </summary>
     [ApiController]
     [Route("api/sales/returns")]
     [Authorize]
@@ -18,6 +22,10 @@ namespace ERPSyatem.API.Controllers
             _service = service;
         }
 
+        /// <summary>
+        /// Retrieves sales returns for the current company,
+        /// filtered by customer, status, or date range.
+        /// </summary>
         [HttpGet]
         public async Task<IActionResult> GetAll(
             [FromQuery] int? customerId,
@@ -30,6 +38,9 @@ namespace ERPSyatem.API.Controllers
             return Ok(result);
         }
 
+        /// <summary>
+        /// Retrieves a specific sales return document by its identifier.
+        /// </summary>
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken)
         {
@@ -39,6 +50,10 @@ namespace ERPSyatem.API.Controllers
             return Ok(result);
         }
 
+        /// <summary>
+        /// Creates a new sales return document.
+        /// The return can be posted to affect inventory if enabled.
+        /// </summary>
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateSalesReturnRequest request, CancellationToken cancellationToken)
         {
@@ -46,6 +61,10 @@ namespace ERPSyatem.API.Controllers
             return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
         }
 
+        /// <summary>
+        /// Only If Inventory module is enabled, Posts (confirms) a sales return.
+        /// returned quantitiesare added back to stock (StockIn).
+        /// </summary>
         [HttpPost("{id}/post")]
         public async Task<IActionResult> Post(int id, CancellationToken cancellationToken)
         {
@@ -53,6 +72,14 @@ namespace ERPSyatem.API.Controllers
             return Ok(result);
         }
 
+        /// <summary>
+        /// Cancels a sales return document.
+        /// </summary>
+        /// <remarks>
+        /// Cancellation is allowed only while the sales return is in <c>Draft</c> status.
+        /// A posted return cannot be cancelled because it may have already affected inventory.
+        /// To reverse a posted return, a separate corrective document must be created.
+        /// </remarks>
         [HttpPost("{id}/cancel")]
         public async Task<IActionResult> Cancel(int id, CancellationToken cancellationToken)
         {
@@ -60,6 +87,16 @@ namespace ERPSyatem.API.Controllers
             return Ok(result);
         }
 
+        /// <summary>
+        /// Soft-deletes a sales return document.
+        /// </summary>
+        /// <remarks>
+        /// Deletion is allowed only for sales returns in <c>Draft</c> status.
+        /// The document is not physically removed from the database,
+        /// but is marked as deleted and excluded from future queries.
+        /// Deletion should be used only when the return was created by mistake
+        /// and has not caused any business or inventory impact.
+        /// </remarks>
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         {
