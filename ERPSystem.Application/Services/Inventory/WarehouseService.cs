@@ -13,15 +13,19 @@ namespace ERPSystem.Application.Services.Inventory
     public class WarehouseService : IWarehouseService
     {
         private readonly IWarehouseRepository _warehouseRepository;
+        private readonly ICurrentUserService _currentUser;
 
-        public WarehouseService(IWarehouseRepository warehouseRepository)
+        public WarehouseService(
+            IWarehouseRepository warehouseRepository,
+            ICurrentUserService currentUser)
         {
             _warehouseRepository = warehouseRepository;
+            _currentUser = currentUser;
         }
 
-        public async Task<List<WarehouseDto>> GetAllAsync(int? companyId = null, int? branchId = null)
+        public async Task<List<WarehouseDto>> GetAllAsync(int? branchId = null)
         {
-            var warehouses = await _warehouseRepository.GetAllAsync(companyId, branchId);
+            var warehouses = await _warehouseRepository.GetAllAsync(_currentUser.CompanyId, branchId);
 
             return warehouses
                 .Select(w => new WarehouseDto
@@ -37,7 +41,7 @@ namespace ERPSystem.Application.Services.Inventory
 
         public async Task<WarehouseDto?> GetByIdAsync(int id)
         {
-            var warehouse = await _warehouseRepository.GetByIdAsync(id);
+            var warehouse = await _warehouseRepository.GetByIdAsync(id, _currentUser.CompanyId);
             if (warehouse == null) return null;
 
             return new WarehouseDto
@@ -52,21 +56,19 @@ namespace ERPSystem.Application.Services.Inventory
 
         public async Task<int> CreateAsync(CreateWarehouseDto dto)
         {
-            var codeExists = await _warehouseRepository.CodeExistsAsync(dto.Code, dto.CompanyId);
+            var codeExists = await _warehouseRepository.CodeExistsAsync(dto.Code, _currentUser.CompanyId);
             if (codeExists)
-            {
-                //// TODO use     custom exceptions | validation result
-                throw new System.InvalidOperationException("Warehouse code already exists for this company.");
-            }
+                throw new InvalidOperationException("Warehouse code already exists for this company.");
 
             var warehouse = new Warehouse
             {
-                CompanyId = dto.CompanyId,
+                CompanyId = _currentUser.CompanyId,
                 BranchId = dto.BranchId,
                 Code = dto.Code,
                 Name = dto.Name,
                 Address = dto.Address,
-                IsActive = true
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
             };
 
             await _warehouseRepository.AddAsync(warehouse);
@@ -77,19 +79,18 @@ namespace ERPSystem.Application.Services.Inventory
 
         public async Task<bool> UpdateAsync(int id, UpdateWarehouseDto dto)
         {
-            var warehouse = await _warehouseRepository.GetByIdAsync(id);
+            var warehouse = await _warehouseRepository.GetByIdAsync(id, _currentUser.CompanyId);
             if (warehouse == null) return false;
 
-            var codeExists = await _warehouseRepository.CodeExistsAsync(dto.Code, warehouse.CompanyId, id);
+            var codeExists = await _warehouseRepository.CodeExistsAsync(dto.Code, _currentUser.CompanyId, id);
             if (codeExists)
-            {
-                throw new System.InvalidOperationException("Warehouse code already exists for this company.");
-            }
+                throw new InvalidOperationException("Warehouse code already exists for this company.");
 
             warehouse.Code = dto.Code;
             warehouse.Name = dto.Name;
             warehouse.Address = dto.Address;
             warehouse.IsActive = dto.IsActive;
+            warehouse.UpdatedAt = DateTime.UtcNow;
 
             await _warehouseRepository.SaveChangesAsync();
             return true;
@@ -97,22 +98,21 @@ namespace ERPSystem.Application.Services.Inventory
 
         public async Task<bool> DeleteAsync(int id)
         {
-            var warehouse = await _warehouseRepository.GetByIdAsync(id);
+            var warehouse = await _warehouseRepository.GetByIdAsync(id, _currentUser.CompanyId);
             if (warehouse == null) return false;
 
             var hasActivity = await _warehouseRepository.HasInventoryActivityAsync(id);
 
             if (hasActivity)
             {
-                // Mark as inactive only
                 warehouse.IsActive = false;
             }
             else
             {
-                // Hard delete or soft delete using IsDeleted
                 warehouse.IsDeleted = true;
             }
 
+            warehouse.UpdatedAt = DateTime.UtcNow;
             await _warehouseRepository.SaveChangesAsync();
             return true;
         }

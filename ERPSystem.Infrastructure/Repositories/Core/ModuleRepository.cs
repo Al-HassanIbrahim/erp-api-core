@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ERPSystem.Domain.Abstractions;
+﻿using ERPSystem.Domain.Abstractions;
 using ERPSystem.Domain.Entities.Core;
 using ERPSystem.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace ERPSystem.Infrastructure.Repositories.Core
-{  
+{
     public class ModuleRepository : IModuleRepository
     {
         private readonly AppDbContext _context;
@@ -28,11 +23,9 @@ namespace ERPSystem.Infrastructure.Repositories.Core
 
         public async Task<Module?> GetByKeyAsync(string key, CancellationToken ct = default)
         {
-            key = key.Trim();
-
             return await _context.Modules
                 .AsNoTracking()
-                .FirstOrDefaultAsync(m => m.Key == key && !m.IsDeleted, ct);
+                .FirstOrDefaultAsync(m => m.Key == key.Trim() && !m.IsDeleted, ct);
         }
 
         public async Task<List<Module>> GetAllAsync(CancellationToken ct = default)
@@ -40,8 +33,19 @@ namespace ERPSystem.Infrastructure.Repositories.Core
             return await _context.Modules
                 .AsNoTracking()
                 .Where(m => !m.IsDeleted)
-                .OrderBy(m => m.Id)
+                .OrderBy(m => m.Name)
                 .ToListAsync(ct);
+        }
+
+        public async Task<bool> KeyExistsAsync(string key, int? excludeId = null, CancellationToken ct = default)
+        {
+            var query = _context.Modules
+                .Where(m => m.Key == key.Trim() && !m.IsDeleted);
+
+            if (excludeId.HasValue)
+                query = query.Where(m => m.Id != excludeId.Value);
+
+            return await query.AnyAsync(ct);
         }
 
         public async Task AddAsync(Module module, CancellationToken ct = default)

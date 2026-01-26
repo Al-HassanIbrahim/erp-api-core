@@ -9,11 +9,11 @@ namespace ERPSystem.Domain.Abstractions
 {
     public interface IWarehouseRepository
     {
-        Task<List<Warehouse>> GetAllAsync(int? companyId = null, int? branchId = null);
+        Task<List<Warehouse>> GetAllAsync(int companyId, int? branchId = null);
         Task<Warehouse?> GetByIdAsync(int id);
-
-        Task<bool> CodeExistsAsync(string code, int? companyId = null, int? excludeId = null);
-
+        Task<Warehouse?> GetByIdAsync(int id, int companyId);
+        Task<bool> ExistsAsync(int id, int companyId);
+        Task<bool> CodeExistsAsync(string code, int companyId, int? excludeId = null);
         Task AddAsync(Warehouse warehouse);
 
         // This does not remove from database, we will just mark inactive in the service

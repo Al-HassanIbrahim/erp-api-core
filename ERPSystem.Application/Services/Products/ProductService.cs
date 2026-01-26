@@ -1,26 +1,26 @@
-﻿
-
 using ERPSystem.Application.DTOs;
 using ERPSystem.Application.Interfaces;
 using ERPSystem.Domain.Abstractions;
 using ERPSystem.Domain.Entities.Products;
 
-namespace ERPSystem.Application.Services
+namespace ERPSystem.Application.Services.Products
 {
     public class ProductService : IProductService
     {
         private readonly IProductRepository _productRepository;
+        private readonly ICurrentUserService _currentUser;
 
-        public ProductService(IProductRepository productRepository)
+        public ProductService(IProductRepository productRepository, ICurrentUserService currentUser)
         {
             _productRepository = productRepository;
+            _currentUser = currentUser;
         }
 
         public async Task<ProductDto?> GetByIdAsync(int id)
         {
-            var product = await _productRepository.GetByIdAsync(id);
+            var product = await _productRepository.GetByIdAsync(id, _currentUser.CompanyId);
 
-            if (product == null || product.IsDeleted)
+            if (product == null)
                 return null;
 
             return MapToDto(product);
@@ -28,18 +28,19 @@ namespace ERPSystem.Application.Services
 
         public async Task<IEnumerable<ProductDto>> GetAllAsync()
         {
-            var products = await _productRepository.GetAllAsync();
-
-            return products
-                .Where(p => !p.IsDeleted)
-                .Select(MapToDto)
-                .ToList();
+            var products = await _productRepository.GetAllByCompanyAsync(_currentUser.CompanyId);
+            return products.Select(MapToDto).ToList();
         }
 
         public async Task<int> CreateAsync(CreateProductDto dto)
         {
+            var codeExists = await _productRepository.CodeExistsAsync(dto.Code, _currentUser.CompanyId);
+            if (codeExists)
+                throw new InvalidOperationException($"Product code '{dto.Code}' already exists.");
+
             var product = new Product
             {
+                CompanyId = _currentUser.CompanyId,
                 Code = dto.Code,
                 Name = dto.Name,
                 Description = dto.Description,
@@ -52,15 +53,21 @@ namespace ERPSystem.Application.Services
             };
 
             await _productRepository.AddAsync(product);
+            await _productRepository.SaveChangesAsync();
+            
             return product.Id;
         }
 
         public async Task UpdateAsync(UpdateProductDto dto)
         {
-            var product = await _productRepository.GetByIdAsync(dto.Id);
+            var product = await _productRepository.GetByIdAsync(dto.Id, _currentUser.CompanyId);
 
-            if (product == null || product.IsDeleted)
-                throw new KeyNotFoundException($"Product with ID {dto.Id} not found.");
+            if (product == null)
+                throw new InvalidOperationException($"Product with ID {dto.Id} not found or does not belong to your company.");
+
+            var codeExists = await _productRepository.CodeExistsAsync(dto.Code, _currentUser.CompanyId, dto.Id);
+            if (codeExists)
+                throw new InvalidOperationException($"Product code '{dto.Code}' already exists.");
 
             product.Code = dto.Code;
             product.Name = dto.Name;
@@ -73,11 +80,12 @@ namespace ERPSystem.Application.Services
             product.UpdatedAt = DateTime.UtcNow;
 
             await _productRepository.UpdateAsync(product);
+            await _productRepository.SaveChangesAsync();
         }
 
         public async Task DeleteAsync(int id)
         {
-            var product = await _productRepository.GetByIdAsync(id);
+            var product = await _productRepository.GetByIdAsync(id, _currentUser.CompanyId);
 
             if (product == null)
                 return;
@@ -86,6 +94,7 @@ namespace ERPSystem.Application.Services
             product.UpdatedAt = DateTime.UtcNow;
 
             await _productRepository.UpdateAsync(product);
+            await _productRepository.SaveChangesAsync();
         }
 
         private static ProductDto MapToDto(Product product)
@@ -103,5 +112,4 @@ namespace ERPSystem.Application.Services
             };
         }
     }
-
 }

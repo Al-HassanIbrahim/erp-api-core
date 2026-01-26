@@ -33,8 +33,7 @@ namespace ERPSystem.Application.Services.Inventory
 
         private string GenerateDocumentNumber(string prefix)
         {
-            // Simple document numbering generator (can be replaced with a proper sequence)
-            return $"{prefix}-{DateTime.UtcNow:yyyyMMddHHmmss}";
+            return $"{prefix}-{DateTime.UtcNow:yyyyMMddHHmmss}-{Guid.NewGuid().ToString("N")[..4].ToUpper()}";
         }
 
         /// <summary>
@@ -42,14 +41,14 @@ namespace ERPSystem.Application.Services.Inventory
         /// </summary>
         private async Task<Product> GetValidProductAsync(int productId, CancellationToken cancellationToken)
         {
-            var product = await _productRepository.GetByIdAsync(productId)
-                          ?? throw new InvalidOperationException("Product not found.");
+            // استخدم الـ overload اللي بيفلتر بـ companyId
+            var product = await _productRepository.GetByIdAsync(productId, _currentUser.CompanyId);
+            
+            if (product == null)
+                throw new InvalidOperationException($"Product with ID {productId} not found or does not belong to your company.");
 
             if (!product.IsActive)
-                throw new InvalidOperationException("Product is not active.");
-
-            if (product.CompanyId != _currentUser.CompanyId)
-                throw new UnauthorizedAccessException("Product does not belong to your company.");
+                throw new InvalidOperationException($"Product '{product.Name}' is not active.");
 
             return product;
         }
@@ -62,17 +61,17 @@ namespace ERPSystem.Application.Services.Inventory
             int? branchId,
             CancellationToken cancellationToken)
         {
-            var warehouse = await _warehouseRepository.GetByIdAsync(warehouseId)
-                            ?? throw new InvalidOperationException("Warehouse not found.");
+            // استخدم الـ overload اللي بيفلتر بـ companyId
+            var warehouse = await _warehouseRepository.GetByIdAsync(warehouseId, _currentUser.CompanyId);
+            
+            if (warehouse == null)
+                throw new InvalidOperationException($"Warehouse with ID {warehouseId} not found or does not belong to your company.");
 
             if (!warehouse.IsActive)
-                throw new InvalidOperationException("Warehouse is not active.");
-
-            if (warehouse.CompanyId != _currentUser.CompanyId)
-                throw new UnauthorizedAccessException("Warehouse does not belong to your company.");
+                throw new InvalidOperationException($"Warehouse '{warehouse.Name}' is not active.");
 
             if (branchId.HasValue && warehouse.BranchId.HasValue && warehouse.BranchId != branchId)
-                throw new InvalidOperationException("Warehouse does not belong to the specified branch.");
+                throw new InvalidOperationException($"Warehouse '{warehouse.Name}' does not belong to the specified branch.");
 
             return warehouse;
         }
@@ -98,12 +97,13 @@ namespace ERPSystem.Application.Services.Inventory
 
                 stockItem = new StockItem
                 {
-                    CompanyId = _currentUser.CompanyId, 
+                    CompanyId = _currentUser.CompanyId,
                     WarehouseId = warehouseId,
                     ProductId = productId,
                     QuantityOnHand = 0,
                     AverageUnitCost = 0,
-                    LastUpdatedAt = DateTime.UtcNow
+                    LastUpdatedAt = DateTime.UtcNow,
+                    CreatedAt = DateTime.UtcNow
                 };
 
                 await _inventoryRepository.AddStockItemAsync(stockItem, cancellationToken);
@@ -161,6 +161,7 @@ namespace ERPSystem.Application.Services.Inventory
                 CreatedByUserId = _currentUser.UserId,
                 PostedByUserId = _currentUser.UserId,
                 PostedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.UtcNow,
                 Lines = new List<InventoryDocumentLine>()
             };
 
@@ -204,7 +205,8 @@ namespace ERPSystem.Application.Services.Inventory
                     UnitId = line.UnitId,
                     LineType = InventoryLineType.In,
                     UnitCost = line.UnitCost,
-                    Notes = line.Notes
+                    Notes = line.Notes,
+                    CreatedAt = DateTime.UtcNow
                 };
 
                 document.Lines.Add(docLine);
@@ -244,6 +246,7 @@ namespace ERPSystem.Application.Services.Inventory
                 CreatedByUserId = _currentUser.UserId,
                 PostedByUserId = _currentUser.UserId,
                 PostedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.UtcNow,
                 Lines = new List<InventoryDocumentLine>()
             };
 
@@ -275,9 +278,8 @@ namespace ERPSystem.Application.Services.Inventory
                     createIfMissing: false,
                     cancellationToken);
 
-                // Negative stock policy: do not allow negative
                 if (stockItem.QuantityOnHand < line.Quantity)
-                    throw new InvalidOperationException("Not enough stock.");
+                    throw new InvalidOperationException($"Not enough stock for product ID {line.ProductId}. Available: {stockItem.QuantityOnHand}, Requested: {line.Quantity}");
 
                 var unitCost = stockItem.AverageUnitCost;
 
@@ -292,7 +294,8 @@ namespace ERPSystem.Application.Services.Inventory
                     UnitId = line.UnitId,
                     LineType = InventoryLineType.Out,
                     UnitCost = unitCost,
-                    Notes = line.Notes
+                    Notes = line.Notes,
+                    CreatedAt = DateTime.UtcNow
                 };
 
                 document.Lines.Add(docLine);
@@ -331,6 +334,7 @@ namespace ERPSystem.Application.Services.Inventory
                 CreatedByUserId = _currentUser.UserId,
                 PostedByUserId = _currentUser.UserId,
                 PostedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.UtcNow,
                 Lines = new List<InventoryDocumentLine>()
             };
 
@@ -364,7 +368,6 @@ namespace ERPSystem.Application.Services.Inventory
                     warehouseCache[line.ToWarehouseId] = toWarehouse;
                 }
 
-                // OUT from source warehouse
                 var fromStock = await GetOrCreateStockItemAsync(
                     line.ProductId,
                     line.FromWarehouseId,
@@ -373,7 +376,7 @@ namespace ERPSystem.Application.Services.Inventory
                     cancellationToken);
 
                 if (fromStock.QuantityOnHand < line.Quantity)
-                    throw new InvalidOperationException("Not enough stock in source warehouse.");
+                    throw new InvalidOperationException($"Not enough stock in source warehouse. Available: {fromStock.QuantityOnHand}, Requested: {line.Quantity}");
 
                 var transferUnitCost = fromStock.AverageUnitCost;
 
@@ -388,11 +391,11 @@ namespace ERPSystem.Application.Services.Inventory
                     UnitId = line.UnitId,
                     LineType = InventoryLineType.Out,
                     UnitCost = transferUnitCost,
-                    Notes = line.Notes
+                    Notes = line.Notes,
+                    CreatedAt = DateTime.UtcNow
                 };
                 document.Lines.Add(outLine);
 
-                // IN to destination warehouse
                 var toStock = await GetOrCreateStockItemAsync(
                     line.ProductId,
                     line.ToWarehouseId,
@@ -410,7 +413,8 @@ namespace ERPSystem.Application.Services.Inventory
                     UnitId = line.UnitId,
                     LineType = InventoryLineType.In,
                     UnitCost = transferUnitCost,
-                    Notes = line.Notes
+                    Notes = line.Notes,
+                    CreatedAt = DateTime.UtcNow
                 };
                 document.Lines.Add(inLine);
             }
@@ -448,6 +452,7 @@ namespace ERPSystem.Application.Services.Inventory
                 CreatedByUserId = _currentUser.UserId,
                 PostedByUserId = _currentUser.UserId,
                 PostedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.UtcNow,
                 Lines = new List<InventoryDocumentLine>()
             };
 
@@ -493,7 +498,8 @@ namespace ERPSystem.Application.Services.Inventory
                     UnitId = line.UnitId,
                     LineType = InventoryLineType.In,
                     UnitCost = line.UnitCost,
-                    Notes = line.Notes
+                    Notes = line.Notes,
+                    CreatedAt = DateTime.UtcNow
                 };
 
                 document.Lines.Add(docLine);
@@ -532,6 +538,7 @@ namespace ERPSystem.Application.Services.Inventory
                 CreatedByUserId = _currentUser.UserId,
                 PostedByUserId = _currentUser.UserId,
                 PostedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.UtcNow,
                 Lines = new List<InventoryDocumentLine>()
             };
 
@@ -561,7 +568,8 @@ namespace ERPSystem.Application.Services.Inventory
                 if (!stockCache.TryGetValue(key, out var stockItem))
                 {
                     stockItem = await _inventoryRepository.GetStockItemAsync(line.ProductId, line.WarehouseId, cancellationToken);
-                    stockCache[key] = stockItem!;
+                    if (stockItem != null)
+                        stockCache[key] = stockItem;
                 }
 
                 var currentQty = stockItem?.QuantityOnHand ?? 0m;
@@ -572,16 +580,17 @@ namespace ERPSystem.Application.Services.Inventory
 
                 if (diff > 0)
                 {
-                    // Positive adjustment (gain): we treat as stock in with cost
                     if (stockItem == null)
                     {
                         stockItem = new StockItem
                         {
+                            CompanyId = _currentUser.CompanyId,
                             ProductId = line.ProductId,
                             WarehouseId = line.WarehouseId,
                             QuantityOnHand = 0,
                             AverageUnitCost = 0,
-                            LastUpdatedAt = DateTime.UtcNow
+                            LastUpdatedAt = DateTime.UtcNow,
+                            CreatedAt = DateTime.UtcNow
                         };
 
                         await _inventoryRepository.AddStockItemAsync(stockItem, cancellationToken);
@@ -602,13 +611,13 @@ namespace ERPSystem.Application.Services.Inventory
                         UnitId = line.UnitId,
                         LineType = InventoryLineType.In,
                         UnitCost = unitCost,
-                        Notes = line.Notes
+                        Notes = line.Notes,
+                        CreatedAt = DateTime.UtcNow
                     };
                     document.Lines.Add(inLine);
                 }
                 else
                 {
-                    // Negative adjustment (loss): treat as stock out using current average cost
                     var outQty = Math.Abs(diff);
 
                     if (stockItem == null)
@@ -627,7 +636,8 @@ namespace ERPSystem.Application.Services.Inventory
                         UnitId = line.UnitId,
                         LineType = InventoryLineType.Out,
                         UnitCost = unitCost,
-                        Notes = line.Notes
+                        Notes = line.Notes,
+                        CreatedAt = DateTime.UtcNow
                     };
                     document.Lines.Add(outLine);
                 }

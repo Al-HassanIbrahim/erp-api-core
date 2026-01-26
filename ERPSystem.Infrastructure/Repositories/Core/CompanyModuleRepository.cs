@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ERPSystem.Domain.Abstractions;
+﻿using ERPSystem.Domain.Abstractions;
 using ERPSystem.Domain.Entities.Core;
 using ERPSystem.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -19,28 +14,28 @@ namespace ERPSystem.Infrastructure.Repositories.Core
             _context = context;
         }
 
-        public async Task<List<CompanyModule>> GetCompanyModulesAsync(int companyId, CancellationToken ct = default)
+        public async Task<List<CompanyModule>> GetByCompanyAsync(int companyId, CancellationToken ct = default)
         {
             return await _context.CompanyModules
                 .AsNoTracking()
-                .Where(x => x.CompanyId == companyId && !x.IsDeleted)
-                .OrderByDescending(x => x.Id)
+                .Include(x => x.Module) // Include Module for mapping
+                .Where(x => x.CompanyId == companyId && !x.IsDeleted && !x.Module.IsDeleted)
+                .OrderBy(x => x.Module.Name)
                 .ToListAsync(ct);
         }
 
         public async Task<CompanyModule?> GetAsync(int companyId, int moduleId, CancellationToken ct = default)
         {
             return await _context.CompanyModules
+                .Include(x => x.Module)
                 .FirstOrDefaultAsync(x =>
                     x.CompanyId == companyId &&
                     x.ModuleId == moduleId &&
                     !x.IsDeleted, ct);
         }
 
-        public async Task<bool> IsEnabledAsync(int companyId, string moduleKey, CancellationToken ct = default)
+        public async Task<bool> IsModuleEnabledAsync(int companyId, string moduleKey, CancellationToken ct = default)
         {
-            moduleKey = moduleKey.Trim();
-
             return await _context.CompanyModules
                 .AsNoTracking()
                 .AnyAsync(x =>
@@ -48,12 +43,7 @@ namespace ERPSystem.Infrastructure.Repositories.Core
                     !x.IsDeleted &&
                     x.IsEnabled &&
                     x.Module != null && !x.Module.IsDeleted &&
-                    x.Module.Key == moduleKey, ct);
-        }
-
-        public async Task AddAsync(CompanyModule companyModule, CancellationToken ct = default)
-        {
-            await _context.CompanyModules.AddAsync(companyModule, ct);
+                    x.Module.Key == moduleKey.Trim(), ct);
         }
 
         public async Task EnableAsync(int companyId, int moduleId, Guid actorUserId, CancellationToken ct = default)
@@ -72,7 +62,6 @@ namespace ERPSystem.Infrastructure.Repositories.Core
                     ModuleId = moduleId,
                     IsEnabled = true,
                     EnabledAt = DateTime.UtcNow,
-
                     CreatedByUserId = actorUserId,
                     UpdatedByUserId = actorUserId,
                     UpdatedAt = DateTime.UtcNow
@@ -85,7 +74,6 @@ namespace ERPSystem.Infrastructure.Repositories.Core
             cm.IsEnabled = true;
             cm.EnabledAt = DateTime.UtcNow;
             cm.ExpiresAt = null;
-
             cm.UpdatedAt = DateTime.UtcNow;
             cm.UpdatedByUserId = actorUserId;
 
@@ -103,7 +91,6 @@ namespace ERPSystem.Infrastructure.Repositories.Core
             if (cm is null) return;
 
             cm.IsEnabled = false;
-
             cm.UpdatedAt = DateTime.UtcNow;
             cm.UpdatedByUserId = actorUserId;
 
@@ -116,5 +103,3 @@ namespace ERPSystem.Infrastructure.Repositories.Core
         }
     }
 }
-
-

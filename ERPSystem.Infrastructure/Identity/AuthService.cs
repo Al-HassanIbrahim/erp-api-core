@@ -51,7 +51,7 @@ namespace ERPSystem.Infrastructure.Identity
             var company = new Company
             {
                 Name = request.Company.Name.Trim(),
-                TaxNumber = request.Company.TaxNumber?.Trim(),
+              //  TaxNumber = request.Company.TaxNumber?.Trim(),
                 Address = request.Company.Address?.Trim(),
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow
