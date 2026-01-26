@@ -1,4 +1,5 @@
-﻿using ERPSystem.Domain.Entities.HR;
+﻿using ERPSystem.Domain.Abstractions;
+using ERPSystem.Domain.Entities.HR;
 using ERPSystem.Domain.Enums;
 using ERPSystem.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -10,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace ERPSystem.Infrastructure.Repositories.Hr
 {
-    public class AttendanceRepository
+    public class AttendanceRepository:IAttendanceRepository
     {
         private readonly AppDbContext _context;
 

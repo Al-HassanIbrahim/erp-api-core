@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ERPSystem.Infrastructure.Repositories.Hr
 {
-    public class PayrollRepository
+    public class PayrollRepository:IPayrollRepository
     {
         private readonly AppDbContext _context;
 
