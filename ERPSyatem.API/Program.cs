@@ -1,5 +1,4 @@
 using ERPSystem.Application.Interfaces;
-using ERPSystem.Application.Services;
 using ERPSystem.Application.Services.Hr;
 using ERPSystem.Application.Services.Core;
 using ERPSystem.Application.Services.Inventory;
@@ -9,7 +8,6 @@ using ERPSystem.Domain.Abstractions;
 using ERPSystem.Infrastructure.Data;
 using ERPSystem.Infrastructure.Identity;
 using ERPSystem.Infrastructure.Repositories;
-using ERPSystem.Infrastructure.Repositories.ERPSystem.Infrastructure.Repositories;
 using ERPSystem.Infrastructure.Repositories.Hr;
 using ERPSystem.Infrastructure.Repositories.Core;
 using ERPSystem.Infrastructure.Repositories.Inventory;
