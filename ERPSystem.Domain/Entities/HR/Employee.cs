@@ -1,12 +1,14 @@
-﻿using ERPSystem.Domain.Entities.HR;
+﻿using ERPSystem.Domain.Abstractions;
+using ERPSystem.Domain.Entities.HR;
 using ERPSystem.Domain.Enums;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Reflection;
 
-public class Employee
+public class Employee: ICompanyEntity
 {
     public Guid Id { get; set; }
+    public int CompanyId { get; set; }
 
     [Required, MaxLength(50)]
     public string EmployeeCode { get; set; } = null!;

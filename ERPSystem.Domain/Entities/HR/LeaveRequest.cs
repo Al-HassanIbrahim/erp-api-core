@@ -5,13 +5,15 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ERPSystem.Domain.Abstractions;
 using ERPSystem.Domain.Enums;
 namespace ERPSystem.Domain.Entities.HR
 {
-    public class LeaveRequest
+    public class LeaveRequest:ICompanyEntity
     {
         public Guid Id { get; set; }
 
+        public int CompanyId { get; set; }
         [Required]
         public LeaveType LeaveType { get; set; }
 

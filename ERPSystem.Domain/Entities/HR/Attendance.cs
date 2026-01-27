@@ -1,16 +1,18 @@
-﻿using System;
+﻿using ERPSystem.Domain.Abstractions;
+using ERPSystem.Domain.Enums;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using ERPSystem.Domain.Enums;
 
 namespace ERPSystem.Domain.Entities.HR
 {
-    public class Attendance
+    public class Attendance: ICompanyEntity
     {
+        public int CompanyId { get; set; }
         public Guid Id { get; set; }
 
         [Required]

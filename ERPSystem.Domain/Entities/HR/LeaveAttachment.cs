@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ERPSystem.Domain.Abstractions;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -8,9 +9,10 @@ using System.Threading.Tasks;
 
 namespace ERPSystem.Domain.Entities.HR
 {
-    public class LeaveAttachment
+    public class LeaveAttachment:ICompanyEntity
     {
         public Guid Id { get; set; }
+        public int CompanyId { get; set; }
 
         [Required, MaxLength(200)]
         public string FileName { get; set; } = null!;

@@ -5,13 +5,15 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ERPSystem.Domain.Abstractions;
 using ERPSystem.Domain.Enums;
 
 namespace ERPSystem.Domain.Entities.HR
 {
-    public class Payroll
+    public class Payroll:ICompanyEntity
     {
         public Guid Id { get; set; }
+        public int CompanyId { get; set; }
 
         [Required, Range(1, 12)]
         public int Month { get; set; }
