@@ -82,6 +82,7 @@ namespace ERPSystem.Application.DTOs.Inventory
         public int WarehouseId { get; set; }
         public decimal Quantity { get; set; }
         public int UnitId { get; set; }
+        public decimal? MinQuantity { get; set; }
         public decimal UnitCost { get; set; }
         public string? Notes { get; set; }
     }

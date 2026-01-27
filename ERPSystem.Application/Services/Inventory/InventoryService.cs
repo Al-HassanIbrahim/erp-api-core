@@ -487,7 +487,8 @@ namespace ERPSystem.Application.Services.Inventory
                     line.WarehouseId,
                     stockCache,
                     createIfMissing: true,
-                    cancellationToken);
+                    cancellationToken,
+                    line.MinQuantity);
 
                 ApplyIncomingCost(stockItem, line.Quantity, line.UnitCost);
 
