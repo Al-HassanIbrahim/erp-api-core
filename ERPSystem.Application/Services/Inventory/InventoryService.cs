@@ -41,7 +41,6 @@ namespace ERPSystem.Application.Services.Inventory
         /// </summary>
         private async Task<Product> GetValidProductAsync(int productId, CancellationToken cancellationToken)
         {
-            // استخدم الـ overload اللي بيفلتر بـ companyId
             var product = await _productRepository.GetByIdAsync(productId, _currentUser.CompanyId);
             
             if (product == null)
@@ -61,7 +60,6 @@ namespace ERPSystem.Application.Services.Inventory
             int? branchId,
             CancellationToken cancellationToken)
         {
-            // استخدم الـ overload اللي بيفلتر بـ companyId
             var warehouse = await _warehouseRepository.GetByIdAsync(warehouseId, _currentUser.CompanyId);
             
             if (warehouse == null)
@@ -81,7 +79,8 @@ namespace ERPSystem.Application.Services.Inventory
             int warehouseId,
             Dictionary<(int, int), StockItem> cache,
             bool createIfMissing,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken,
+            decimal? minQuantity =null)
         {
             var key = (productId, warehouseId);
 
@@ -101,6 +100,7 @@ namespace ERPSystem.Application.Services.Inventory
                     WarehouseId = warehouseId,
                     ProductId = productId,
                     QuantityOnHand = 0,
+                    MinQuantity = minQuantity,
                     AverageUnitCost = 0,
                     LastUpdatedAt = DateTime.UtcNow,
                     CreatedAt = DateTime.UtcNow
@@ -193,7 +193,8 @@ namespace ERPSystem.Application.Services.Inventory
                     line.WarehouseId,
                     stockCache,
                     createIfMissing: true,
-                    cancellationToken);
+                    cancellationToken,
+                    line.MinQuantity);
 
                 ApplyIncomingCost(stockItem, line.Quantity, line.UnitCost);
 
