@@ -1,35 +1,30 @@
-﻿using ERPSystem.Domain.Abstractions;
+﻿using ERPSystem.Application.Interfaces;
+using ERPSystem.Domain.Abstractions;
 using ERPSystem.Domain.Entities.HR;
 using ERPSystem.Domain.Enums;
 using ERPSystem.Infrastructure.Data;
+using ERPSystem.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ERPSystem.Infrastructure.Repositories.Hr
 {
-    public class AttendanceRepository:IAttendanceRepository
+    public class AttendanceRepository : BaseRepository<Attendance>, IAttendanceRepository
     {
-        private readonly AppDbContext _context;
-
-        public AttendanceRepository(AppDbContext context)
-        {
-            _context = context;
-        }
+        public AttendanceRepository(AppDbContext context, ICurrentUserService current)
+            : base(context, current) { }
 
         public async Task<Attendance?> GetByIdAsync(Guid id)
         {
-            return await _context.Attendances
+            // Use Query() to enforce company scoping
+            return await Query()
                 .Include(a => a.Employee)
                 .FirstOrDefaultAsync(a => a.Id == id);
         }
 
         public async Task<Attendance?> GetByEmployeeAndDateAsync(Guid employeeId, DateOnly date)
         {
-            return await _context.Attendances
+            // Company scoping + employeeId filter
+            return await Query()
                 .Include(a => a.Employee)
                 .FirstOrDefaultAsync(a => a.EmployeeId == employeeId && a.Date == date);
         }
@@ -37,51 +32,38 @@ namespace ERPSystem.Infrastructure.Repositories.Hr
         public async Task<IEnumerable<Attendance>> GetByEmployeeAndPeriodAsync(
             Guid employeeId, DateOnly start, DateOnly end)
         {
-            return await _context.Attendances
+            return await Query()
                 .Where(a => a.EmployeeId == employeeId &&
-                           a.Date >= start &&
-                           a.Date <= end)
+                            a.Date >= start &&
+                            a.Date <= end)
                 .OrderBy(a => a.Date)
                 .ToListAsync();
         }
 
         public async Task<bool> HasCheckedInTodayAsync(Guid employeeId, DateOnly date)
         {
-            return await _context.Attendances
+            return await Query()
                 .AnyAsync(a => a.EmployeeId == employeeId &&
-                              a.Date == date &&
-                              a.CheckInTime != null);
+                               a.Date == date &&
+                               a.CheckInTime != null);
         }
 
         public async Task<bool> IsPayrollProcessedForPeriodAsync(Guid employeeId, DateOnly date)
         {
+            // Payroll must also be company-scoped.
+            // If Payroll implements ICompanyEntity: prefer Query() in PayrollRepository.
+            // Here we enforce company filter explicitly.
             return await _context.Payrolls
-                .AnyAsync(p => p.EmployeeId == employeeId &&
-                              p.PayPeriodStart <= date &&
-                              p.PayPeriodEnd >= date &&
-                              p.Status != PayrollStatus.Draft);
+                .AnyAsync(p => p.CompanyId == CompanyId &&
+                               p.EmployeeId == employeeId &&
+                               p.PayPeriodStart <= date &&
+                               p.PayPeriodEnd >= date &&
+                               p.Status != PayrollStatus.Draft);
         }
 
-        public async Task AddAsync(Attendance attendance)
-        {
-            await _context.Attendances.AddAsync(attendance);
-            await _context.SaveChangesAsync();
-        }
-
-        public async Task UpdateAsync(Attendance attendance)
-        {
-            _context.Attendances.Update(attendance);
-            await _context.SaveChangesAsync();
-        }
-
-        public async Task DeleteAsync(Guid id)
-        {
-            var attendance = await GetByIdAsync(id);
-            if (attendance != null)
-            {
-                _context.Attendances.Remove(attendance);
-                await _context.SaveChangesAsync();
-            }
-        }
+        // ✅ CRUD: delegate to base (so CompanyId is enforced and cross-company updates are blocked)
+        public Task AddAsync(Attendance attendance) => base.AddAsync(attendance);
+        public Task UpdateAsync(Attendance attendance) => base.UpdateAsync(attendance);
+        public Task DeleteAsync(Guid id) => base.DeleteAsync(id);
     }
 }

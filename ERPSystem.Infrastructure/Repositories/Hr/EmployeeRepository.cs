@@ -1,32 +1,22 @@
-﻿using ERPSystem.Domain.Abstractions;
+﻿using ERPSystem.Application.Interfaces;
+using ERPSystem.Domain.Abstractions;
 using ERPSystem.Domain.Enums;
 using ERPSystem.Infrastructure.Data;
+using ERPSystem.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ERPSystem.Infrastructure.Repositories.Hr
 {
-    public class EmployeeRepository: IEmployeeRepository
+    public class EmployeeRepository : BaseRepository<Employee>, IEmployeeRepository
     {
-        private readonly AppDbContext _context;
+        public EmployeeRepository(AppDbContext context, ICurrentUserService current)
+            : base(context, current) { }
 
-        public EmployeeRepository(AppDbContext context)
-        {
-            _context = context;
-        }
-
-        public async Task<Employee?> GetByIdAsync(Guid id)
-        {
-            return await _context.Employees.FindAsync(id);
-        }
+        // Keep only employee-specific queries (with Includes / special filters)
 
         public async Task<Employee?> GetByIdWithDetailsAsync(Guid id)
         {
-            return await _context.Employees
+            return await Query()
                 .Include(e => e.Department)
                 .Include(e => e.Position)
                 .Include(e => e.Manager)
@@ -37,7 +27,7 @@ namespace ERPSystem.Infrastructure.Repositories.Hr
 
         public async Task<IEnumerable<Employee>> GetAllAsync()
         {
-            return await _context.Employees
+            return await Query()
                 .Include(e => e.Department)
                 .Include(e => e.Position)
                 .ToListAsync();
@@ -45,25 +35,26 @@ namespace ERPSystem.Infrastructure.Repositories.Hr
 
         public async Task<bool> ExistsByEmailAsync(string email)
         {
-            return await _context.Employees
-                .AnyAsync(e => e.Email.ToLower() == email.ToLower());
+            var normalized = email.Trim().ToLower();
+            return await Query()
+                .AnyAsync(e => e.Email.ToLower() == normalized);
         }
 
         public async Task<bool> ExistsByEmployeeCodeAsync(string employeeCode)
         {
-            return await _context.Employees
+            return await Query()
                 .AnyAsync(e => e.EmployeeCode == employeeCode);
         }
 
         public async Task<bool> ExistsByNationalIdAsync(string nationalId)
         {
-            return await _context.Employees
+            return await Query()
                 .AnyAsync(e => e.NationalId == nationalId);
         }
 
         public async Task<IEnumerable<Employee>> GetByDepartmentIdAsync(Guid departmentId)
         {
-            return await _context.Employees
+            return await Query()
                 .Include(e => e.Position)
                 .Where(e => e.DepartmentId == departmentId)
                 .ToListAsync();
@@ -71,7 +62,7 @@ namespace ERPSystem.Infrastructure.Repositories.Hr
 
         public async Task<IEnumerable<Employee>> GetByStatusAsync(EmployeeStatus status)
         {
-            return await _context.Employees
+            return await Query()
                 .Include(e => e.Department)
                 .Include(e => e.Position)
                 .Where(e => e.Status == status)
@@ -85,45 +76,25 @@ namespace ERPSystem.Infrastructure.Repositories.Hr
 
             while (current != Guid.Empty)
             {
-                if (current == employeeId)
-                    return true;
-
-                if (visited.Contains(current))
-                    return false;
-
+                if (current == employeeId) return true;
+                if (visited.Contains(current)) return false;
                 visited.Add(current);
 
-                var manager = await _context.Employees
+                var next = await Query()
                     .Where(e => e.Id == current)
                     .Select(e => e.ReportsToId)
                     .FirstOrDefaultAsync();
 
-                current = manager ?? Guid.Empty;
+                current = next ?? Guid.Empty;
             }
 
             return false;
         }
 
-        public async Task AddAsync(Employee employee)
-        {
-            await _context.Employees.AddAsync(employee);
-            await _context.SaveChangesAsync();
-        }
-
-        public async Task UpdateAsync(Employee employee)
-        {
-            _context.Employees.Update(employee);
-            await _context.SaveChangesAsync();
-        }
-
-        public async Task DeleteAsync(Guid id)
-        {
-            var employee = await GetByIdAsync(id);
-            if (employee != null)
-            {
-                _context.Employees.Remove(employee);
-                await _context.SaveChangesAsync();
-            }
-        }
+        // ✅ DO NOT re-implement CRUD here:
+        // - GetByIdAsync(Guid id) comes from BaseRepository (company-scoped)
+        // - AddAsync(Employee) comes from BaseRepository (enforces CompanyId)
+        // - UpdateAsync(Employee) comes from BaseRepository (blocks cross-company update)
+        // - DeleteAsync(Guid id) comes from BaseRepository (company-scoped)
     }
 }
