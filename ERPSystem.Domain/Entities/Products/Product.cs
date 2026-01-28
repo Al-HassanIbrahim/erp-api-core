@@ -22,7 +22,8 @@ namespace ERPSystem.Domain.Entities.Products
         public int UnitOfMeasureId { get; set; }
         public UnitOfMeasure UnitOfMeasure { get; set; } = default!;
 
-        public decimal DefaultPrice { get; set; }       
+        public decimal DefaultPrice { get; set; }   
+        public decimal? MinQuantity { get; set; } // Minimum stock quantity to detect low stock
         public string? Barcode { get; set; }
         public bool IsActive { get; set; } = true;
     }
