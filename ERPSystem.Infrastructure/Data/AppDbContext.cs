@@ -208,8 +208,9 @@ namespace ERPSystem.Infrastructure.Data
         private void SeedData(ModelBuilder modelBuilder)
         {
             // Seed Departments
-            var hrDeptId = Guid.NewGuid();
-            var itDeptId = Guid.NewGuid();
+            var hrDeptId = new Guid("10000000-0000-0000-0000-000000000001");
+            var itDeptId = new Guid("10000000-0000-0000-0000-000000000002");
+            var seedDate = new DateTime(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
             modelBuilder.Entity<Department>().HasData(
                 new Department
@@ -219,7 +220,7 @@ namespace ERPSystem.Infrastructure.Data
                     Name = "Human Resources",
                     Description = "Human Resources Department",
                     IsActive = true,
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = seedDate
                 },
                 new Department
                 {
@@ -228,14 +229,14 @@ namespace ERPSystem.Infrastructure.Data
                     Name = "Information Technology",
                     Description = "IT Department",
                     IsActive = true,
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = seedDate
                 }
             );
 
             // Seed Positions
-            var hrManagerId = Guid.NewGuid();
-            var devManagerId = Guid.NewGuid();
-            var seniorDevId = Guid.NewGuid();
+            var hrManagerId = new Guid("20000000-0000-0000-0000-000000000001");
+            var devManagerId = new Guid("20000000-0000-0000-0000-000000000002");
+            var seniorDevId = new Guid("20000000-0000-0000-0000-000000000003");
 
             modelBuilder.Entity<JobPosition>().HasData(
                 new JobPosition
@@ -249,7 +250,7 @@ namespace ERPSystem.Infrastructure.Data
                     MinSalary = 8000,
                     MaxSalary = 12000,
                     IsActive = true,
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = seedDate
                 },
                 new JobPosition
                 {
@@ -262,7 +263,7 @@ namespace ERPSystem.Infrastructure.Data
                     MinSalary = 10000,
                     MaxSalary = 15000,
                     IsActive = true,
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = seedDate
                 },
                 new JobPosition
                 {
@@ -275,7 +276,7 @@ namespace ERPSystem.Infrastructure.Data
                     MinSalary = 6000,
                     MaxSalary = 9000,
                     IsActive = true,
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = seedDate
                 }
             );
             // ========== DISABLE CASCADE DELETE GLOBALLY ==========
