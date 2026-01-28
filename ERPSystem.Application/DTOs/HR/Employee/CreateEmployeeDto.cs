@@ -21,8 +21,6 @@ namespace ERPSystem.Application.DTOs.HR.Employee
 
         [Required, EmailAddress]
         public string Email { get; set; } = null!;
-
-        [Required, Phone]
         public string PhoneNumber { get; set; } = null!;
 
         [Required]
@@ -37,18 +35,12 @@ namespace ERPSystem.Application.DTOs.HR.Employee
         [Required, MaxLength(50)]
         public string NationalId { get; set; } = null!;
 
-        [Required]
         public MaritalStatus MaritalStatus { get; set; }
-
-        [Required]
         public string BankAccountNumber { get; set; } = null!;
-
-        [Required]
         public string BankName { get; set; } = null!;
 
-        [Required]
-        public string BankBranch { get; set; } = null!;
 
+        public string BankBranch { get; set; } = null!;
         [Required]
         public DateTime HireDate { get; set; }
 
@@ -62,7 +54,6 @@ namespace ERPSystem.Application.DTOs.HR.Employee
 
         public Guid? ReportsToId { get; set; }
 
-        [Required]
         public AddressDto CurrentAddress { get; set; } = null!;
 
 
