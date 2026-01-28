@@ -164,6 +164,9 @@ namespace ERPSystem.Infrastructure.Migrations
                     b.Property<TimeOnly?>("CheckOutTime")
                         .HasColumnType("time");
 
+                    b.Property<int>("CompanyId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -223,6 +226,9 @@ namespace ERPSystem.Infrastructure.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
+                    b.Property<int>("CompanyId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -259,18 +265,20 @@ namespace ERPSystem.Infrastructure.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("27a29603-4626-4b7b-a2d7-06a2913de8c7"),
+                            Id = new Guid("10000000-0000-0000-0000-000000000001"),
                             Code = "HR",
-                            CreatedAt = new DateTime(2026, 1, 26, 6, 35, 16, 120, DateTimeKind.Utc).AddTicks(5965),
+                            CompanyId = 0,
+                            CreatedAt = new DateTime(2020, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Human Resources Department",
                             IsActive = true,
                             Name = "Human Resources"
                         },
                         new
                         {
-                            Id = new Guid("ceec6dce-cb05-4336-bd1f-3d0d14386dad"),
+                            Id = new Guid("10000000-0000-0000-0000-000000000002"),
                             Code = "IT",
-                            CreatedAt = new DateTime(2026, 1, 26, 6, 35, 16, 120, DateTimeKind.Utc).AddTicks(5969),
+                            CompanyId = 0,
+                            CreatedAt = new DateTime(2020, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "IT Department",
                             IsActive = true,
                             Name = "Information Technology"
@@ -282,6 +290,9 @@ namespace ERPSystem.Infrastructure.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("CompanyId")
+                        .HasColumnType("int");
 
                     b.Property<string>("DocumentName")
                         .IsRequired()
@@ -334,6 +345,9 @@ namespace ERPSystem.Infrastructure.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
+                    b.Property<int>("CompanyId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -376,10 +390,11 @@ namespace ERPSystem.Infrastructure.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("d0f29baf-2498-41ab-a395-b558a329481b"),
+                            Id = new Guid("20000000-0000-0000-0000-000000000001"),
                             Code = "HRM",
-                            CreatedAt = new DateTime(2026, 1, 26, 6, 35, 16, 120, DateTimeKind.Utc).AddTicks(6318),
-                            DepartmentId = new Guid("27a29603-4626-4b7b-a2d7-06a2913de8c7"),
+                            CompanyId = 0,
+                            CreatedAt = new DateTime(2020, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            DepartmentId = new Guid("10000000-0000-0000-0000-000000000001"),
                             Description = "Manages HR operations",
                             IsActive = true,
                             Level = 5,
@@ -389,10 +404,11 @@ namespace ERPSystem.Infrastructure.Migrations
                         },
                         new
                         {
-                            Id = new Guid("ba27dbfc-fd2f-4487-b5b5-2aafe9d71b50"),
+                            Id = new Guid("20000000-0000-0000-0000-000000000002"),
                             Code = "DEVM",
-                            CreatedAt = new DateTime(2026, 1, 26, 6, 35, 16, 120, DateTimeKind.Utc).AddTicks(6324),
-                            DepartmentId = new Guid("ceec6dce-cb05-4336-bd1f-3d0d14386dad"),
+                            CompanyId = 0,
+                            CreatedAt = new DateTime(2020, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            DepartmentId = new Guid("10000000-0000-0000-0000-000000000002"),
                             Description = "Manages development team",
                             IsActive = true,
                             Level = 5,
@@ -402,10 +418,11 @@ namespace ERPSystem.Infrastructure.Migrations
                         },
                         new
                         {
-                            Id = new Guid("ecfb2de2-3a5c-461d-8289-bdd25deb4c58"),
+                            Id = new Guid("20000000-0000-0000-0000-000000000003"),
                             Code = "SDEV",
-                            CreatedAt = new DateTime(2026, 1, 26, 6, 35, 16, 120, DateTimeKind.Utc).AddTicks(6329),
-                            DepartmentId = new Guid("ceec6dce-cb05-4336-bd1f-3d0d14386dad"),
+                            CompanyId = 0,
+                            CreatedAt = new DateTime(2020, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            DepartmentId = new Guid("10000000-0000-0000-0000-000000000002"),
                             Description = "Senior software developer",
                             IsActive = true,
                             Level = 3,
@@ -420,6 +437,9 @@ namespace ERPSystem.Infrastructure.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("CompanyId")
+                        .HasColumnType("int");
 
                     b.Property<string>("FileName")
                         .IsRequired()
@@ -449,6 +469,9 @@ namespace ERPSystem.Infrastructure.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("CompanyId")
+                        .HasColumnType("int");
 
                     b.Property<Guid>("EmployeeId")
                         .HasColumnType("uniqueidentifier");
@@ -498,6 +521,9 @@ namespace ERPSystem.Infrastructure.Migrations
 
                     b.Property<DateTime?>("CancelledDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<int>("CompanyId")
+                        .HasColumnType("int");
 
                     b.Property<decimal>("CurrentBalance")
                         .HasColumnType("decimal(5,2)");
@@ -557,6 +583,9 @@ namespace ERPSystem.Infrastructure.Migrations
 
                     b.Property<decimal>("BasicSalary")
                         .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("CompanyId")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -641,6 +670,9 @@ namespace ERPSystem.Infrastructure.Migrations
 
                     b.Property<decimal>("Amount")
                         .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("CompanyId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -1075,158 +1107,6 @@ namespace ERPSystem.Infrastructure.Migrations
                     b.ToTable("Customers");
                 });
 
-            modelBuilder.Entity("Employee", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("BankAccountNumber")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("BankBranch")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("BankName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CreatedBy")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("Currency")
-                        .IsRequired()
-                        .HasMaxLength(3)
-                        .HasColumnType("nvarchar(3)");
-
-                    b.Property<string>("CurrentAddressLine")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("CurrentCity")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("CurrentCountry")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("CurrentPostalCode")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<DateTime>("DateOfBirth")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid>("DepartmentId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("EmployeeCode")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("FirstName")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<int>("Gender")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("HireDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("LastName")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<int>("MaritalStatus")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("ModifiedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("ModifiedBy")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("NationalId")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("Nationality")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("PhoneNumber")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<Guid>("PositionId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime?>("ProbationEndDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("ProfileImageUrl")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<Guid?>("ReportsToId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<decimal>("Salary")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("TerminationDate")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DepartmentId");
-
-                    b.HasIndex("Email")
-                        .IsUnique();
-
-                    b.HasIndex("EmployeeCode")
-                        .IsUnique();
-
-                    b.HasIndex("NationalId")
-                        .IsUnique();
-
-                    b.HasIndex("PositionId");
-
-                    b.HasIndex("ReportsToId");
-
-                    b.ToTable("Employees");
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", b =>
             modelBuilder.Entity("ERPSystem.Domain.Entities.Sales.SalesDelivery", b =>
                 {
                     b.Property<int>("Id")
@@ -1828,6 +1708,153 @@ namespace ERPSystem.Infrastructure.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("Employee", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("BankAccountNumber")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("BankBranch")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("BankName")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("CompanyId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("nvarchar(3)");
+
+                    b.Property<string>("CurrentAddressLine")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("CurrentCity")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("CurrentCountry")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("CurrentPostalCode")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime>("DateOfBirth")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("DepartmentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("EmployeeCode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("Gender")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("HireDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("MaritalStatus")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("ModifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ModifiedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("NationalId")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Nationality")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<Guid>("PositionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("ProbationEndDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ProfileImageUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<Guid?>("ReportsToId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Salary")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("TerminationDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DepartmentId");
+
+                    b.HasIndex("Email")
+                        .IsUnique();
+
+                    b.HasIndex("EmployeeCode")
+                        .IsUnique();
+
+                    b.HasIndex("NationalId")
+                        .IsUnique();
+
+                    b.HasIndex("PositionId");
+
+                    b.HasIndex("ReportsToId");
+
+                    b.ToTable("Employees");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1983,7 +2010,7 @@ namespace ERPSystem.Infrastructure.Migrations
                     b.HasOne("Employee", "Employee")
                         .WithMany("Attendances")
                         .HasForeignKey("EmployeeId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Employee");
@@ -1994,7 +2021,7 @@ namespace ERPSystem.Infrastructure.Migrations
                     b.HasOne("Employee", "Manager")
                         .WithMany()
                         .HasForeignKey("ManagerId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.Navigation("Manager");
                 });
@@ -2004,7 +2031,7 @@ namespace ERPSystem.Infrastructure.Migrations
                     b.HasOne("Employee", "Employee")
                         .WithMany("Documents")
                         .HasForeignKey("EmployeeId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Employee");
@@ -2015,7 +2042,7 @@ namespace ERPSystem.Infrastructure.Migrations
                     b.HasOne("ERPSystem.Domain.Entities.HR.Department", "Department")
                         .WithMany("Positions")
                         .HasForeignKey("DepartmentId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.Navigation("Department");
                 });
@@ -2025,7 +2052,7 @@ namespace ERPSystem.Infrastructure.Migrations
                     b.HasOne("ERPSystem.Domain.Entities.HR.LeaveRequest", "LeaveRequest")
                         .WithMany("Attachments")
                         .HasForeignKey("LeaveRequestId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("LeaveRequest");
@@ -2036,7 +2063,7 @@ namespace ERPSystem.Infrastructure.Migrations
                     b.HasOne("Employee", "Employee")
                         .WithMany()
                         .HasForeignKey("EmployeeId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Employee");
@@ -2047,7 +2074,7 @@ namespace ERPSystem.Infrastructure.Migrations
                     b.HasOne("Employee", "Employee")
                         .WithMany("LeaveRequests")
                         .HasForeignKey("EmployeeId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Employee");
@@ -2058,7 +2085,7 @@ namespace ERPSystem.Infrastructure.Migrations
                     b.HasOne("Employee", "Employee")
                         .WithMany("Payrolls")
                         .HasForeignKey("EmployeeId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Employee");
@@ -2069,7 +2096,7 @@ namespace ERPSystem.Infrastructure.Migrations
                     b.HasOne("ERPSystem.Domain.Entities.HR.Payroll", "Payroll")
                         .WithMany("LineItems")
                         .HasForeignKey("PayrollId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Payroll");
@@ -2358,19 +2385,19 @@ namespace ERPSystem.Infrastructure.Migrations
                     b.HasOne("ERPSystem.Domain.Entities.HR.Department", "Department")
                         .WithMany("Employees")
                         .HasForeignKey("DepartmentId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("ERPSystem.Domain.Entities.HR.JobPosition", "Position")
                         .WithMany("Employees")
                         .HasForeignKey("PositionId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("Employee", "Manager")
                         .WithMany("DirectReports")
                         .HasForeignKey("ReportsToId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.Navigation("Department");
 
@@ -2488,17 +2515,6 @@ namespace ERPSystem.Infrastructure.Migrations
                     b.Navigation("Products");
                 });
 
-            modelBuilder.Entity("Employee", b =>
-                {
-                    b.Navigation("Attendances");
-
-                    b.Navigation("DirectReports");
-
-                    b.Navigation("Documents");
-
-                    b.Navigation("LeaveRequests");
-
-                    b.Navigation("Payrolls");
             modelBuilder.Entity("ERPSystem.Domain.Entities.Sales.Customer", b =>
                 {
                     b.Navigation("Invoices");
@@ -2528,6 +2544,19 @@ namespace ERPSystem.Infrastructure.Migrations
             modelBuilder.Entity("ERPSystem.Domain.Entities.Sales.SalesReturn", b =>
                 {
                     b.Navigation("Lines");
+                });
+
+            modelBuilder.Entity("Employee", b =>
+                {
+                    b.Navigation("Attendances");
+
+                    b.Navigation("DirectReports");
+
+                    b.Navigation("Documents");
+
+                    b.Navigation("LeaveRequests");
+
+                    b.Navigation("Payrolls");
                 });
 #pragma warning restore 612, 618
         }
