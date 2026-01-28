@@ -25,21 +25,19 @@ public class Employee: ICompanyEntity
     [Required, EmailAddress, MaxLength(100)]
     public string Email { get; set; } = null!;
 
-    [Required, MaxLength(20)]
-    public string PhoneNumber { get; set; } = null!;
-
+    [MaxLength(20)]
+    public string? PhoneNumber { get; set; }
     [Required]
     public DateTime DateOfBirth { get; set; }
 
     // Bank Details
-    [Required, MaxLength(50)]
-    public string BankAccountNumber { get; set; } = null!;
+    [MaxLength(50)]
+    public string? BankAccountNumber { get; set; }
 
-    [Required, MaxLength(100)]
-    public string BankName { get; set; } = null!;
-
-    [Required, MaxLength(100)]
-    public string BankBranch { get; set; } = null!;
+    [MaxLength(100)]
+    public string? BankName { get; set; }
+    [MaxLength(100)]
+    public string? BankBranch { get; set; }
 
     [Required]
     public Gender Gender { get; set; }
@@ -50,7 +48,7 @@ public class Employee: ICompanyEntity
     [Required, MaxLength(50)]
     public string NationalId { get; set; } = null!;
 
-    [Required]
+    
     public MaritalStatus MaritalStatus { get; set; }
 
     // Employment Details
@@ -64,10 +62,12 @@ public class Employee: ICompanyEntity
     public EmployeeStatus Status { get; set; } = EmployeeStatus.Active;
 
     // Relationships
+    [Required]
     [ForeignKey("Department")]
     public Guid DepartmentId { get; set; }
     public Department Department { get; set; } = null!;
 
+    [Required]
     [ForeignKey("Position")]
     public Guid PositionId { get; set; }
     public JobPosition Position { get; set; } = null!;
@@ -79,14 +79,14 @@ public class Employee: ICompanyEntity
     public ICollection<Employee> DirectReports { get; set; } = new List<Employee>();
 
     // Address Information
-    [Required, MaxLength(200)]
-    public string CurrentAddressLine { get; set; } = null!;
+    [MaxLength(200)]
+    public string? CurrentAddressLine { get; set; }
 
-    [Required, MaxLength(100)]
-    public string CurrentCity { get; set; } = null!;
+    [MaxLength(100)]
+    public string? CurrentCity { get; set; } 
 
-    [Required, MaxLength(100)]
-    public string CurrentCountry { get; set; } = null!;
+    [MaxLength(100)]
+    public string? CurrentCountry { get; set; }
 
     [MaxLength(20)]
     public string? CurrentPostalCode { get; set; }

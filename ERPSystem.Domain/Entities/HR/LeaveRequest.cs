@@ -32,7 +32,7 @@ namespace ERPSystem.Domain.Entities.HR
         [Required]
         public DateTime RequestDate { get; set; } = DateTime.UtcNow;
 
-        [Required, MaxLength(500)]
+        [MaxLength(500)]
         public string Reason { get; set; } = null!;
 
         // Approval/Rejection Details

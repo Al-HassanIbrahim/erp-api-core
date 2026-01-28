@@ -19,7 +19,7 @@ namespace ERPSystem.Domain.Entities.HR
         public Guid PayrollId { get; set; }
         public Payroll Payroll { get; set; } = null!;
 
-        [Required, MaxLength(200)]
+        [MaxLength(200)]
         public string Description { get; set; } = null!;
 
         [Required, Column(TypeName = "decimal(18,2)")]
