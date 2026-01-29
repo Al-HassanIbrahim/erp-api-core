@@ -1,4 +1,5 @@
-﻿using ERPSystem.Domain.Entities.Core;
+﻿using ERPSystem.Domain.Entities.Contacts;
+using ERPSystem.Domain.Entities.Core;
 using ERPSystem.Domain.Entities.Inventory;
 using ERPSystem.Domain.Entities.Products;
 using ERPSystem.Domain.Entities.Sales;
@@ -42,6 +43,9 @@ namespace ERPSystem.Infrastructure.Data
         public DbSet<SalesReceiptAllocation> SalesReceiptAllocations => Set<SalesReceiptAllocation>();
         public DbSet<SalesReturn> SalesReturns => Set<SalesReturn>();
         public DbSet<SalesReturnLine> SalesReturnLines => Set<SalesReturnLine>();
+
+        // Contacts
+        public DbSet<Contact> Contacts => Set<Contact>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
