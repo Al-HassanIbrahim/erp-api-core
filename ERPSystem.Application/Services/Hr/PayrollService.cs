@@ -7,34 +7,42 @@ using ERPSystem.Domain.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace ERPSystem.Application.Services.Hr
 {
-    public class PayrollService:IPayrollService
+    public class PayrollService : IPayrollService
     {
         private readonly IPayrollRepository _payrollRepo;
         private readonly IEmployeeRepository _employeeRepo;
         private readonly IAttendanceRepository _attendanceRepo;
         private readonly ILeaveRequestRepository _leaveRepo;
+        private readonly ICurrentUserService _currentUser;
 
         public PayrollService(
             IPayrollRepository payrollRepo,
             IEmployeeRepository employeeRepo,
             IAttendanceRepository attendanceRepo,
-            ILeaveRequestRepository leaveRepo)
+            ILeaveRequestRepository leaveRepo,
+            ICurrentUserService currentUser)
         {
             _payrollRepo = payrollRepo;
             _employeeRepo = employeeRepo;
             _attendanceRepo = attendanceRepo;
             _leaveRepo = leaveRepo;
+            _currentUser = currentUser;
         }
 
-        public async Task<PayrollBatchDto> GeneratePayrollAsync(
-            GeneratePayrollDto dto, string generatedBy)
+        private async Task<Employee> GetValidEmployeeAsync(Guid employeeId)
         {
-            // Validate month and year
+            var emp = await _employeeRepo.GetByIdAsync(employeeId, _currentUser.CompanyId);
+            if (emp == null)
+                throw new InvalidOperationException("Employee not found or does not belong to your company.");
+            return emp;
+        }
+
+        public async Task<PayrollBatchDto> GeneratePayrollAsync(GeneratePayrollDto dto, string generatedBy)
+        {
             if (dto.Month < 1 || dto.Month > 12)
                 throw new InvalidOperationException("Invalid month. Must be between 1 and 12");
 
@@ -44,16 +52,14 @@ namespace ERPSystem.Application.Services.Hr
             var startDate = new DateOnly(dto.Year, dto.Month, 1);
             var endDate = startDate.AddMonths(1).AddDays(-1);
 
-            // Get employees to process
             IEnumerable<Employee> employees;
 
             if (dto.EmployeeIds != null && dto.EmployeeIds.Any())
             {
-                // Specific employees
                 var empList = new List<Employee>();
                 foreach (var id in dto.EmployeeIds)
                 {
-                    var emp = await _employeeRepo.GetByIdAsync(id);
+                    var emp = await _employeeRepo.GetByIdAsync(id, _currentUser.CompanyId);
                     if (emp != null)
                         empList.Add(emp);
                 }
@@ -61,26 +67,21 @@ namespace ERPSystem.Application.Services.Hr
             }
             else if (dto.DepartmentIds != null && dto.DepartmentIds.Any())
             {
-                // By departments
                 var empList = new List<Employee>();
                 foreach (var deptId in dto.DepartmentIds)
                 {
-                    var deptEmps = await _employeeRepo.GetByDepartmentIdAsync(deptId);
+                    var deptEmps = await _employeeRepo.GetByDepartmentIdAsync(deptId, _currentUser.CompanyId);
                     empList.AddRange(deptEmps);
                 }
                 employees = empList;
             }
             else
             {
-                // All employees
-                employees = await _employeeRepo.GetAllAsync();
+                employees = await _employeeRepo.GetAllAsync(_currentUser.CompanyId);
             }
 
-            // Filter by status
             if (!dto.IncludeInactive)
-            {
                 employees = employees.Where(e => e.Status == EmployeeStatus.Active);
-            }
 
             var result = new PayrollBatchDto
             {
@@ -93,9 +94,8 @@ namespace ERPSystem.Application.Services.Hr
             {
                 try
                 {
-                    // Check if payroll already exists
                     if (await _payrollRepo.ExistsForEmployeeAndPeriodAsync(
-                        employee.Id, dto.Month, dto.Year))
+                        employee.Id, dto.Month, dto.Year, _currentUser.CompanyId))
                     {
                         result.Errors.Add($"{employee.EmployeeCode}: Payroll already exists for this period");
                         result.FailedCount++;
@@ -125,12 +125,9 @@ namespace ERPSystem.Application.Services.Hr
         public async Task<PayrollDetailDto> GenerateEmployeePayrollAsync(
             Guid employeeId, int month, int year, string generatedBy)
         {
-            var employee = await _employeeRepo.GetByIdAsync(employeeId);
-            if (employee == null)
-                throw new InvalidOperationException("Employee not found");
+            var employee = await GetValidEmployeeAsync(employeeId);
 
-            // Check if already exists
-            if (await _payrollRepo.ExistsForEmployeeAndPeriodAsync(employeeId, month, year))
+            if (await _payrollRepo.ExistsForEmployeeAndPeriodAsync(employeeId, month, year, _currentUser.CompanyId))
                 throw new InvalidOperationException("Payroll already exists for this period");
 
             var startDate = new DateOnly(year, month, 1);
@@ -148,50 +145,36 @@ namespace ERPSystem.Application.Services.Hr
             Employee employee, int month, int year,
             DateOnly startDate, DateOnly endDate, string generatedBy)
         {
-            // Get attendance records
             var attendances = await _attendanceRepo.GetByEmployeeAndPeriodAsync(
-                employee.Id, startDate, endDate);
+                employee.Id, startDate, endDate, _currentUser.CompanyId);
 
-            // Validation: Must have at least one attendance record
             if (!attendances.Any())
                 throw new InvalidOperationException("No attendance records found for this period");
 
-            // Calculate working days (excluding weekends)
             var workingDays = CalculateWorkingDays(startDate, endDate);
 
-            // Calculate present days
             var presentDays = attendances.Count(a =>
                 a.Status == AttendanceStatus.Present ||
                 a.Status == AttendanceStatus.Late);
 
-            // Calculate absent days
             var absentDays = attendances.Count(a => a.Status == AttendanceStatus.Absent);
 
-            // Get approved leaves for this period
             var approvedLeaves = await _leaveRepo.GetApprovedByEmployeeAndPeriodAsync(
-                employee.Id, startDate, endDate);
+                employee.Id, startDate, endDate, _currentUser.CompanyId);
 
-            // Calculate unpaid leave days
             var unpaidLeaveDays = approvedLeaves
                 .Where(lr => lr.LeaveType == LeaveType.Unpaid)
                 .Sum(lr => CalculateWorkingDaysInRange(lr.StartDate, lr.EndDate));
 
-            // Calculate leave days
-            var leaveDays = attendances.Count(a => a.Status == AttendanceStatus.OnLeave);
-
-            // Calculate overtime hours
             var overtimeHours = attendances.Sum(a => a.OvertimeHours);
 
-            // Calculate salary components
             var dailyRate = employee.Salary / workingDays;
-
-            // Base salary = worked days × daily rate
             var baseSalary = presentDays * dailyRate;
 
-            // Create payroll
             var payroll = new Payroll
             {
                 Id = Guid.NewGuid(),
+                CompanyId = _currentUser.CompanyId,
                 EmployeeId = employee.Id,
                 Month = month,
                 Year = year,
@@ -209,14 +192,12 @@ namespace ERPSystem.Application.Services.Hr
                 CreatedAt = DateTime.UtcNow
             };
 
-            // Add allowances
             AddAllowances(payroll, employee);
 
-            // Add overtime pay
             if (overtimeHours > 0)
             {
-                var hourlyRate = employee.Salary / (workingDays * 8); // 8 hours per day
-                var overtimePay = overtimeHours * hourlyRate * 1.5m; // 1.5x for overtime
+                var hourlyRate = employee.Salary / (workingDays * 8);
+                var overtimePay = overtimeHours * hourlyRate * 1.5m;
 
                 payroll.LineItems.Add(new PayrollLineItem
                 {
@@ -227,181 +208,61 @@ namespace ERPSystem.Application.Services.Hr
                 });
             }
 
-            // Calculate total allowances
             payroll.TotalAllowances = payroll.LineItems
                 .Where(i => i.Type == PayrollLineItemType.Allowance)
                 .Sum(i => i.Amount);
 
-            // Add deductions
             AddDeductions(payroll, employee, dailyRate, absentDays, unpaidLeaveDays);
 
-            // Calculate total deductions
             payroll.TotalDeductions = payroll.LineItems
                 .Where(i => i.Type == PayrollLineItemType.Deduction)
                 .Sum(i => i.Amount);
 
-            // Calculate net salary
             payroll.NetSalary = baseSalary + payroll.TotalAllowances - payroll.TotalDeductions;
-
-            // Ensure net salary is not negative
-            if (payroll.NetSalary < 0)
-                payroll.NetSalary = 0;
+            if (payroll.NetSalary < 0) payroll.NetSalary = 0;
 
             return payroll;
         }
 
-        private void AddAllowances(Payroll payroll, Employee employee)
-        {
-            // Transport allowance (example: 10% of basic salary)
-            var transportAllowance = employee.Salary * 0.10m;
-            payroll.LineItems.Add(new PayrollLineItem
-            {
-                Id = Guid.NewGuid(),
-                Description = "Transport Allowance",
-                Amount = transportAllowance,
-                Type = PayrollLineItemType.Allowance
-            });
-
-            // Housing allowance (example: 20% of basic salary)
-            var housingAllowance = employee.Salary * 0.20m;
-            payroll.LineItems.Add(new PayrollLineItem
-            {
-                Id = Guid.NewGuid(),
-                Description = "Housing Allowance",
-                Amount = housingAllowance,
-                Type = PayrollLineItemType.Allowance
-            });
-
-            // Add more allowances based on position, level, etc.
-        }
-
-        private void AddDeductions(Payroll payroll, Employee employee,
-            decimal dailyRate, int absentDays, int unpaidLeaveDays)
-        {
-            // Absence deduction
-            if (absentDays > 0)
-            {
-                var absenceDeduction = absentDays * dailyRate;
-                payroll.LineItems.Add(new PayrollLineItem
-                {
-                    Id = Guid.NewGuid(),
-                    Description = $"Absence Deduction ({absentDays} days × {dailyRate:F2})",
-                    Amount = absenceDeduction,
-                    Type = PayrollLineItemType.Deduction
-                });
-            }
-
-            // Unpaid leave deduction
-            if (unpaidLeaveDays > 0)
-            {
-                var unpaidLeaveDeduction = unpaidLeaveDays * dailyRate;
-                payroll.LineItems.Add(new PayrollLineItem
-                {
-                    Id = Guid.NewGuid(),
-                    Description = $"Unpaid Leave ({unpaidLeaveDays} days × {dailyRate:F2})",
-                    Amount = unpaidLeaveDeduction,
-                    Type = PayrollLineItemType.Deduction
-                });
-            }
-
-            // Social security (example: 11% of basic salary)
-            var socialSecurity = employee.Salary * 0.11m;
-            payroll.LineItems.Add(new PayrollLineItem
-            {
-                Id = Guid.NewGuid(),
-                Description = "Social Security (11%)",
-                Amount = socialSecurity,
-                Type = PayrollLineItemType.Deduction
-            });
-
-            // Income tax (progressive tax example)
-            var grossSalary = payroll.BasicSalary + payroll.LineItems
-                .Where(i => i.Type == PayrollLineItemType.Allowance)
-                .Sum(i => i.Amount);
-
-            var taxDeduction = CalculateTax(grossSalary);
-            payroll.LineItems.Add(new PayrollLineItem
-            {
-                Id = Guid.NewGuid(),
-                Description = $"Income Tax",
-                Amount = taxDeduction,
-                Type = PayrollLineItemType.Deduction
-            });
-        }
-
-        private decimal CalculateTax(decimal grossSalary)
-        {
-            // Progressive tax example (Egypt-like system)
-            // 0-15000: 0%
-            // 15001-30000: 10%
-            // 30001-45000: 15%
-            // 45001+: 20%
-
-            decimal tax = 0;
-
-            if (grossSalary <= 15000)
-            {
-                tax = 0;
-            }
-            else if (grossSalary <= 30000)
-            {
-                tax = (grossSalary - 15000) * 0.10m;
-            }
-            else if (grossSalary <= 45000)
-            {
-                tax = (15000 * 0.10m) + ((grossSalary - 30000) * 0.15m);
-            }
-            else
-            {
-                tax = (15000 * 0.10m) + (15000 * 0.15m) + ((grossSalary - 45000) * 0.20m);
-            }
-
-            return tax;
-        }
-
         public async Task<PayrollDetailDto?> GetByIdAsync(Guid id)
         {
-            var payroll = await _payrollRepo.GetByIdWithDetailsAsync(id);
+            var payroll = await _payrollRepo.GetByIdWithDetailsAsync(id, _currentUser.CompanyId);
             return payroll != null ? MapToDetailDto(payroll) : null;
         }
 
         public async Task<IEnumerable<PayrollDto>> GetByEmployeeIdAsync(Guid employeeId)
         {
-            var payrolls = await _payrollRepo.GetByEmployeeIdAsync(employeeId);
+            // optional guard: ensure employee belongs to company
+            await GetValidEmployeeAsync(employeeId);
+
+            var payrolls = await _payrollRepo.GetByEmployeeIdAsync(employeeId, _currentUser.CompanyId);
             return payrolls.Select(MapToDto);
         }
 
         public async Task<IEnumerable<PayrollDto>> GetByPeriodAsync(int month, int year)
         {
-            var payrolls = await _payrollRepo.GetByMonthAndYearAsync(month, year);
+            var payrolls = await _payrollRepo.GetByMonthAndYearAsync(month, year, _currentUser.CompanyId);
             return payrolls.Select(MapToDto);
         }
 
-        public async Task<PayrollDetailDto> UpdateAsync(
-            Guid id, UpdatePayrollDto dto, string modifiedBy)
+        public async Task<PayrollDetailDto> UpdateAsync(Guid id, UpdatePayrollDto dto, string modifiedBy)
         {
-            var payroll = await _payrollRepo.GetByIdWithDetailsAsync(id);
+            var payroll = await _payrollRepo.GetByIdWithDetailsAsync(id, _currentUser.CompanyId);
             if (payroll == null)
                 throw new InvalidOperationException("Payroll not found");
 
-            // Validation: Only draft payroll can be updated
             if (payroll.Status != PayrollStatus.Draft)
                 throw new InvalidOperationException("Only draft payroll can be updated");
 
-            // Update allowances
             if (dto.Allowances != null)
             {
-                // Remove existing allowances
                 var existingAllowances = payroll.LineItems
                     .Where(i => i.Type == PayrollLineItemType.Allowance)
                     .ToList();
 
                 foreach (var item in existingAllowances)
-                {
                     payroll.LineItems.Remove(item);
-                }
 
-                // Add new allowances
                 foreach (var allowance in dto.Allowances)
                 {
                     payroll.LineItems.Add(new PayrollLineItem
@@ -414,20 +275,15 @@ namespace ERPSystem.Application.Services.Hr
                 }
             }
 
-            // Update deductions
             if (dto.Deductions != null)
             {
-                // Remove existing deductions
                 var existingDeductions = payroll.LineItems
                     .Where(i => i.Type == PayrollLineItemType.Deduction)
                     .ToList();
 
                 foreach (var item in existingDeductions)
-                {
                     payroll.LineItems.Remove(item);
-                }
 
-                // Add new deductions
                 foreach (var deduction in dto.Deductions)
                 {
                     payroll.LineItems.Add(new PayrollLineItem
@@ -440,9 +296,6 @@ namespace ERPSystem.Application.Services.Hr
                 }
             }
 
-            
-
-            // Recalculate totals
             payroll.TotalAllowances = payroll.LineItems
                 .Where(i => i.Type == PayrollLineItemType.Allowance)
                 .Sum(i => i.Amount);
@@ -452,26 +305,21 @@ namespace ERPSystem.Application.Services.Hr
                 .Sum(i => i.Amount);
 
             payroll.NetSalary = payroll.BasicSalary + payroll.TotalAllowances - payroll.TotalDeductions;
-
-            if (payroll.NetSalary < 0)
-                payroll.NetSalary = 0;
+            if (payroll.NetSalary < 0) payroll.NetSalary = 0;
 
             await _payrollRepo.UpdateAsync(payroll);
-
             return MapToDetailDto(payroll);
         }
 
         public async Task ProcessPayrollAsync(Guid id, string processedBy)
         {
-            var payroll = await _payrollRepo.GetByIdAsync(id);
+            var payroll = await _payrollRepo.GetByIdAsync(id, _currentUser.CompanyId);
             if (payroll == null)
                 throw new InvalidOperationException("Payroll not found");
 
-            // Validation: Can only process draft payroll
             if (payroll.Status != PayrollStatus.Draft)
                 throw new InvalidOperationException("Can only process draft payroll");
 
-            // Validation: Net salary must be greater than 0
             if (payroll.NetSalary <= 0)
                 throw new InvalidOperationException("Cannot process payroll with zero or negative net salary");
 
@@ -484,11 +332,10 @@ namespace ERPSystem.Application.Services.Hr
 
         public async Task MarkAsPaidAsync(Guid id, MarkPaidDto dto, string paidBy)
         {
-            var payroll = await _payrollRepo.GetByIdAsync(id);
+            var payroll = await _payrollRepo.GetByIdAsync(id, _currentUser.CompanyId);
             if (payroll == null)
                 throw new InvalidOperationException("Payroll not found");
 
-            // Validation: Can only mark processed payroll as paid
             if (payroll.Status != PayrollStatus.Processed)
                 throw new InvalidOperationException("Can only mark processed payroll as paid");
 
@@ -498,18 +345,15 @@ namespace ERPSystem.Application.Services.Hr
             payroll.TransactionReference = dto.TransactionReference;
             payroll.PaidBy = paidBy;
 
-            
-
             await _payrollRepo.UpdateAsync(payroll);
         }
 
         public async Task RevertToDraftAsync(Guid id, string modifiedBy)
         {
-            var payroll = await _payrollRepo.GetByIdAsync(id);
+            var payroll = await _payrollRepo.GetByIdAsync(id, _currentUser.CompanyId);
             if (payroll == null)
                 throw new InvalidOperationException("Payroll not found");
 
-            // Validation: Can only revert processed payroll
             if (payroll.Status != PayrollStatus.Processed)
                 throw new InvalidOperationException("Can only revert processed payroll to draft");
 
@@ -522,22 +366,21 @@ namespace ERPSystem.Application.Services.Hr
 
         public async Task DeleteAsync(Guid id)
         {
-            var payroll = await _payrollRepo.GetByIdAsync(id);
+            var payroll = await _payrollRepo.GetByIdAsync(id, _currentUser.CompanyId);
             if (payroll == null)
                 throw new InvalidOperationException("Payroll not found");
 
-            // Validation: Only draft payroll can be deleted
             if (payroll.Status != PayrollStatus.Draft)
                 throw new InvalidOperationException("Only draft payroll can be deleted");
 
-            await _payrollRepo.DeleteAsync(id);
+            await _payrollRepo.DeleteAsync(id, _currentUser.CompanyId);
         }
 
         public async Task<PayrollSummaryDto> GetPeriodSummaryAsync(int month, int year)
         {
-            var payrolls = await _payrollRepo.GetByMonthAndYearAsync(month, year);
+            var payrolls = await _payrollRepo.GetByMonthAndYearAsync(month, year, _currentUser.CompanyId);
 
-            var summary = new PayrollSummaryDto
+            return new PayrollSummaryDto
             {
                 Month = month,
                 Year = year,
@@ -550,28 +393,21 @@ namespace ERPSystem.Application.Services.Hr
                 ProcessedCount = payrolls.Count(p => p.Status == PayrollStatus.Processed),
                 PaidCount = payrolls.Count(p => p.Status == PayrollStatus.Paid)
             };
-
-            return summary;
         }
 
         public async Task<PayrollDetailDto> RecalculateAsync(Guid id, string modifiedBy)
         {
-            var payroll = await _payrollRepo.GetByIdWithDetailsAsync(id);
+            var payroll = await _payrollRepo.GetByIdWithDetailsAsync(id, _currentUser.CompanyId);
             if (payroll == null)
                 throw new InvalidOperationException("Payroll not found");
 
-            // Validation: Can only recalculate draft payroll
             if (payroll.Status != PayrollStatus.Draft)
                 throw new InvalidOperationException("Can only recalculate draft payroll");
 
-            var employee = await _employeeRepo.GetByIdAsync(payroll.EmployeeId);
-            if (employee == null)
-                throw new InvalidOperationException("Employee not found");
+            var employee = await GetValidEmployeeAsync(payroll.EmployeeId);
 
-            // Delete old payroll
-            await _payrollRepo.DeleteAsync(id);
+            await _payrollRepo.DeleteAsync(id, _currentUser.CompanyId);
 
-            // Generate new one
             var newPayroll = await GenerateSinglePayrollAsync(
                 employee,
                 payroll.Month,
@@ -585,14 +421,14 @@ namespace ERPSystem.Application.Services.Hr
             return MapToDetailDto(newPayroll);
         }
 
-        // Helper Methods
+        // ===== helpers (same as your code) =====
+
         private int CalculateWorkingDays(DateOnly startDate, DateOnly endDate)
         {
             int workingDays = 0;
             for (var date = startDate; date <= endDate; date = date.AddDays(1))
             {
                 var dayOfWeek = date.DayOfWeek;
-                // Exclude Friday and Saturday (weekend in Egypt/Middle East)
                 if (dayOfWeek != DayOfWeek.Friday && dayOfWeek != DayOfWeek.Saturday)
                     workingDays++;
             }
@@ -600,8 +436,89 @@ namespace ERPSystem.Application.Services.Hr
         }
 
         private int CalculateWorkingDaysInRange(DateOnly startDate, DateOnly endDate)
+            => CalculateWorkingDays(startDate, endDate);
+
+        private void AddAllowances(Payroll payroll, Employee employee)
         {
-            return CalculateWorkingDays(startDate, endDate);
+            var transportAllowance = employee.Salary * 0.10m;
+            payroll.LineItems.Add(new PayrollLineItem
+            {
+                Id = Guid.NewGuid(),
+                Description = "Transport Allowance",
+                Amount = transportAllowance,
+                Type = PayrollLineItemType.Allowance
+            });
+
+            var housingAllowance = employee.Salary * 0.20m;
+            payroll.LineItems.Add(new PayrollLineItem
+            {
+                Id = Guid.NewGuid(),
+                Description = "Housing Allowance",
+                Amount = housingAllowance,
+                Type = PayrollLineItemType.Allowance
+            });
+        }
+
+        private void AddDeductions(Payroll payroll, Employee employee,
+            decimal dailyRate, int absentDays, int unpaidLeaveDays)
+        {
+            if (absentDays > 0)
+            {
+                var absenceDeduction = absentDays * dailyRate;
+                payroll.LineItems.Add(new PayrollLineItem
+                {
+                    Id = Guid.NewGuid(),
+                    Description = $"Absence Deduction ({absentDays} days × {dailyRate:F2})",
+                    Amount = absenceDeduction,
+                    Type = PayrollLineItemType.Deduction
+                });
+            }
+
+            if (unpaidLeaveDays > 0)
+            {
+                var unpaidLeaveDeduction = unpaidLeaveDays * dailyRate;
+                payroll.LineItems.Add(new PayrollLineItem
+                {
+                    Id = Guid.NewGuid(),
+                    Description = $"Unpaid Leave ({unpaidLeaveDays} days × {dailyRate:F2})",
+                    Amount = unpaidLeaveDeduction,
+                    Type = PayrollLineItemType.Deduction
+                });
+            }
+
+            var socialSecurity = employee.Salary * 0.11m;
+            payroll.LineItems.Add(new PayrollLineItem
+            {
+                Id = Guid.NewGuid(),
+                Description = "Social Security (11%)",
+                Amount = socialSecurity,
+                Type = PayrollLineItemType.Deduction
+            });
+
+            var grossSalary = payroll.BasicSalary + payroll.LineItems
+                .Where(i => i.Type == PayrollLineItemType.Allowance)
+                .Sum(i => i.Amount);
+
+            var taxDeduction = CalculateTax(grossSalary);
+            payroll.LineItems.Add(new PayrollLineItem
+            {
+                Id = Guid.NewGuid(),
+                Description = "Income Tax",
+                Amount = taxDeduction,
+                Type = PayrollLineItemType.Deduction
+            });
+        }
+
+        private decimal CalculateTax(decimal grossSalary)
+        {
+            decimal tax = 0;
+
+            if (grossSalary <= 15000) tax = 0;
+            else if (grossSalary <= 30000) tax = (grossSalary - 15000) * 0.10m;
+            else if (grossSalary <= 45000) tax = (15000 * 0.10m) + ((grossSalary - 30000) * 0.15m);
+            else tax = (15000 * 0.10m) + (15000 * 0.15m) + ((grossSalary - 45000) * 0.20m);
+
+            return tax;
         }
 
         private PayrollDto MapToDto(Payroll p)
@@ -687,6 +604,4 @@ namespace ERPSystem.Application.Services.Hr
             };
         }
     }
-
-
 }

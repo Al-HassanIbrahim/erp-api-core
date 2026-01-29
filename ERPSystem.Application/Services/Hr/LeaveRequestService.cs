@@ -8,7 +8,7 @@ using ERPSystem.Domain.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ERPSystem.Application.Services.Hr
@@ -18,40 +18,54 @@ namespace ERPSystem.Application.Services.Hr
         private readonly ILeaveRequestRepository _leaveRepo;
         private readonly ILeaveBalanceRepository _balanceRepo;
         private readonly IEmployeeRepository _employeeRepo;
+        private readonly ICurrentUserService _currentUser;
+
         private const int MIN_NOTICE_DAYS = 2;
         private const int SICK_LEAVE_CERTIFICATE_THRESHOLD = 3;
 
         public LeaveRequestService(
             ILeaveRequestRepository leaveRepo,
             ILeaveBalanceRepository balanceRepo,
-            IEmployeeRepository employeeRepo)
+            IEmployeeRepository employeeRepo,
+            ICurrentUserService currentUser)
         {
             _leaveRepo = leaveRepo;
             _balanceRepo = balanceRepo;
             _employeeRepo = employeeRepo;
+            _currentUser = currentUser;
         }
+
+        // ================== GUARDS ==================
+
+        private async Task<Employee> GetValidEmployeeAsync(Guid employeeId, CancellationToken ct = default)
+        {
+            var employee = await _employeeRepo.GetByIdAsync(employeeId, _currentUser.CompanyId, ct);
+            if (employee == null)
+                throw new InvalidOperationException("Employee not found or does not belong to your company.");
+            return employee;
+        }
+
+        private void EnsureEmployeeActive(Employee employee)
+        {
+            if (employee.Status != EmployeeStatus.Active)
+                throw new InvalidOperationException("Only active employees can request leave");
+        }
+
+        // ================== CREATE ==================
 
         public async Task<LeaveRequestDto> CreateAsync(CreateLeaveRequestDto dto)
         {
-            var employee = await _employeeRepo.GetByIdAsync(dto.EmployeeId);
-            if (employee == null)
-                throw new InvalidOperationException("Employee not found");
+            var employee = await GetValidEmployeeAsync(dto.EmployeeId);
+            EnsureEmployeeActive(employee);
 
-            if (employee.Status != EmployeeStatus.Active)
-                throw new InvalidOperationException("Only active employees can request leave");
-
-            // Validation: Start date cannot be in the past
             if (dto.StartDate < DateOnly.FromDateTime(DateTime.Today))
                 throw new InvalidOperationException("Start date cannot be in the past");
 
-            // Validation: End date must be after start date
             if (dto.EndDate < dto.StartDate)
                 throw new InvalidOperationException("End date must be after start date");
 
-            // Calculate total days
             var totalDays = (dto.EndDate.DayNumber - dto.StartDate.DayNumber) + 1;
 
-            // Validation: Annual leave requires minimum 2 days notice
             if (dto.LeaveType == LeaveType.Annual)
             {
                 var daysUntilStart = dto.StartDate.DayNumber - DateOnly.FromDateTime(DateTime.Today).DayNumber;
@@ -59,28 +73,20 @@ namespace ERPSystem.Application.Services.Hr
                     throw new InvalidOperationException($"Annual leave requires at least {MIN_NOTICE_DAYS} days notice");
             }
 
-            // Validation: Sick leave > 3 days requires medical certificate
-            if (dto.LeaveType == LeaveType.Sick && totalDays > SICK_LEAVE_CERTIFICATE_THRESHOLD)
-            {
-                // Note: File attachment validation should be done in controller/UI
-                // For now, we just document this requirement
-            }
-
-            // Check leave balance (except unpaid leave)
             var currentYear = dto.StartDate.Year;
             decimal currentBalance = 0;
 
             if (dto.LeaveType != LeaveType.Unpaid)
             {
                 var balance = await _balanceRepo.GetByEmployeeYearAndTypeAsync(
-                    dto.EmployeeId, currentYear, dto.LeaveType);
+                    dto.EmployeeId, currentYear, dto.LeaveType, _currentUser.CompanyId);
 
                 if (balance == null)
                 {
-                    // Initialize balance if not exists
                     balance = new LeaveBalance
                     {
                         Id = Guid.NewGuid(),
+                        CompanyId = _currentUser.CompanyId,
                         EmployeeId = dto.EmployeeId,
                         Year = currentYear,
                         LeaveType = dto.LeaveType,
@@ -88,30 +94,27 @@ namespace ERPSystem.Application.Services.Hr
                         Used = 0,
                         Pending = 0
                     };
+
                     await _balanceRepo.AddAsync(balance);
                 }
 
                 currentBalance = balance.Available;
 
-                // Validation: Cannot exceed available balance
                 if (totalDays > currentBalance)
                     throw new InvalidOperationException(
                         $"Insufficient leave balance. Available: {currentBalance} days, Requested: {totalDays} days");
             }
 
-            // Validation: Cannot overlap with existing approved leave
-            if (await _leaveRepo.HasOverlappingLeaveAsync(dto.EmployeeId, dto.StartDate, dto.EndDate))
+            if (await _leaveRepo.HasOverlappingLeaveAsync(dto.EmployeeId, dto.StartDate, dto.EndDate, _currentUser.CompanyId))
                 throw new InvalidOperationException("Leave request overlaps with existing approved leave");
 
-            // Validation: Cannot create leave for non-working days (weekends)
-            // Check if all days are weekends
             if (AreAllDaysWeekend(dto.StartDate, dto.EndDate))
                 throw new InvalidOperationException("Cannot create leave request for only weekend days");
 
-            // Create leave request
             var leaveRequest = new LeaveRequest
             {
                 Id = Guid.NewGuid(),
+                CompanyId = _currentUser.CompanyId,
                 EmployeeId = dto.EmployeeId,
                 LeaveType = dto.LeaveType,
                 StartDate = dto.StartDate,
@@ -126,11 +129,11 @@ namespace ERPSystem.Application.Services.Hr
 
             await _leaveRepo.AddAsync(leaveRequest);
 
-            // Update pending balance
             if (dto.LeaveType != LeaveType.Unpaid)
             {
                 var balance = await _balanceRepo.GetByEmployeeYearAndTypeAsync(
-                    dto.EmployeeId, currentYear, dto.LeaveType);
+                    dto.EmployeeId, currentYear, dto.LeaveType, _currentUser.CompanyId);
+
                 balance!.Pending += totalDays;
                 await _balanceRepo.UpdateAsync(balance);
             }
@@ -138,49 +141,49 @@ namespace ERPSystem.Application.Services.Hr
             return MapToDto(leaveRequest, employee);
         }
 
+        // ================== UPDATE ==================
+
         public async Task<LeaveRequestDto> UpdateAsync(Guid id, UpdateLeaveRequestDto dto)
         {
-            var leaveRequest = await _leaveRepo.GetByIdWithDetailsAsync(id);
+            var leaveRequest = await _leaveRepo.GetByIdWithDetailsAsync(id, _currentUser.CompanyId);
             if (leaveRequest == null)
                 throw new InvalidOperationException("Leave request not found");
 
-            // Validation: Only pending requests can be updated
+            // extra guard: employee must belong to same company
+            var employee = await GetValidEmployeeAsync(leaveRequest.EmployeeId);
+
             if (leaveRequest.Status != LeaveRequestStatus.Pending)
                 throw new InvalidOperationException("Only pending leave requests can be updated");
 
             var oldTotalDays = leaveRequest.TotalDays;
             var needsBalanceUpdate = false;
 
-            // Update dates if provided
             if (dto.StartDate.HasValue || dto.EndDate.HasValue)
             {
                 var newStartDate = dto.StartDate ?? leaveRequest.StartDate;
                 var newEndDate = dto.EndDate ?? leaveRequest.EndDate;
 
-                // Validation
                 if (newStartDate < DateOnly.FromDateTime(DateTime.Today))
                     throw new InvalidOperationException("Start date cannot be in the past");
 
                 if (newEndDate < newStartDate)
                     throw new InvalidOperationException("End date must be after start date");
 
-                // Check for overlaps (excluding this request)
                 if (await _leaveRepo.HasOverlappingLeaveAsync(
-                    leaveRequest.EmployeeId, newStartDate, newEndDate, id))
+                    leaveRequest.EmployeeId, newStartDate, newEndDate, _currentUser.CompanyId, excludeId: id))
                     throw new InvalidOperationException("Leave request overlaps with existing approved leave");
 
                 var newTotalDays = (newEndDate.DayNumber - newStartDate.DayNumber) + 1;
 
-                // Update balance if days changed
-                if (newTotalDays != oldTotalDays)
+                if (newTotalDays != oldTotalDays && leaveRequest.LeaveType != LeaveType.Unpaid)
                 {
                     var currentYear = newStartDate.Year;
+
                     var balance = await _balanceRepo.GetByEmployeeYearAndTypeAsync(
-                        leaveRequest.EmployeeId, currentYear, leaveRequest.LeaveType);
+                        leaveRequest.EmployeeId, currentYear, leaveRequest.LeaveType, _currentUser.CompanyId);
 
                     if (balance != null)
                     {
-                        // Check if new total exceeds available
                         var additionalDays = newTotalDays - oldTotalDays;
                         if (additionalDays > 0 && additionalDays > balance.Available)
                             throw new InvalidOperationException("Insufficient leave balance for updated dates");
@@ -194,19 +197,15 @@ namespace ERPSystem.Application.Services.Hr
                 leaveRequest.TotalDays = newTotalDays;
             }
 
-            // Update reason if provided
             if (!string.IsNullOrWhiteSpace(dto.Reason))
-            {
                 leaveRequest.Reason = dto.Reason;
-            }
 
             await _leaveRepo.UpdateAsync(leaveRequest);
 
-            // Update pending balance if needed
             if (needsBalanceUpdate && leaveRequest.LeaveType != LeaveType.Unpaid)
             {
                 var balance = await _balanceRepo.GetByEmployeeYearAndTypeAsync(
-                    leaveRequest.EmployeeId, leaveRequest.StartDate.Year, leaveRequest.LeaveType);
+                    leaveRequest.EmployeeId, leaveRequest.StartDate.Year, leaveRequest.LeaveType, _currentUser.CompanyId);
 
                 if (balance != null)
                 {
@@ -215,23 +214,22 @@ namespace ERPSystem.Application.Services.Hr
                 }
             }
 
-            return MapToDto(leaveRequest, leaveRequest.Employee);
+            // use employee we validated (avoid trusting included nav if data inconsistent)
+            return MapToDto(leaveRequest, employee);
         }
+
+        // ================== APPROVE ==================
 
         public async Task ApproveAsync(Guid id, ApproveLeaveDto dto, string approvedBy)
         {
-            var leaveRequest = await _leaveRepo.GetByIdWithDetailsAsync(id);
+            var leaveRequest = await _leaveRepo.GetByIdWithDetailsAsync(id, _currentUser.CompanyId);
             if (leaveRequest == null)
                 throw new InvalidOperationException("Leave request not found");
 
-            // Validation: Only pending requests can be approved
+            await GetValidEmployeeAsync(leaveRequest.EmployeeId);
+
             if (leaveRequest.Status != LeaveRequestStatus.Pending)
                 throw new InvalidOperationException("Only pending leave requests can be approved");
-
-            // Validation: Cannot approve own leave (if approvedBy is employee)
-            // This check would need user context in real implementation
-            // if (leaveRequest.EmployeeId.ToString() == approvedBy)
-            //     throw new InvalidOperationException("Cannot approve your own leave request");
 
             leaveRequest.Status = LeaveRequestStatus.Approved;
             leaveRequest.ApprovedBy = approvedBy;
@@ -239,11 +237,10 @@ namespace ERPSystem.Application.Services.Hr
 
             await _leaveRepo.UpdateAsync(leaveRequest);
 
-            // Deduct from balance and update used
             if (leaveRequest.LeaveType != LeaveType.Unpaid)
             {
                 var balance = await _balanceRepo.GetByEmployeeYearAndTypeAsync(
-                    leaveRequest.EmployeeId, leaveRequest.StartDate.Year, leaveRequest.LeaveType);
+                    leaveRequest.EmployeeId, leaveRequest.StartDate.Year, leaveRequest.LeaveType, _currentUser.CompanyId);
 
                 if (balance != null)
                 {
@@ -252,22 +249,21 @@ namespace ERPSystem.Application.Services.Hr
                     await _balanceRepo.UpdateAsync(balance);
                 }
             }
-
-            // Optional: Mark employee as OnLeave for those dates
-            // This could be handled by a background job or during attendance checks
         }
+
+        // ================== REJECT ==================
 
         public async Task RejectAsync(Guid id, RejectLeaveDto dto, string rejectedBy)
         {
-            var leaveRequest = await _leaveRepo.GetByIdAsync(id);
+            var leaveRequest = await _leaveRepo.GetByIdAsync(id, _currentUser.CompanyId);
             if (leaveRequest == null)
                 throw new InvalidOperationException("Leave request not found");
 
-            // Validation: Only pending requests can be rejected
+            await GetValidEmployeeAsync(leaveRequest.EmployeeId);
+
             if (leaveRequest.Status != LeaveRequestStatus.Pending)
                 throw new InvalidOperationException("Only pending leave requests can be rejected");
 
-            // Validation: Rejection reason is required
             if (string.IsNullOrWhiteSpace(dto.Reason))
                 throw new InvalidOperationException("Rejection reason is required");
 
@@ -277,11 +273,10 @@ namespace ERPSystem.Application.Services.Hr
 
             await _leaveRepo.UpdateAsync(leaveRequest);
 
-            // Return pending balance
             if (leaveRequest.LeaveType != LeaveType.Unpaid)
             {
                 var balance = await _balanceRepo.GetByEmployeeYearAndTypeAsync(
-                    leaveRequest.EmployeeId, leaveRequest.StartDate.Year, leaveRequest.LeaveType);
+                    leaveRequest.EmployeeId, leaveRequest.StartDate.Year, leaveRequest.LeaveType, _currentUser.CompanyId);
 
                 if (balance != null)
                 {
@@ -291,13 +286,16 @@ namespace ERPSystem.Application.Services.Hr
             }
         }
 
+        // ================== CANCEL ==================
+
         public async Task CancelAsync(Guid id, string reason, string cancelledBy)
         {
-            var leaveRequest = await _leaveRepo.GetByIdAsync(id);
+            var leaveRequest = await _leaveRepo.GetByIdAsync(id, _currentUser.CompanyId);
             if (leaveRequest == null)
                 throw new InvalidOperationException("Leave request not found");
 
-            // Validation: Can only cancel approved leaves before start date
+            await GetValidEmployeeAsync(leaveRequest.EmployeeId);
+
             if (leaveRequest.Status != LeaveRequestStatus.Approved)
                 throw new InvalidOperationException("Can only cancel approved leave requests");
 
@@ -313,11 +311,10 @@ namespace ERPSystem.Application.Services.Hr
 
             await _leaveRepo.UpdateAsync(leaveRequest);
 
-            // Return balance to employee
             if (leaveRequest.LeaveType != LeaveType.Unpaid)
             {
                 var balance = await _balanceRepo.GetByEmployeeYearAndTypeAsync(
-                    leaveRequest.EmployeeId, leaveRequest.StartDate.Year, leaveRequest.LeaveType);
+                    leaveRequest.EmployeeId, leaveRequest.StartDate.Year, leaveRequest.LeaveType, _currentUser.CompanyId);
 
                 if (balance != null)
                 {
@@ -327,39 +324,34 @@ namespace ERPSystem.Application.Services.Hr
             }
         }
 
+        // ================== READ ==================
+
         public async Task<LeaveRequestDetailDto?> GetByIdAsync(Guid id)
         {
-            var leaveRequest = await _leaveRepo.GetByIdWithDetailsAsync(id);
+            var leaveRequest = await _leaveRepo.GetByIdWithDetailsAsync(id, _currentUser.CompanyId);
             return leaveRequest != null ? MapToDetailDto(leaveRequest) : null;
         }
 
         public async Task<IEnumerable<LeaveRequestDto>> GetByEmployeeIdAsync(Guid employeeId)
         {
-            var employee = await _employeeRepo.GetByIdAsync(employeeId);
-            if (employee == null)
-                throw new InvalidOperationException("Employee not found");
+            var employee = await GetValidEmployeeAsync(employeeId);
 
-            var leaveRequests = await _leaveRepo.GetByEmployeeIdAsync(employeeId);
+            var leaveRequests = await _leaveRepo.GetByEmployeeIdAsync(employeeId, _currentUser.CompanyId);
             return leaveRequests.Select(lr => MapToDto(lr, employee));
         }
 
         public async Task<IEnumerable<LeaveRequestDto>> GetPendingAsync()
         {
-            var leaveRequests = await _leaveRepo.GetPendingAsync();
+            var leaveRequests = await _leaveRepo.GetPendingAsync(_currentUser.CompanyId);
             return leaveRequests.Select(lr => MapToDto(lr, lr.Employee));
         }
 
-        
-
         public async Task<LeaveBalanceDto> GetBalanceAsync(Guid employeeId, int year)
         {
-            var employee = await _employeeRepo.GetByIdAsync(employeeId);
-            if (employee == null)
-                throw new InvalidOperationException("Employee not found");
+            var employee = await GetValidEmployeeAsync(employeeId);
 
-            var balances = await _balanceRepo.GetByEmployeeAndYearAsync(employeeId, year);
+            var balances = await _balanceRepo.GetByEmployeeAndYearAsync(employeeId, year, _currentUser.CompanyId);
 
-            // Initialize missing balances for all leave types
             var allLeaveTypes = Enum.GetValues<LeaveType>().Where(lt => lt != LeaveType.Unpaid);
             foreach (var leaveType in allLeaveTypes)
             {
@@ -368,6 +360,7 @@ namespace ERPSystem.Application.Services.Hr
                     var newBalance = new LeaveBalance
                     {
                         Id = Guid.NewGuid(),
+                        CompanyId = _currentUser.CompanyId,
                         EmployeeId = employeeId,
                         Year = year,
                         LeaveType = leaveType,
@@ -402,13 +395,10 @@ namespace ERPSystem.Application.Services.Hr
             DateOnly? endDate = null,
             LeaveType? leaveType = null)
         {
-            var employee = await _employeeRepo.GetByIdAsync(employeeId);
-            if (employee == null)
-                throw new InvalidOperationException("Employee not found");
+            var employee = await GetValidEmployeeAsync(employeeId);
 
-            var allLeaves = await _leaveRepo.GetByEmployeeIdAsync(employeeId);
+            var allLeaves = await _leaveRepo.GetByEmployeeIdAsync(employeeId, _currentUser.CompanyId);
 
-            // Apply filters
             var filteredLeaves = allLeaves.AsEnumerable();
 
             if (startDate.HasValue)
@@ -423,21 +413,23 @@ namespace ERPSystem.Application.Services.Hr
             return filteredLeaves.Select(lr => MapToDto(lr, employee));
         }
 
+        // ================== DELETE ==================
+
         public async Task DeleteAsync(Guid id)
         {
-            var leaveRequest = await _leaveRepo.GetByIdAsync(id);
+            var leaveRequest = await _leaveRepo.GetByIdAsync(id, _currentUser.CompanyId);
             if (leaveRequest == null)
                 throw new InvalidOperationException("Leave request not found");
 
-            // Validation: Only pending requests can be deleted
+            await GetValidEmployeeAsync(leaveRequest.EmployeeId);
+
             if (leaveRequest.Status != LeaveRequestStatus.Pending)
                 throw new InvalidOperationException("Only pending leave requests can be deleted");
 
-            // Return pending balance
             if (leaveRequest.LeaveType != LeaveType.Unpaid)
             {
                 var balance = await _balanceRepo.GetByEmployeeYearAndTypeAsync(
-                    leaveRequest.EmployeeId, leaveRequest.StartDate.Year, leaveRequest.LeaveType);
+                    leaveRequest.EmployeeId, leaveRequest.StartDate.Year, leaveRequest.LeaveType, _currentUser.CompanyId);
 
                 if (balance != null)
                 {
@@ -446,10 +438,11 @@ namespace ERPSystem.Application.Services.Hr
                 }
             }
 
-            await _leaveRepo.DeleteAsync(id);
+            await _leaveRepo.DeleteAsync(id, _currentUser.CompanyId);
         }
 
-        // Helper Methods
+        // ================== HELPERS ==================
+
         private decimal GetDefaultEntitlement(LeaveType type)
         {
             return type switch
