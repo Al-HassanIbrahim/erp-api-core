@@ -27,6 +27,9 @@ namespace ERPSystem.Application.Exceptions
         public static BusinessException InventoryModuleNotEnabled() =>
             new("INVENTORY_MODULE_DISABLED", "Inventory module is not enabled for this company. Delivery/Return posting is not available.", 403);
 
+        public static BusinessException ContactModuleNotEnabled() =>
+           new("Contact_MODULE_DISABLED", "Contact module is not enabled for this company.", 403);
+
         // Not Found
         public static BusinessException CustomerNotFound() =>
             new("CUSTOMER_NOT_FOUND", "Customer not found.", 404);
@@ -48,6 +51,8 @@ namespace ERPSystem.Application.Exceptions
 
         public static BusinessException WarehouseNotFound() =>
             new("WAREHOUSE_NOT_FOUND", "Warehouse not found.", 404);
+        public static BusinessException ContactNotFound() =>
+            new("Contact_NOT_FOUND", "Contact not found.", 404);
 
         // Validation
         public static BusinessException InvalidStatus(string message) =>
