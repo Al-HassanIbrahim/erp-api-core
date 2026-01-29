@@ -1,5 +1,6 @@
 ﻿using ERPSystem.Application.DTOs.HR.Attendance;
 using ERPSystem.Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using static ERPSystem.Application.DTOs.HR.Attendance.Check;
@@ -8,6 +9,7 @@ namespace ERPSyatem.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class AttendanceController : ControllerBase
     {
         private readonly IAttendanceService _attendanceService;

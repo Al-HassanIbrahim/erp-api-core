@@ -1,82 +1,82 @@
 ﻿using ERPSystem.Application.DTOs.HR.Department;
 using ERPSystem.Application.DTOs.HR.Employee;
+using ERPSystem.Application.Interfaces;
 using ERPSystem.Domain.Abstractions;
 using ERPSystem.Domain.Entities.HR;
-using Microsoft.AspNetCore.Http;
+using ERPSystem.Domain.Enums;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ERPSyatem.API.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class DepartmentController : ControllerBase
     {
         private readonly IDepartmentRepository _departmentRepo;
         private readonly IEmployeeRepository _employeeRepo;
+        private readonly ICurrentUserService _currentUser;
 
         public DepartmentController(
             IDepartmentRepository departmentRepo,
-            IEmployeeRepository employeeRepo)
+            IEmployeeRepository employeeRepo,
+            ICurrentUserService currentUser)
         {
             _departmentRepo = departmentRepo;
             _employeeRepo = employeeRepo;
+            _currentUser = currentUser;
         }
 
-        /// <summary>
-        /// Get all departments
-        /// </summary>
+        /// <summary>Get all departments (company-scoped)</summary>
         [HttpGet]
-        [ProducesResponseType(typeof(IEnumerable<DepartmentDto>), 200)]
-        public async Task<ActionResult<IEnumerable<DepartmentDto>>> GetAll()
+        public async Task<ActionResult<IEnumerable<DepartmentDto>>> GetAll(CancellationToken ct)
         {
-            var departments = await _departmentRepo.GetAllAsync();
+            var departments = await _departmentRepo.GetAllAsync(_currentUser.CompanyId, ct);
             return Ok(departments.Select(MapToDto));
         }
 
-        /// <summary>
-        /// Get department by ID with details
-        /// </summary>
-        [HttpGet("{id}")]
+        /// <summary>Get department by id with details (company-scoped)</summary>
+        [HttpGet("{id:guid}")]
         [ProducesResponseType(typeof(DepartmentDetailDto), 200)]
         [ProducesResponseType(404)]
-        public async Task<ActionResult<DepartmentDetailDto>> GetById(Guid id)
+        public async Task<ActionResult<DepartmentDetailDto>> GetById(Guid id, CancellationToken ct)
         {
-            var department = await _departmentRepo.GetByIdWithDetailsAsync(id);
+            var department = await _departmentRepo.GetByIdWithDetailsAsync(id, _currentUser.CompanyId, ct);
             if (department == null)
                 return NotFound(new { error = "Department not found" });
 
             return Ok(MapToDetailDto(department));
         }
 
-        /// <summary>
-        /// Create new department
-        /// </summary>
+        /// <summary>Create new department (company-scoped)</summary>
         [HttpPost]
         [ProducesResponseType(typeof(DepartmentDto), 201)]
         [ProducesResponseType(400)]
-        public async Task<ActionResult<DepartmentDto>> Create([FromBody] CreateDepartmentDto dto)
+        public async Task<ActionResult<DepartmentDto>> Create([FromBody] CreateDepartmentDto dto, CancellationToken ct)
         {
             try
             {
-                // Validation: Code must be unique
-                if (await _departmentRepo.ExistsByCodeAsync(dto.Code))
+                if (await _departmentRepo.ExistsByCodeAsync(dto.Code, _currentUser.CompanyId, ct))
                     return BadRequest(new { error = $"Department code '{dto.Code}' already exists" });
 
-                // Validation: Name must be unique
-                if (await _departmentRepo.ExistsByNameAsync(dto.Name))
+                if (await _departmentRepo.ExistsByNameAsync(dto.Name, _currentUser.CompanyId, ct))
                     return BadRequest(new { error = $"Department name '{dto.Name}' already exists" });
 
-                // Validation: Manager must exist if provided
                 if (dto.ManagerId.HasValue)
                 {
-                    var manager = await _employeeRepo.GetByIdAsync(dto.ManagerId.Value);
+                    var manager = await _employeeRepo.GetByIdAsync(dto.ManagerId.Value, _currentUser.CompanyId, ct);
                     if (manager == null)
-                        return BadRequest(new { error = "Manager not found" });
+                        return BadRequest(new { error = "Manager not found or does not belong to your company." });
+
+                    if (manager.Status != EmployeeStatus.Active)
+                        return BadRequest(new { error = "Manager must be active." });
                 }
 
                 var department = new Department
                 {
                     Id = Guid.NewGuid(),
+                    CompanyId = _currentUser.CompanyId,
                     Code = dto.Code,
                     Name = dto.Name,
                     Description = dto.Description,
@@ -85,8 +85,12 @@ namespace ERPSyatem.API.Controllers
                     CreatedAt = DateTime.UtcNow
                 };
 
-                await _departmentRepo.AddAsync(department);
-                return CreatedAtAction(nameof(GetById), new { id = department.Id }, MapToDto(department));
+                await _departmentRepo.AddAsync(department, ct);
+
+                return CreatedAtAction(
+                    nameof(GetById),
+                    new { id = department.Id },
+                    MapToDto(department));
             }
             catch (Exception ex)
             {
@@ -94,32 +98,32 @@ namespace ERPSyatem.API.Controllers
             }
         }
 
-        /// <summary>
-        /// Update department
-        /// </summary>
-        [HttpPut("{id}")]
+        /// <summary>Update department (company-scoped)</summary>
+        [HttpPut("{id:guid}")]
         [ProducesResponseType(typeof(DepartmentDto), 200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
-        public async Task<ActionResult<DepartmentDto>> Update(Guid id, [FromBody] UpdateDepartmentDto dto)
+        public async Task<ActionResult<DepartmentDto>> Update(Guid id, [FromBody] UpdateDepartmentDto dto, CancellationToken ct)
         {
             try
             {
-                var department = await _departmentRepo.GetByIdAsync(id);
+                var department = await _departmentRepo.GetByIdAsync(id, _currentUser.CompanyId, ct);
                 if (department == null)
                     return NotFound(new { error = "Department not found" });
 
-                // Validation: Name must be unique (excluding current)
-                var existingByName = await _departmentRepo.GetAllAsync();
-                if (existingByName.Any(d => d.Name.ToLower() == dto.Name.ToLower() && d.Id != id))
+                // Name uniqueness (exclude current dept) - company scoped
+                var all = await _departmentRepo.GetAllAsync(_currentUser.CompanyId, ct);
+                if (all.Any(d => d.Id != id && d.Name.Trim().ToLower() == dto.Name.Trim().ToLower()))
                     return BadRequest(new { error = $"Department name '{dto.Name}' already exists" });
 
-                // Validation: Manager must exist if provided
                 if (dto.ManagerId.HasValue)
                 {
-                    var manager = await _employeeRepo.GetByIdAsync(dto.ManagerId.Value);
+                    var manager = await _employeeRepo.GetByIdAsync(dto.ManagerId.Value, _currentUser.CompanyId, ct);
                     if (manager == null)
-                        return BadRequest(new { error = "Manager not found" });
+                        return BadRequest(new { error = "Manager not found or does not belong to your company." });
+
+                    if (manager.Status != EmployeeStatus.Active)
+                        return BadRequest(new { error = "Manager must be active." });
                 }
 
                 department.Name = dto.Name;
@@ -128,7 +132,8 @@ namespace ERPSyatem.API.Controllers
                 department.IsActive = dto.IsActive;
                 department.ModifiedAt = DateTime.UtcNow;
 
-                await _departmentRepo.UpdateAsync(department);
+                await _departmentRepo.UpdateAsync(department, ct);
+
                 return Ok(MapToDto(department));
             }
             catch (Exception ex)
@@ -137,27 +142,27 @@ namespace ERPSyatem.API.Controllers
             }
         }
 
-        /// <summary>
-        /// Delete department
-        /// </summary>
-        [HttpDelete("{id}")]
+        /// <summary>Delete department (company-scoped)</summary>
+        [HttpDelete("{id:guid}")]
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
-        public async Task<ActionResult> Delete(Guid id)
+        public async Task<ActionResult> Delete(Guid id, CancellationToken ct)
         {
             try
             {
-                var department = await _departmentRepo.GetByIdAsync(id);
+                var department = await _departmentRepo.GetByIdAsync(id, _currentUser.CompanyId, ct);
                 if (department == null)
                     return NotFound(new { error = "Department not found" });
 
-                // Validation: Cannot delete department with active employees
-                var employeeCount = await _departmentRepo.GetEmployeeCountAsync(id);
+                var employeeCount = await _departmentRepo.GetEmployeeCountAsync(id, _currentUser.CompanyId, ct);
                 if (employeeCount > 0)
-                    return BadRequest(new { error = $"Cannot delete department with {employeeCount} employees. Please reassign them first." });
+                    return BadRequest(new
+                    {
+                        error = $"Cannot delete department with {employeeCount} employees. Please reassign them first."
+                    });
 
-                await _departmentRepo.DeleteAsync(id);
+                await _departmentRepo.DeleteAsync(id, _currentUser.CompanyId, ct);
                 return NoContent();
             }
             catch (Exception ex)
@@ -165,6 +170,8 @@ namespace ERPSyatem.API.Controllers
                 return BadRequest(new { error = ex.Message });
             }
         }
+
+        // ================== MAPPERS ==================
 
         private DepartmentDto MapToDto(Department d) => new()
         {
@@ -190,6 +197,7 @@ namespace ERPSyatem.API.Controllers
             EmployeeCount = d.Employees?.Count ?? 0,
             IsActive = d.IsActive,
             CreatedAt = d.CreatedAt,
+
             Manager = d.Manager != null ? new EmployeeListDto
             {
                 Id = d.Manager.Id,
@@ -200,6 +208,7 @@ namespace ERPSyatem.API.Controllers
                 Status = d.Manager.Status.ToString(),
                 HireDate = d.Manager.HireDate
             } : null,
+
             Employees = d.Employees?.Select(e => new EmployeeListDto
             {
                 Id = e.Id,
