@@ -13,57 +13,73 @@ namespace ERPSystem.Infrastructure.Repositories.Hr
         public AttendanceRepository(AppDbContext context, ICurrentUserService current)
             : base(context, current) { }
 
-        public async Task<Attendance?> GetByIdAsync(Guid id)
+        private void EnsureCompany(int companyId)
         {
-            // Use Query() to enforce company scoping
-            return await Query()
-                .Include(a => a.Employee)
-                .FirstOrDefaultAsync(a => a.Id == id);
+            if (companyId != CompanyId)
+                throw new UnauthorizedAccessException("Cross-company access is not allowed.");
         }
 
-        public async Task<Attendance?> GetByEmployeeAndDateAsync(Guid employeeId, DateOnly date)
+        public async Task<Attendance?> GetByIdAsync(Guid id, int companyId, CancellationToken ct = default)
         {
-            // Company scoping + employeeId filter
+            EnsureCompany(companyId);
+
             return await Query()
                 .Include(a => a.Employee)
-                .FirstOrDefaultAsync(a => a.EmployeeId == employeeId && a.Date == date);
+                .FirstOrDefaultAsync(a => a.Id == id, ct);
         }
 
-        public async Task<IEnumerable<Attendance>> GetByEmployeeAndPeriodAsync(
-            Guid employeeId, DateOnly start, DateOnly end)
+        public async Task<Attendance?> GetByEmployeeAndDateAsync(Guid employeeId, DateOnly date, int companyId, CancellationToken ct = default)
         {
+            EnsureCompany(companyId);
+
+            return await Query()
+                .Include(a => a.Employee)
+                .FirstOrDefaultAsync(a => a.EmployeeId == employeeId && a.Date == date, ct);
+        }
+
+        public async Task<IReadOnlyList<Attendance>> GetByEmployeeAndPeriodAsync(
+            Guid employeeId, DateOnly start, DateOnly end, int companyId, CancellationToken ct = default)
+        {
+            EnsureCompany(companyId);
+
             return await Query()
                 .Where(a => a.EmployeeId == employeeId &&
                             a.Date >= start &&
                             a.Date <= end)
                 .OrderBy(a => a.Date)
-                .ToListAsync();
+                .ToListAsync(ct);
         }
 
-        public async Task<bool> HasCheckedInTodayAsync(Guid employeeId, DateOnly date)
+        public async Task<bool> HasCheckedInTodayAsync(Guid employeeId, DateOnly date, int companyId, CancellationToken ct = default)
         {
+            EnsureCompany(companyId);
+
             return await Query()
                 .AnyAsync(a => a.EmployeeId == employeeId &&
                                a.Date == date &&
-                               a.CheckInTime != null);
+                               a.CheckInTime != null, ct);
         }
 
-        public async Task<bool> IsPayrollProcessedForPeriodAsync(Guid employeeId, DateOnly date)
+        public async Task<bool> IsPayrollProcessedForPeriodAsync(Guid employeeId, DateOnly date, int companyId, CancellationToken ct = default)
         {
-            // Payroll must also be company-scoped.
-            // If Payroll implements ICompanyEntity: prefer Query() in PayrollRepository.
-            // Here we enforce company filter explicitly.
+            EnsureCompany(companyId);
+
             return await _context.Payrolls
                 .AnyAsync(p => p.CompanyId == CompanyId &&
                                p.EmployeeId == employeeId &&
                                p.PayPeriodStart <= date &&
                                p.PayPeriodEnd >= date &&
-                               p.Status != PayrollStatus.Draft);
+                               p.Status != PayrollStatus.Draft, ct);
         }
 
-        // ✅ CRUD: delegate to base (so CompanyId is enforced and cross-company updates are blocked)
+        // ✅ CRUD: delegate to base (CompanyId enforced + cross-company update blocked)
         public Task AddAsync(Attendance attendance) => base.AddAsync(attendance);
         public Task UpdateAsync(Attendance attendance) => base.UpdateAsync(attendance);
-        public Task DeleteAsync(Guid id) => base.DeleteAsync(id);
+
+        public async Task DeleteAsync(Guid id, int companyId, CancellationToken ct = default)
+        {
+            EnsureCompany(companyId);
+            await base.DeleteAsync(id); // base uses GetByIdAsync scoped by company anyway
+        }
     }
 }

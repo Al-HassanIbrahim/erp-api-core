@@ -13,24 +13,33 @@ namespace ERPSystem.Infrastructure.Repositories.Hr
         public LeaveBalanceRepository(AppDbContext context, ICurrentUserService current)
             : base(context, current) { }
 
-        public async Task<LeaveBalance?> GetByEmployeeYearAndTypeAsync(
-            Guid employeeId, int year, LeaveType type)
+        private void EnsureCompany(int companyId)
         {
+            if (companyId != CompanyId)
+                throw new UnauthorizedAccessException("Cross-company access is not allowed.");
+        }
+
+        public async Task<LeaveBalance?> GetByEmployeeYearAndTypeAsync(
+            Guid employeeId, int year, LeaveType type, int companyId, CancellationToken ct = default)
+        {
+            EnsureCompany(companyId);
+
             return await Query()
                 .FirstOrDefaultAsync(lb => lb.EmployeeId == employeeId &&
                                            lb.Year == year &&
-                                           lb.LeaveType == type);
+                                           lb.LeaveType == type, ct);
         }
 
         public async Task<IEnumerable<LeaveBalance>> GetByEmployeeAndYearAsync(
-            Guid employeeId, int year)
+            Guid employeeId, int year, int companyId, CancellationToken ct = default)
         {
+            EnsureCompany(companyId);
+
             return await Query()
                 .Where(lb => lb.EmployeeId == employeeId && lb.Year == year)
-                .ToListAsync();
+                .ToListAsync(ct);
         }
 
-        // CRUD: delegate to base (enforces CompanyId + blocks cross-company updates)
         public Task AddAsync(LeaveBalance balance) => base.AddAsync(balance);
         public Task UpdateAsync(LeaveBalance balance) => base.UpdateAsync(balance);
     }

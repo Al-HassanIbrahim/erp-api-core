@@ -12,29 +12,45 @@ namespace ERPSystem.Infrastructure.Repositories.Hr
         public PositionRepository(AppDbContext context, ICurrentUserService current)
             : base(context, current) { }
 
-        public async Task<JobPosition?> GetByIdAsync(Guid id)
+        private void EnsureCompany(int companyId)
         {
+            if (companyId != CompanyId)
+                throw new UnauthorizedAccessException("Cross-company access is not allowed.");
+        }
+
+        public async Task<JobPosition?> GetByIdAsync(Guid id, int companyId, CancellationToken ct = default)
+        {
+            EnsureCompany(companyId);
+
             return await Query()
                 .Include(p => p.Department)
-                .FirstOrDefaultAsync(p => p.Id == id);
+                .FirstOrDefaultAsync(p => p.Id == id, ct);
         }
 
-        public async Task<IEnumerable<JobPosition>> GetAllAsync()
+        public async Task<IEnumerable<JobPosition>> GetAllAsync(int companyId, CancellationToken ct = default)
         {
+            EnsureCompany(companyId);
+
             return await Query()
                 .Include(p => p.Department)
-                .ToListAsync();
+                .ToListAsync(ct);
         }
 
-        public async Task<bool> ExistsByCodeAsync(string code)
+        public async Task<bool> ExistsByCodeAsync(string code, int companyId, CancellationToken ct = default)
         {
+            EnsureCompany(companyId);
+
             return await Query()
-                .AnyAsync(p => p.Code == code);
+                .AnyAsync(p => p.Code == code, ct);
         }
 
-        // CRUD: delegate to base (enforces CompanyId + blocks cross-company updates)
         public Task AddAsync(JobPosition position) => base.AddAsync(position);
         public Task UpdateAsync(JobPosition position) => base.UpdateAsync(position);
-        public Task DeleteAsync(Guid id) => base.DeleteAsync(id);
+
+        public async Task DeleteAsync(Guid id, int companyId, CancellationToken ct = default)
+        {
+            EnsureCompany(companyId);
+            await base.DeleteAsync(id);
+        }
     }
 }

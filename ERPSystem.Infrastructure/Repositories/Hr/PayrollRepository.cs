@@ -12,55 +12,77 @@ namespace ERPSystem.Infrastructure.Repositories.Hr
         public PayrollRepository(AppDbContext context, ICurrentUserService current)
             : base(context, current) { }
 
-        // Avoid FindAsync; use base (company-scoped)
-        public Task<Payroll?> GetByIdAsync(Guid id)
-            => base.GetByIdAsync(id);
-
-        public async Task<Payroll?> GetByIdWithDetailsAsync(Guid id)
+        private void EnsureCompany(int companyId)
         {
+            if (companyId != CompanyId)
+                throw new UnauthorizedAccessException("Cross-company access is not allowed.");
+        }
+
+        public async Task<Payroll?> GetByIdAsync(Guid id, int companyId, CancellationToken ct = default)
+        {
+            EnsureCompany(companyId);
+            return await Query().FirstOrDefaultAsync(p => p.Id == id, ct);
+        }
+
+        public async Task<Payroll?> GetByIdWithDetailsAsync(Guid id, int companyId, CancellationToken ct = default)
+        {
+            EnsureCompany(companyId);
+
             return await Query()
                 .Include(p => p.Employee)
                 .Include(p => p.LineItems)
-                .FirstOrDefaultAsync(p => p.Id == id);
+                .FirstOrDefaultAsync(p => p.Id == id, ct);
         }
 
-        public async Task<IEnumerable<Payroll>> GetByEmployeeIdAsync(Guid employeeId)
+        public async Task<IEnumerable<Payroll>> GetByEmployeeIdAsync(Guid employeeId, int companyId, CancellationToken ct = default)
         {
+            EnsureCompany(companyId);
+
             return await Query()
                 .Where(p => p.EmployeeId == employeeId)
                 .OrderByDescending(p => p.Year)
                 .ThenByDescending(p => p.Month)
-                .ToListAsync();
+                .ToListAsync(ct);
         }
 
-        public async Task<Payroll?> GetByEmployeeAndPeriodAsync(Guid employeeId, int month, int year)
+        public async Task<Payroll?> GetByEmployeeAndPeriodAsync(Guid employeeId, int month, int year, int companyId, CancellationToken ct = default)
         {
+            EnsureCompany(companyId);
+
             return await Query()
                 .Include(p => p.LineItems)
                 .FirstOrDefaultAsync(p => p.EmployeeId == employeeId &&
                                           p.Month == month &&
-                                          p.Year == year);
+                                          p.Year == year, ct);
         }
 
-        public async Task<IEnumerable<Payroll>> GetByMonthAndYearAsync(int month, int year)
+        public async Task<IEnumerable<Payroll>> GetByMonthAndYearAsync(int month, int year, int companyId, CancellationToken ct = default)
         {
+            EnsureCompany(companyId);
+
             return await Query()
                 .Include(p => p.Employee)
                 .Where(p => p.Month == month && p.Year == year)
-                .ToListAsync();
+                .ToListAsync(ct);
         }
 
-        public async Task<bool> ExistsForEmployeeAndPeriodAsync(Guid employeeId, int month, int year)
+        public async Task<bool> ExistsForEmployeeAndPeriodAsync(Guid employeeId, int month, int year, int companyId, CancellationToken ct = default)
         {
+            EnsureCompany(companyId);
+
             return await Query()
                 .AnyAsync(p => p.EmployeeId == employeeId &&
                                p.Month == month &&
-                               p.Year == year);
+                               p.Year == year, ct);
         }
 
-        // CRUD: delegate to base (enforces CompanyId + blocks cross-company updates)
         public Task AddAsync(Payroll payroll) => base.AddAsync(payroll);
         public Task UpdateAsync(Payroll payroll) => base.UpdateAsync(payroll);
-        public Task DeleteAsync(Guid id) => base.DeleteAsync(id);
+
+        public async Task DeleteAsync(Guid id, int companyId, CancellationToken ct = default)
+        {
+            EnsureCompany(companyId);
+            await base.DeleteAsync(id);
+        }
     }
 }
