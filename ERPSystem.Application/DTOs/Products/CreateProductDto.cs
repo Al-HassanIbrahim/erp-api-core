@@ -10,6 +10,7 @@
         public int UnitOfMeasureId { get; set; }
 
         public decimal DefaultPrice { get; set; }
+        public decimal? MinQuantity { get; set; }
         public string? Barcode { get; set; }
     }
 }

@@ -47,6 +47,7 @@ namespace ERPSystem.Application.Services.Products
                 CategoryId = dto.CategoryId,
                 UnitOfMeasureId = dto.UnitOfMeasureId,
                 DefaultPrice = dto.DefaultPrice,
+                MinQuantity = dto.MinQuantity,
                 Barcode = dto.Barcode,
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow
@@ -75,6 +76,7 @@ namespace ERPSystem.Application.Services.Products
             product.CategoryId = dto.CategoryId;
             product.UnitOfMeasureId = dto.UnitOfMeasureId;
             product.DefaultPrice = dto.DefaultPrice;
+            product.MinQuantity = dto.MinQuantity;
             product.Barcode = dto.Barcode;
             product.IsActive = dto.IsActive;
             product.UpdatedAt = DateTime.UtcNow;
@@ -106,6 +108,7 @@ namespace ERPSystem.Application.Services.Products
                 Name = product.Name,
                 Description = product.Description,
                 DefaultPrice = product.DefaultPrice,
+                MinQuantity = product.MinQuantity,
                 CategoryName = product.Category?.Name,
                 UnitOfMeasureName = product.UnitOfMeasure?.Name ?? string.Empty,
                 IsActive = product.IsActive
