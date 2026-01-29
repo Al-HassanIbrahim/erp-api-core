@@ -1,5 +1,6 @@
 using System.Text;
 using ERPSystem.Application.Interfaces;
+using ERPSystem.Application.Services.Contacts;
 using ERPSystem.Application.Services.Core;
 using ERPSystem.Application.Services.Inventory;
 using ERPSystem.Application.Services.Products;
@@ -8,6 +9,7 @@ using ERPSystem.Domain.Abstractions;
 using ERPSystem.Infrastructure.Data;
 using ERPSystem.Infrastructure.Identity;
 using ERPSystem.Infrastructure.Repositories;
+using ERPSystem.Infrastructure.Repositories.Contacts;
 using ERPSystem.Infrastructure.Repositories.Core;
 using ERPSystem.Infrastructure.Repositories.Inventory;
 using ERPSystem.Infrastructure.Repositories.Sales;
@@ -75,6 +77,11 @@ namespace ERPSyatem.API
             builder.Services.AddScoped<ISalesDeliveryService, SalesDeliveryService>();
             builder.Services.AddScoped<ISalesReceiptService, SalesReceiptService>();
             builder.Services.AddScoped<ISalesReturnService, SalesReturnService>();
+
+            // Contact
+            builder.Services.AddScoped<IContactRepository, ContactRepository>();
+           
+            builder.Services.AddScoped<IContactService, ContactService>();
 
 
             #region Swagger
