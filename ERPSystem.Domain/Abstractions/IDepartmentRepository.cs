@@ -1,22 +1,19 @@
 ﻿using ERPSystem.Domain.Entities.HR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ERPSystem.Domain.Abstractions
 {
     public interface IDepartmentRepository
     {
-        Task<Department?> GetByIdAsync(Guid id);
-        Task<Department?> GetByIdWithDetailsAsync(Guid id);
-        Task<IEnumerable<Department>> GetAllAsync();
-        Task<bool> ExistsByCodeAsync(string code);
-        Task<bool> ExistsByNameAsync(string name);
-        Task<int> GetEmployeeCountAsync(Guid departmentId);
-        Task AddAsync(Department department);
-        Task UpdateAsync(Department department);
-        Task DeleteAsync(Guid id);
+        Task<Department?> GetByIdAsync(Guid id, int companyId, CancellationToken ct = default);
+        Task<Department?> GetByIdWithDetailsAsync(Guid id, int companyId, CancellationToken ct = default);
+        Task<IEnumerable<Department>> GetAllAsync(int companyId, CancellationToken ct = default);
+
+        Task<bool> ExistsByCodeAsync(string code, int companyId, CancellationToken ct = default);
+        Task<bool> ExistsByNameAsync(string name, int companyId, CancellationToken ct = default);
+        Task<int> GetEmployeeCountAsync(Guid departmentId, int companyId, CancellationToken ct = default);
+
+        Task AddAsync(Department department, CancellationToken ct = default);
+        Task UpdateAsync(Department department, CancellationToken ct = default);
+        Task DeleteAsync(Guid id, int companyId, CancellationToken ct = default);
     }
 }

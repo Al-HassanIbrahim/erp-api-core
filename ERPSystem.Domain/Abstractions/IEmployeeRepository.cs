@@ -9,17 +9,19 @@ namespace ERPSystem.Domain.Abstractions
 {
     public interface IEmployeeRepository
     {
-        Task<Employee?> GetByIdAsync(Guid id);
-        Task<Employee?> GetByIdWithDetailsAsync(Guid id);
-        Task<IEnumerable<Employee>> GetAllAsync();
-        Task<bool> ExistsByEmailAsync(string email);
-        Task<bool> ExistsByEmployeeCodeAsync(string employeeCode);
-        Task<bool> ExistsByNationalIdAsync(string nationalId);
-        Task<IEnumerable<Employee>> GetByDepartmentIdAsync(Guid departmentId);
-        Task<IEnumerable<Employee>> GetByStatusAsync(EmployeeStatus status);
-        Task<bool> HasCircularReportingAsync(Guid employeeId, Guid managerId);
+        Task<Employee?> GetByIdAsync(Guid id, int companyId, CancellationToken ct = default);
+        Task<Employee?> GetByIdWithDetailsAsync(Guid id, int companyId, CancellationToken ct = default);
+        Task<IEnumerable<Employee>> GetAllAsync(int companyId, CancellationToken ct = default);
+
+        Task<bool> ExistsByEmployeeCodeAsync(string code, int companyId, CancellationToken ct = default);
+        Task<bool> ExistsByEmailAsync(string email, int companyId, CancellationToken ct = default);
+        Task<bool> ExistsByNationalIdAsync(string nationalId, int companyId, CancellationToken ct = default);
+        Task<IEnumerable<Employee>> GetByDepartmentIdAsync(Guid departmentId, int companyId, CancellationToken ct = default);
+        Task<IEnumerable<Employee>> GetByStatusAsync(EmployeeStatus status, int companyId, CancellationToken ct = default);
+        Task<bool> HasCircularReportingAsync(Guid employeeId, Guid managerId, int companyId, CancellationToken ct = default);
         Task AddAsync(Employee employee);
         Task UpdateAsync(Employee employee);
-        Task DeleteAsync(Guid id);
+        Task DeleteAsync(Guid id, int companyId, CancellationToken ct = default);
+
     }
 }

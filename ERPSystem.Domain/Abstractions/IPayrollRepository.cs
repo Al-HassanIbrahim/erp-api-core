@@ -9,14 +9,18 @@ namespace ERPSystem.Domain.Abstractions
 {
     public interface IPayrollRepository
     {
-        Task<Payroll?> GetByIdAsync(Guid id);
-        Task<Payroll?> GetByIdWithDetailsAsync(Guid id);
-        Task<IEnumerable<Payroll>> GetByEmployeeIdAsync(Guid employeeId);
-        Task<Payroll?> GetByEmployeeAndPeriodAsync(Guid employeeId, int month, int year);
-        Task<IEnumerable<Payroll>> GetByMonthAndYearAsync(int month, int year);
-        Task<bool> ExistsForEmployeeAndPeriodAsync(Guid employeeId, int month, int year);
+        Task<Payroll?> GetByIdAsync(Guid id, int companyId, CancellationToken ct = default);
+        Task<Payroll?> GetByIdWithDetailsAsync(Guid id, int companyId, CancellationToken ct = default);
+
+        Task<IEnumerable<Payroll>> GetByEmployeeIdAsync(Guid employeeId, int companyId, CancellationToken ct = default);
+        Task<Payroll?> GetByEmployeeAndPeriodAsync(Guid employeeId, int month, int year, int companyId, CancellationToken ct = default);
+
+        Task<IEnumerable<Payroll>> GetByMonthAndYearAsync(int month, int year, int companyId, CancellationToken ct = default);
+        Task<bool> ExistsForEmployeeAndPeriodAsync(Guid employeeId, int month, int year, int companyId, CancellationToken ct = default);
+
         Task AddAsync(Payroll payroll);
         Task UpdateAsync(Payroll payroll);
-        Task DeleteAsync(Guid id);
+
+        Task DeleteAsync(Guid id, int companyId, CancellationToken ct = default);
     }
 }

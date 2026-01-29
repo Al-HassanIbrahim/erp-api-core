@@ -10,8 +10,8 @@ namespace ERPSystem.Domain.Abstractions
 {
     public interface ILeaveBalanceRepository
     {
-        Task<LeaveBalance?> GetByEmployeeYearAndTypeAsync(Guid employeeId, int year, LeaveType type);
-        Task<IEnumerable<LeaveBalance>> GetByEmployeeAndYearAsync(Guid employeeId, int year);
+        Task<LeaveBalance?> GetByEmployeeYearAndTypeAsync(Guid employeeId, int year, LeaveType type, int companyId, CancellationToken ct = default);
+        Task<IEnumerable<LeaveBalance>> GetByEmployeeAndYearAsync(Guid employeeId, int year, int companyId, CancellationToken ct = default);
         Task AddAsync(LeaveBalance balance);
         Task UpdateAsync(LeaveBalance balance);
     }
