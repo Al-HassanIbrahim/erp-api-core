@@ -11,6 +11,7 @@ namespace ERPSystem.Application.Services.Core
 
         private const string SalesModuleCode = "SALES";
         private const string InventoryModuleCode = "INVENTORY";
+        private const string ContactModuleCode = "CONTACT";
 
         public ModuleAccessService(
             ICompanyModuleRepository companyModuleRepository,
@@ -34,6 +35,10 @@ namespace ERPSystem.Application.Services.Core
         {
             return await IsModuleEnabledAsync(_currentUser.CompanyId, InventoryModuleCode, cancellationToken);
         }
+        public async Task<bool> IsContactEnabledAsync(CancellationToken cancellationToken = default)
+        {
+            return await IsModuleEnabledAsync(_currentUser.CompanyId, ContactModuleCode, cancellationToken);
+        }
 
         public async Task EnsureSalesEnabledAsync(CancellationToken cancellationToken = default)
         {
@@ -45,6 +50,11 @@ namespace ERPSystem.Application.Services.Core
         {
             if (!await IsInventoryEnabledAsync(cancellationToken))
                 throw BusinessErrors.InventoryModuleNotEnabled();
+        }
+        public async Task EnsureContactEnabledAsync(CancellationToken cancellationToken = default)
+        {
+            if (!await IsContactEnabledAsync(cancellationToken))
+                throw BusinessErrors.ContactModuleNotEnabled();
         }
     }
 }
