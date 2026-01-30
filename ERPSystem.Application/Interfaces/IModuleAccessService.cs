@@ -13,9 +13,11 @@ using System.Threading.Tasks;
             Task<bool> IsSalesEnabledAsync(CancellationToken cancellationToken = default);
             Task<bool> IsInventoryEnabledAsync(CancellationToken cancellationToken = default);
             Task<bool> IsContactEnabledAsync(CancellationToken cancellationToken = default);
+            Task<bool> IsExpensesEnabledAsync(CancellationToken cancellationToken = default);
             Task EnsureSalesEnabledAsync(CancellationToken cancellationToken = default);
             Task EnsureInventoryEnabledAsync(CancellationToken cancellationToken = default);
             Task EnsureContactEnabledAsync(CancellationToken cancellationToken = default);
+            Task EnsureExpensesEnabledAsync(CancellationToken cancellationToken = default);
         }
     }
 

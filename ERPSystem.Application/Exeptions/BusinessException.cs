@@ -32,6 +32,8 @@ namespace ERPSystem.Application.Exceptions
 
         public static BusinessException ContactModuleNotEnabled() =>
            new("Contact_MODULE_DISABLED", "Contact module is not enabled for this company.", 403);
+        public static BusinessException ExpensesModuleNotEnabled() =>
+           new("EXPENSES_MODULE_NOT_ENABLED", "Expenses module is not enabled for this company.", 403);
 
         // Not Found
         public static BusinessException CustomerNotFound() =>
@@ -72,6 +74,26 @@ namespace ERPSystem.Application.Exceptions
 
         public static BusinessException AllocationExceedsBalance() =>
             new("ALLOCATION_EXCEEDS_BALANCE", "Allocation amount exceeds invoice balance.", 400);
+        public static BusinessException ExpenseNotFound() =>
+           new("EXPENSE_NOT_FOUND", "Expense not found.", 404);
+
+        public static BusinessException ExpenseCategoryNotFound() =>
+            new("EXPENSE_CATEGORY_NOT_FOUND", "Expense category not found.", 404);
+        public static BusinessException ExpenseCategoryInUse() =>
+           new("EXPENSE_CATEGORY_IN_USE", "Cannot delete category because it has associated expenses.", 400);
+
+        public static BusinessException DuplicateExpenseCategoryName() =>
+            new("DUPLICATE_EXPENSE_CATEGORY_NAME", "A category with this name already exists.", 400);
+
+        public static BusinessException InvalidExpenseStatus() =>
+            new("INVALID_EXPENSE_STATUS", "Invalid expense status. Use 'Paid' or 'Pending'.", 400);
+
+        public static BusinessException InvalidPaymentMethod() =>
+            new("INVALID_PAYMENT_METHOD", "Invalid payment method.", 400);
+
+        public static BusinessException InvalidTimeGrouping() =>
+            new("INVALID_TIME_GROUPING", "Invalid time grouping. Use 'Day', 'Week', or 'Month'.", 400);
+    
 
         // Authorization
         public static BusinessException Unauthorized(string message = "You do not have access to this resource.") =>

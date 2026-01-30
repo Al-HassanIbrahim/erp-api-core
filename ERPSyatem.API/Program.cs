@@ -2,6 +2,7 @@ using ERPSystem.Application.Interfaces;
 using ERPSystem.Application.Services.Hr;
 using ERPSystem.Application.Services.Contacts;
 using ERPSystem.Application.Services.Core;
+using ERPSystem.Application.Services.Expenses;
 using ERPSystem.Application.Services.Inventory;
 using ERPSystem.Application.Services.Products;
 using ERPSystem.Application.Services.Sales;
@@ -12,6 +13,7 @@ using ERPSystem.Infrastructure.Repositories;
 using ERPSystem.Infrastructure.Repositories.Hr;
 using ERPSystem.Infrastructure.Repositories.Contacts;
 using ERPSystem.Infrastructure.Repositories.Core;
+using ERPSystem.Infrastructure.Repositories.Expenses;
 using ERPSystem.Infrastructure.Repositories.Inventory;
 using ERPSystem.Infrastructure.Repositories.Sales;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -100,6 +102,13 @@ namespace ERPSyatem.API
            
             builder.Services.AddScoped<IContactService, ContactService>();
 
+            // Expenses
+            builder.Services.AddScoped<IExpenseRepository, ExpenseRepository>();
+            builder.Services.AddScoped<IExpenseCategoryRepository, ExpenseCategoryRepository>();
+            
+            builder.Services.AddScoped<IExpenseService, ExpenseService>();
+            builder.Services.AddScoped<IExpenseCategoryService, ExpenseCategoryService>();
+            builder.Services.AddScoped<IExpenseStatsService, ExpenseStatsService>();
 
             #region Swagger
             builder.Services.AddSwaggerGen(c =>
