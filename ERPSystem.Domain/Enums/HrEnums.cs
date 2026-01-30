@@ -76,13 +76,6 @@ namespace ERPSystem.Domain.Enums
             Paid = 3
         }
 
-        public enum PaymentMethod
-        {
-            BankTransfer = 1,
-            Cash = 2,
-            Check = 3
-        }
-
         public enum PayrollLineItemType
         {
             Allowance = 1,
