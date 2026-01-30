@@ -5,6 +5,7 @@ using ERPSystem.Domain.Entities.Products;
 using ERPSystem.Domain.Enums;
 ﻿using ERPSystem.Domain.Entities.Contacts;
 using ERPSystem.Domain.Entities.Core;
+using ERPSystem.Domain.Entities.Expenses;
 using ERPSystem.Domain.Entities.Inventory;
 using ERPSystem.Domain.Entities.Products;
 using ERPSystem.Domain.Entities.Sales;
@@ -68,6 +69,10 @@ namespace ERPSystem.Infrastructure.Data
 
         // Contacts
         public DbSet<Contact> Contacts => Set<Contact>();
+
+        // Expenses
+        public DbSet<ExpenseCategory> ExpenseCategories => Set<ExpenseCategory>();
+        public DbSet<Expense> Expenses => Set<Expense>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -325,6 +330,18 @@ namespace ERPSystem.Infrastructure.Data
 
             modelBuilder.Entity<SalesReturn>()
                 .HasIndex(e => new { e.CompanyId, e.ReturnNumber }).IsUnique();
+
+            // ExpenseCategory
+            modelBuilder.Entity<ExpenseCategory>()
+                .HasIndex(e => new { e.CompanyId, e.Name }).IsUnique();
+
+            // Expense
+            modelBuilder.Entity<Expense>()
+                .HasIndex(e => new { e.CompanyId, e.ExpenseDate });
+            modelBuilder.Entity<Expense>()
+                .HasIndex(e => new { e.CompanyId, e.ExpenseCategoryId });
+            modelBuilder.Entity<Expense>()
+                .Property(e => e.Amount).HasPrecision(18, 2);
         }
     }
 }
