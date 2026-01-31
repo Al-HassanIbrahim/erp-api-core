@@ -10,20 +10,20 @@ namespace ERPSystem.Application.Interfaces
 {
     public interface IEmployeeService
     {
-        Task<EmployeeDetailDto> CreateAsync(CreateEmployeeDto dto, string createdBy);
+        Task<EmployeeDetailDto> CreateAsync(CreateEmployeeDto dto, string createdBy, CancellationToken ct = default);
 
-        Task<EmployeeDetailDto> UpdateAsync(Guid id, UpdateEmployeeDto dto, string modifiedBy);
+        Task<EmployeeDetailDto> UpdateAsync(Guid id, UpdateEmployeeDto dto, string modifiedBy, CancellationToken ct = default);
 
-        Task UpdateStatusAsync(Guid id, UpdateEmployeeDto dto, string modifiedBy);
+        Task UpdateStatusAsync(Guid id, UpdateEmployeeDto dto, string modifiedBy, CancellationToken ct = default);
 
-        Task<EmployeeDetailDto?> GetByIdAsync(Guid id);
+        Task<EmployeeDetailDto?> GetByIdAsync(Guid id, CancellationToken ct = default);
 
-        Task<IEnumerable<EmployeeListDto>> GetAllAsync();
+        Task<IEnumerable<EmployeeListDto>> GetAllAsync(CancellationToken ct = default);
 
-        Task<IEnumerable<EmployeeListDto>> GetByDepartmentAsync(Guid departmentId);
+        Task<IEnumerable<EmployeeListDto>> GetByDepartmentAsync(Guid departmentId, CancellationToken ct = default);
 
-        Task<IEnumerable<EmployeeListDto>> GetByStatusAsync(EmployeeStatus status);
+        Task<IEnumerable<EmployeeListDto>> GetByStatusAsync(EmployeeStatus status, CancellationToken ct = default);
 
-        Task DeleteAsync(Guid id);
+        Task DeleteAsync(Guid id, CancellationToken ct = default);
     }
 }
