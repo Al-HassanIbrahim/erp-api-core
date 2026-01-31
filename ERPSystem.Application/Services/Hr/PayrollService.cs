@@ -18,19 +18,22 @@ namespace ERPSystem.Application.Services.Hr
         private readonly IAttendanceRepository _attendanceRepo;
         private readonly ILeaveRequestRepository _leaveRepo;
         private readonly ICurrentUserService _currentUser;
+        private readonly IModuleAccessService _moduleAccess;
 
         public PayrollService(
             IPayrollRepository payrollRepo,
             IEmployeeRepository employeeRepo,
             IAttendanceRepository attendanceRepo,
             ILeaveRequestRepository leaveRepo,
-            ICurrentUserService currentUser)
+            ICurrentUserService currentUser,
+            IModuleAccessService moduleAccess)
         {
             _payrollRepo = payrollRepo;
             _employeeRepo = employeeRepo;
             _attendanceRepo = attendanceRepo;
             _leaveRepo = leaveRepo;
             _currentUser = currentUser;
+            _moduleAccess = moduleAccess;
         }
 
         private async Task<Employee> GetValidEmployeeAsync(Guid employeeId)
@@ -41,8 +44,9 @@ namespace ERPSystem.Application.Services.Hr
             return emp;
         }
 
-        public async Task<PayrollBatchDto> GeneratePayrollAsync(GeneratePayrollDto dto, string generatedBy)
+        public async Task<PayrollBatchDto> GeneratePayrollAsync(GeneratePayrollDto dto, string generatedBy, CancellationToken ct = default)
         {
+            await _moduleAccess.EnsureHrAccessAsync(ct);
             if (dto.Month < 1 || dto.Month > 12)
                 throw new InvalidOperationException("Invalid month. Must be between 1 and 12");
 
@@ -123,8 +127,9 @@ namespace ERPSystem.Application.Services.Hr
         }
 
         public async Task<PayrollDetailDto> GenerateEmployeePayrollAsync(
-            Guid employeeId, int month, int year, string generatedBy)
+            Guid employeeId, int month, int year, string generatedBy, CancellationToken ct = default)
         {
+            await _moduleAccess.EnsureHrAccessAsync(ct);
             var employee = await GetValidEmployeeAsync(employeeId);
 
             if (await _payrollRepo.ExistsForEmployeeAndPeriodAsync(employeeId, month, year, _currentUser.CompanyId))
@@ -224,14 +229,16 @@ namespace ERPSystem.Application.Services.Hr
             return payroll;
         }
 
-        public async Task<PayrollDetailDto?> GetByIdAsync(Guid id)
+        public async Task<PayrollDetailDto?> GetByIdAsync(Guid id, CancellationToken ct = default)
         {
+            await _moduleAccess.EnsureHrAccessAsync(ct);
             var payroll = await _payrollRepo.GetByIdWithDetailsAsync(id, _currentUser.CompanyId);
             return payroll != null ? MapToDetailDto(payroll) : null;
         }
 
-        public async Task<IEnumerable<PayrollDto>> GetByEmployeeIdAsync(Guid employeeId)
+        public async Task<IEnumerable<PayrollDto>> GetByEmployeeIdAsync(Guid employeeId, CancellationToken ct = default)
         {
+            await _moduleAccess.EnsureHrAccessAsync(ct);
             // optional guard: ensure employee belongs to company
             await GetValidEmployeeAsync(employeeId);
 
@@ -239,14 +246,16 @@ namespace ERPSystem.Application.Services.Hr
             return payrolls.Select(MapToDto);
         }
 
-        public async Task<IEnumerable<PayrollDto>> GetByPeriodAsync(int month, int year)
+        public async Task<IEnumerable<PayrollDto>> GetByPeriodAsync(int month, int year,CancellationToken ct =default)
         {
+            await _moduleAccess.EnsureHrAccessAsync(ct);
             var payrolls = await _payrollRepo.GetByMonthAndYearAsync(month, year, _currentUser.CompanyId);
             return payrolls.Select(MapToDto);
         }
 
-        public async Task<PayrollDetailDto> UpdateAsync(Guid id, UpdatePayrollDto dto, string modifiedBy)
+        public async Task<PayrollDetailDto> UpdateAsync(Guid id, UpdatePayrollDto dto, string modifiedBy, CancellationToken ct = default)
         {
+            await _moduleAccess.EnsureHrAccessAsync(ct);
             var payroll = await _payrollRepo.GetByIdWithDetailsAsync(id, _currentUser.CompanyId);
             if (payroll == null)
                 throw new InvalidOperationException("Payroll not found");
@@ -311,8 +320,9 @@ namespace ERPSystem.Application.Services.Hr
             return MapToDetailDto(payroll);
         }
 
-        public async Task ProcessPayrollAsync(Guid id, string processedBy)
+        public async Task ProcessPayrollAsync(Guid id, string processedBy, CancellationToken ct = default)
         {
+            await _moduleAccess.EnsureHrAccessAsync(ct);
             var payroll = await _payrollRepo.GetByIdAsync(id, _currentUser.CompanyId);
             if (payroll == null)
                 throw new InvalidOperationException("Payroll not found");
@@ -330,8 +340,9 @@ namespace ERPSystem.Application.Services.Hr
             await _payrollRepo.UpdateAsync(payroll);
         }
 
-        public async Task MarkAsPaidAsync(Guid id, MarkPaidDto dto, string paidBy)
+        public async Task MarkAsPaidAsync(Guid id, MarkPaidDto dto, string paidBy, CancellationToken ct = default)
         {
+            await _moduleAccess.EnsureHrAccessAsync(ct);
             var payroll = await _payrollRepo.GetByIdAsync(id, _currentUser.CompanyId);
             if (payroll == null)
                 throw new InvalidOperationException("Payroll not found");
@@ -348,8 +359,9 @@ namespace ERPSystem.Application.Services.Hr
             await _payrollRepo.UpdateAsync(payroll);
         }
 
-        public async Task RevertToDraftAsync(Guid id, string modifiedBy)
+        public async Task RevertToDraftAsync(Guid id, string modifiedBy, CancellationToken ct = default)
         {
+            await _moduleAccess.EnsureHrAccessAsync(ct);
             var payroll = await _payrollRepo.GetByIdAsync(id, _currentUser.CompanyId);
             if (payroll == null)
                 throw new InvalidOperationException("Payroll not found");
@@ -364,8 +376,9 @@ namespace ERPSystem.Application.Services.Hr
             await _payrollRepo.UpdateAsync(payroll);
         }
 
-        public async Task DeleteAsync(Guid id)
+        public async Task DeleteAsync(Guid id, CancellationToken ct = default)
         {
+            await _moduleAccess.EnsureHrAccessAsync(ct);
             var payroll = await _payrollRepo.GetByIdAsync(id, _currentUser.CompanyId);
             if (payroll == null)
                 throw new InvalidOperationException("Payroll not found");
@@ -376,8 +389,9 @@ namespace ERPSystem.Application.Services.Hr
             await _payrollRepo.DeleteAsync(id, _currentUser.CompanyId);
         }
 
-        public async Task<PayrollSummaryDto> GetPeriodSummaryAsync(int month, int year)
+        public async Task<PayrollSummaryDto> GetPeriodSummaryAsync(int month, int year, CancellationToken ct = default)
         {
+            await _moduleAccess.EnsureHrAccessAsync(ct);
             var payrolls = await _payrollRepo.GetByMonthAndYearAsync(month, year, _currentUser.CompanyId);
 
             return new PayrollSummaryDto
@@ -395,8 +409,9 @@ namespace ERPSystem.Application.Services.Hr
             };
         }
 
-        public async Task<PayrollDetailDto> RecalculateAsync(Guid id, string modifiedBy)
+        public async Task<PayrollDetailDto> RecalculateAsync(Guid id, string modifiedBy, CancellationToken ct = default)
         {
+            await _moduleAccess.EnsureHrAccessAsync(ct);
             var payroll = await _payrollRepo.GetByIdWithDetailsAsync(id, _currentUser.CompanyId);
             if (payroll == null)
                 throw new InvalidOperationException("Payroll not found");

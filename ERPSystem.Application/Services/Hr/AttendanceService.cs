@@ -17,6 +17,7 @@ namespace ERPSystem.Application.Services.Hr
         private readonly IAttendanceRepository _attendanceRepo;
         private readonly IEmployeeRepository _employeeRepo;
         private readonly ICurrentUserService _currentUser;
+        private readonly IModuleAccessService _moduleAccess;
 
         private readonly TimeOnly EXPECTED_CHECK_IN = new TimeOnly(9, 0);  // 9:00 AM
         private readonly TimeOnly EXPECTED_CHECK_OUT = new TimeOnly(17, 0); // 5:00 PM
@@ -26,11 +27,13 @@ namespace ERPSystem.Application.Services.Hr
         public AttendanceService(
             IAttendanceRepository attendanceRepo,
             IEmployeeRepository employeeRepo,
-            ICurrentUserService currentUser)
+            ICurrentUserService currentUser,
+            IModuleAccessService moduleAccess)
         {
             _attendanceRepo = attendanceRepo;
             _employeeRepo = employeeRepo;
             _currentUser = currentUser;
+            _moduleAccess = moduleAccess;
         }
 
         // ================== GUARDS ==================
@@ -52,8 +55,9 @@ namespace ERPSystem.Application.Services.Hr
 
         // ================== CHECK IN ==================
 
-        public async Task<AttendanceDto> CheckInAsync(CheckInDto dto, string createdBy)
+        public async Task<AttendanceDto> CheckInAsync(CheckInDto dto, string createdBy, CancellationToken ct = default)
         {
+            await _moduleAccess.EnsureHrAccessAsync(ct);
             var employee = await GetValidEmployeeAsync(dto.EmployeeId);
             EnsureEmployeeActive(employee);
 
@@ -92,8 +96,9 @@ namespace ERPSystem.Application.Services.Hr
 
         // ================== CHECK OUT ==================
 
-        public async Task<AttendanceDto> CheckOutAsync(CheckOutDto dto, string modifiedBy)
+        public async Task<AttendanceDto> CheckOutAsync(CheckOutDto dto, string modifiedBy, CancellationToken ct = default)
         {
+            await _moduleAccess.EnsureHrAccessAsync(ct);
             var employee = await GetValidEmployeeAsync(dto.EmployeeId);
 
             var date = DateOnly.FromDateTime(dto.CheckOutTime ?? DateTime.Now);
@@ -130,8 +135,9 @@ namespace ERPSystem.Application.Services.Hr
 
         // ================== MANUAL ENTRY ==================
 
-        public async Task<AttendanceDto> CreateManualEntryAsync(ManualAttendanceDto dto, string createdBy)
+        public async Task<AttendanceDto> CreateManualEntryAsync(ManualAttendanceDto dto, string createdBy, CancellationToken ct = default)
         {
+            await _moduleAccess.EnsureHrAccessAsync(ct);
             var employee = await GetValidEmployeeAsync(dto.EmployeeId);
 
             if (dto.Date > DateOnly.FromDateTime(DateTime.Today))
@@ -174,8 +180,9 @@ namespace ERPSystem.Application.Services.Hr
 
         // ================== UPDATE ==================
 
-        public async Task<AttendanceDto> UpdateAsync(Guid id, UpdateAttendanceDto dto, string modifiedBy)
+        public async Task<AttendanceDto> UpdateAsync(Guid id, UpdateAttendanceDto dto, string modifiedBy, CancellationToken ct = default)
         {
+            await _moduleAccess.EnsureHrAccessAsync(ct);
             // company-scoped
             var attendance = await _attendanceRepo.GetByIdAsync(id, _currentUser.CompanyId);
             if (attendance == null)
@@ -224,8 +231,9 @@ namespace ERPSystem.Application.Services.Hr
 
         // ================== SUMMARY ==================
 
-        public async Task<AttendanceSummaryDto> GetSummaryAsync(Guid employeeId, int month, int year)
+        public async Task<AttendanceSummaryDto> GetSummaryAsync(Guid employeeId, int month, int year, CancellationToken ct = default)
         {
+            await _moduleAccess.EnsureHrAccessAsync(ct);
             var employee = await GetValidEmployeeAsync(employeeId);
 
             var startDate = new DateOnly(year, month, 1);

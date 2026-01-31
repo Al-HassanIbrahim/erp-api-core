@@ -20,17 +20,20 @@ namespace ERPSystem.Application.Services.Hr
         private readonly IDepartmentRepository _departmentRepo;
         private readonly IPositionRepository _positionRepo;
         private readonly ICurrentUserService _cuurentUser;
+        private readonly IModuleAccessService _moduleAccess;
 
         public EmployeeService(
             IEmployeeRepository employeeRepo,
             IDepartmentRepository departmentRepo,
             IPositionRepository positionRepo,
-            ICurrentUserService currentUser)
+            ICurrentUserService currentUser,
+            IModuleAccessService moduleAccess)
         {
             _employeeRepo = employeeRepo;
             _departmentRepo = departmentRepo;
             _positionRepo = positionRepo;
             _cuurentUser = currentUser;
+            _moduleAccess = moduleAccess;
         }
 
         // ================== GUARDS ==================
@@ -77,8 +80,9 @@ namespace ERPSystem.Application.Services.Hr
 
         // ================== CREATE ==================
 
-        public async Task<EmployeeDetailDto> CreateAsync(CreateEmployeeDto dto, string createdBy)
+        public async Task<EmployeeDetailDto> CreateAsync(CreateEmployeeDto dto, string createdBy, CancellationToken ct = default)
         {
+            await _moduleAccess.EnsureHrAccessAsync(ct);
             if (await _employeeRepo.ExistsByEmployeeCodeAsync(dto.EmployeeCode, _cuurentUser.CompanyId))
                 throw new InvalidOperationException($"Employee code '{dto.EmployeeCode}' already exists");
 
@@ -164,8 +168,9 @@ namespace ERPSystem.Application.Services.Hr
 
         // ================== UPDATE ==================
 
-        public async Task<EmployeeDetailDto> UpdateAsync(Guid id, UpdateEmployeeDto dto, string modifiedBy)
+        public async Task<EmployeeDetailDto> UpdateAsync(Guid id, UpdateEmployeeDto dto, string modifiedBy, CancellationToken ct = default)
         {
+            await _moduleAccess.EnsureHrAccessAsync(ct);
             var employee = await GetValidEmployeeAsync(id);
 
             // Email uniqueness if changed (company-scoped)
@@ -248,8 +253,9 @@ namespace ERPSystem.Application.Services.Hr
 
         // ================== UPDATE STATUS ==================
 
-        public async Task UpdateStatusAsync(Guid id, UpdateEmployeeDto dto, string modifiedBy)
+        public async Task UpdateStatusAsync(Guid id, UpdateEmployeeDto dto, string modifiedBy, CancellationToken ct = default)
         {
+            await _moduleAccess.EnsureHrAccessAsync(ct);
             var employee = await GetValidEmployeeAsync(id);
 
             if (employee.Status != EmployeeStatus.Active && dto.Status == EmployeeStatus.Inactive)
@@ -274,20 +280,23 @@ namespace ERPSystem.Application.Services.Hr
 
         // ================== READ ==================
 
-        public async Task<EmployeeDetailDto?> GetByIdAsync(Guid id)
+        public async Task<EmployeeDetailDto?> GetByIdAsync(Guid id, CancellationToken ct = default)
         {
+            await _moduleAccess.EnsureHrAccessAsync(ct);
             var employee = await _employeeRepo.GetByIdWithDetailsAsync(id, _cuurentUser.CompanyId);
             return employee != null ? MapToDetailDto(employee) : null;
         }
 
-        public async Task<IEnumerable<EmployeeListDto>> GetAllAsync()
+        public async Task<IEnumerable<EmployeeListDto>> GetAllAsync(CancellationToken ct = default)
         {
+            await _moduleAccess.EnsureHrAccessAsync(ct);
             var employees = await _employeeRepo.GetAllAsync(_cuurentUser.CompanyId);
             return employees.Select(MapToListDto);
         }
 
-        public async Task<IEnumerable<EmployeeListDto>> GetByDepartmentAsync(Guid departmentId)
+        public async Task<IEnumerable<EmployeeListDto>> GetByDepartmentAsync(Guid departmentId, CancellationToken ct = default)
         {
+            await _moduleAccess.EnsureHrAccessAsync(ct);
             // optional: validate dept in same company to avoid probing
             await GetValidDepartmentAsync(departmentId);
 
@@ -295,16 +304,18 @@ namespace ERPSystem.Application.Services.Hr
             return employees.Select(MapToListDto);
         }
 
-        public async Task<IEnumerable<EmployeeListDto>> GetByStatusAsync(EmployeeStatus status)
+        public async Task<IEnumerable<EmployeeListDto>> GetByStatusAsync(EmployeeStatus status,CancellationToken ct = default)
         {
+            await _moduleAccess.EnsureHrAccessAsync(ct);
             var employees = await _employeeRepo.GetByStatusAsync(status, _cuurentUser.CompanyId);
             return employees.Select(MapToListDto);
         }
 
         // ================== DELETE ==================
 
-        public async Task DeleteAsync(Guid id)
+        public async Task DeleteAsync(Guid id, CancellationToken ct = default)
         {
+            await _moduleAccess.EnsureHrAccessAsync(ct);
             var employee = await GetValidEmployeeWithDetailsAsync(id);
 
             if (employee.DirectReports.Any())

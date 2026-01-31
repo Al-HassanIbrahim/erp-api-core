@@ -19,6 +19,7 @@ namespace ERPSystem.Application.Services.Hr
         private readonly ILeaveBalanceRepository _balanceRepo;
         private readonly IEmployeeRepository _employeeRepo;
         private readonly ICurrentUserService _currentUser;
+        private readonly IModuleAccessService _moduleAccess;
 
         private const int MIN_NOTICE_DAYS = 2;
         private const int SICK_LEAVE_CERTIFICATE_THRESHOLD = 3;
@@ -27,12 +28,14 @@ namespace ERPSystem.Application.Services.Hr
             ILeaveRequestRepository leaveRepo,
             ILeaveBalanceRepository balanceRepo,
             IEmployeeRepository employeeRepo,
-            ICurrentUserService currentUser)
+            ICurrentUserService currentUser,
+            IModuleAccessService moduleAccess)
         {
             _leaveRepo = leaveRepo;
             _balanceRepo = balanceRepo;
             _employeeRepo = employeeRepo;
             _currentUser = currentUser;
+            _moduleAccess = moduleAccess;
         }
 
         // ================== GUARDS ==================
@@ -53,8 +56,9 @@ namespace ERPSystem.Application.Services.Hr
 
         // ================== CREATE ==================
 
-        public async Task<LeaveRequestDto> CreateAsync(CreateLeaveRequestDto dto)
+        public async Task<LeaveRequestDto> CreateAsync(CreateLeaveRequestDto dto,CancellationToken ct = default)
         {
+            await _moduleAccess.EnsureHrAccessAsync(ct);
             var employee = await GetValidEmployeeAsync(dto.EmployeeId);
             EnsureEmployeeActive(employee);
 
@@ -143,8 +147,9 @@ namespace ERPSystem.Application.Services.Hr
 
         // ================== UPDATE ==================
 
-        public async Task<LeaveRequestDto> UpdateAsync(Guid id, UpdateLeaveRequestDto dto)
+        public async Task<LeaveRequestDto> UpdateAsync(Guid id, UpdateLeaveRequestDto dto,CancellationToken ct = default)
         {
+            await _moduleAccess.EnsureHrAccessAsync(ct);
             var leaveRequest = await _leaveRepo.GetByIdWithDetailsAsync(id, _currentUser.CompanyId);
             if (leaveRequest == null)
                 throw new InvalidOperationException("Leave request not found");
@@ -220,8 +225,9 @@ namespace ERPSystem.Application.Services.Hr
 
         // ================== APPROVE ==================
 
-        public async Task ApproveAsync(Guid id, ApproveLeaveDto dto, string approvedBy)
+        public async Task ApproveAsync(Guid id, ApproveLeaveDto dto, string approvedBy,CancellationToken ct = default)
         {
+            await _moduleAccess.EnsureHrAccessAsync(ct);
             var leaveRequest = await _leaveRepo.GetByIdWithDetailsAsync(id, _currentUser.CompanyId);
             if (leaveRequest == null)
                 throw new InvalidOperationException("Leave request not found");
@@ -253,8 +259,9 @@ namespace ERPSystem.Application.Services.Hr
 
         // ================== REJECT ==================
 
-        public async Task RejectAsync(Guid id, RejectLeaveDto dto, string rejectedBy)
+        public async Task RejectAsync(Guid id, RejectLeaveDto dto, string rejectedBy,CancellationToken ct =default)
         {
+            await _moduleAccess.EnsureHrAccessAsync(ct);
             var leaveRequest = await _leaveRepo.GetByIdAsync(id, _currentUser.CompanyId);
             if (leaveRequest == null)
                 throw new InvalidOperationException("Leave request not found");
@@ -288,8 +295,9 @@ namespace ERPSystem.Application.Services.Hr
 
         // ================== CANCEL ==================
 
-        public async Task CancelAsync(Guid id, string reason, string cancelledBy)
+        public async Task CancelAsync(Guid id, string reason, string cancelledBy, CancellationToken ct = default)
         {
+            await _moduleAccess.EnsureHrAccessAsync(ct);
             var leaveRequest = await _leaveRepo.GetByIdAsync(id, _currentUser.CompanyId);
             if (leaveRequest == null)
                 throw new InvalidOperationException("Leave request not found");
@@ -326,28 +334,32 @@ namespace ERPSystem.Application.Services.Hr
 
         // ================== READ ==================
 
-        public async Task<LeaveRequestDetailDto?> GetByIdAsync(Guid id)
+        public async Task<LeaveRequestDetailDto?> GetByIdAsync(Guid id, CancellationToken ct = default)
         {
+            await _moduleAccess.EnsureHrAccessAsync(ct);
             var leaveRequest = await _leaveRepo.GetByIdWithDetailsAsync(id, _currentUser.CompanyId);
             return leaveRequest != null ? MapToDetailDto(leaveRequest) : null;
         }
 
-        public async Task<IEnumerable<LeaveRequestDto>> GetByEmployeeIdAsync(Guid employeeId)
+        public async Task<IEnumerable<LeaveRequestDto>> GetByEmployeeIdAsync(Guid employeeId, CancellationToken ct =default)
         {
+            await _moduleAccess.EnsureHrAccessAsync(ct);
             var employee = await GetValidEmployeeAsync(employeeId);
 
             var leaveRequests = await _leaveRepo.GetByEmployeeIdAsync(employeeId, _currentUser.CompanyId);
             return leaveRequests.Select(lr => MapToDto(lr, employee));
         }
 
-        public async Task<IEnumerable<LeaveRequestDto>> GetPendingAsync()
+        public async Task<IEnumerable<LeaveRequestDto>> GetPendingAsync(CancellationToken ct = default)
         {
+            await _moduleAccess.EnsureHrAccessAsync(ct);
             var leaveRequests = await _leaveRepo.GetPendingAsync(_currentUser.CompanyId);
             return leaveRequests.Select(lr => MapToDto(lr, lr.Employee));
         }
 
-        public async Task<LeaveBalanceDto> GetBalanceAsync(Guid employeeId, int year)
+        public async Task<LeaveBalanceDto> GetBalanceAsync(Guid employeeId, int year,CancellationToken ct =default)
         {
+            await _moduleAccess.EnsureHrAccessAsync(ct);
             var employee = await GetValidEmployeeAsync(employeeId);
 
             var balances = await _balanceRepo.GetByEmployeeAndYearAsync(employeeId, year, _currentUser.CompanyId);
@@ -393,8 +405,10 @@ namespace ERPSystem.Application.Services.Hr
             Guid employeeId,
             DateOnly? startDate = null,
             DateOnly? endDate = null,
-            LeaveType? leaveType = null)
+            LeaveType? leaveType = null,
+            CancellationToken ct =default)
         {
+            await _moduleAccess.EnsureHrAccessAsync(ct);
             var employee = await GetValidEmployeeAsync(employeeId);
 
             var allLeaves = await _leaveRepo.GetByEmployeeIdAsync(employeeId, _currentUser.CompanyId);
@@ -415,8 +429,9 @@ namespace ERPSystem.Application.Services.Hr
 
         // ================== DELETE ==================
 
-        public async Task DeleteAsync(Guid id)
+        public async Task DeleteAsync(Guid id, CancellationToken ct =default)
         {
+            await _moduleAccess.EnsureHrAccessAsync(ct);
             var leaveRequest = await _leaveRepo.GetByIdAsync(id, _currentUser.CompanyId);
             if (leaveRequest == null)
                 throw new InvalidOperationException("Leave request not found");
