@@ -18,6 +18,7 @@ using System.Threading.Tasks;
             Task EnsureInventoryEnabledAsync(CancellationToken cancellationToken = default);
             Task EnsureContactEnabledAsync(CancellationToken cancellationToken = default);
             Task EnsureExpensesEnabledAsync(CancellationToken cancellationToken = default);
-        }
+            Task EnsureHrAccessAsync(CancellationToken ct = default);
+    }
     }
 
