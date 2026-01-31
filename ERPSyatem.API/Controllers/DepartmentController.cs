@@ -32,6 +32,7 @@ namespace ERPSyatem.API.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<DepartmentDto>>> GetAll(CancellationToken ct)
         {
+
             var departments = await _departmentRepo.GetAllAsync(_currentUser.CompanyId, ct);
             return Ok(departments.Select(MapToDto));
         }

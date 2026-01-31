@@ -24,9 +24,9 @@ namespace ERPSyatem.API.Controllers
         /// </summary>
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<EmployeeListDto>), 200)]
-        public async Task<ActionResult<IEnumerable<EmployeeListDto>>> GetAll()
+        public async Task<ActionResult<IEnumerable<EmployeeListDto>>> GetAll(CancellationToken ct)
         {
-            var employees = await _employeeService.GetAllAsync();
+            var employees = await _employeeService.GetAllAsync(ct);
             return Ok(employees);
         }
 
@@ -36,9 +36,9 @@ namespace ERPSyatem.API.Controllers
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(EmployeeDetailDto), 200)]
         [ProducesResponseType(404)]
-        public async Task<ActionResult<EmployeeDetailDto>> GetById(Guid id)
+        public async Task<ActionResult<EmployeeDetailDto>> GetById(Guid id, CancellationToken ct)
         {
-            var employee = await _employeeService.GetByIdAsync(id);
+            var employee = await _employeeService.GetByIdAsync(id,ct);
             if (employee == null)
                 return NotFound(new { error = "Employee not found" });
 
@@ -50,9 +50,9 @@ namespace ERPSyatem.API.Controllers
         /// </summary>
         [HttpGet("department/{departmentId}")]
         [ProducesResponseType(typeof(IEnumerable<EmployeeListDto>), 200)]
-        public async Task<ActionResult<IEnumerable<EmployeeListDto>>> GetByDepartment(Guid departmentId)
+        public async Task<ActionResult<IEnumerable<EmployeeListDto>>> GetByDepartment(Guid departmentId,CancellationToken ct)
         {
-            var employees = await _employeeService.GetByDepartmentAsync(departmentId);
+            var employees = await _employeeService.GetByDepartmentAsync(departmentId,ct);
             return Ok(employees);
         }
 
@@ -61,9 +61,9 @@ namespace ERPSyatem.API.Controllers
         /// </summary>
         [HttpGet("status/{status}")]
         [ProducesResponseType(typeof(IEnumerable<EmployeeListDto>), 200)]
-        public async Task<ActionResult<IEnumerable<EmployeeListDto>>> GetByStatus(EmployeeStatus status)
+        public async Task<ActionResult<IEnumerable<EmployeeListDto>>> GetByStatus(EmployeeStatus status,CancellationToken ct)
         {
-            var employees = await _employeeService.GetByStatusAsync(status);
+            var employees = await _employeeService.GetByStatusAsync(status,ct);
             return Ok(employees);
         }
 
@@ -73,12 +73,12 @@ namespace ERPSyatem.API.Controllers
         [HttpPost]
         [ProducesResponseType(typeof(EmployeeDetailDto), 201)]
         [ProducesResponseType(400)]
-        public async Task<ActionResult<EmployeeDetailDto>> Create([FromBody] CreateEmployeeDto dto)
+        public async Task<ActionResult<EmployeeDetailDto>> Create([FromBody] CreateEmployeeDto dto,CancellationToken ct)
         {
             try
             {
                 var createdBy = User.Identity?.Name ?? "System";
-                var employee = await _employeeService.CreateAsync(dto, createdBy);
+                var employee = await _employeeService.CreateAsync(dto, createdBy,ct);
                 return CreatedAtAction(nameof(GetById), new { id = employee.Id }, employee);
             }
             catch (InvalidOperationException ex)
@@ -95,12 +95,12 @@ namespace ERPSyatem.API.Controllers
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
         public async Task<ActionResult<EmployeeDetailDto>> Update(
-            Guid id, [FromBody] UpdateEmployeeDto dto)
+            Guid id, [FromBody] UpdateEmployeeDto dto,CancellationToken ct)
         {
             try
             {
                 var modifiedBy = User.Identity?.Name ?? "System";
-                var employee = await _employeeService.UpdateAsync(id, dto, modifiedBy);
+                var employee = await _employeeService.UpdateAsync(id, dto, modifiedBy,ct);
                 return Ok(employee);
             }
             catch (InvalidOperationException ex)
@@ -117,7 +117,7 @@ namespace ERPSyatem.API.Controllers
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
         public async Task<ActionResult> UpdateStatus(
-            Guid id, [FromBody] UpdateEmployeeDto dto)
+            Guid id, [FromBody] UpdateEmployeeDto dto,CancellationToken ct)
         {
             try
             {
@@ -138,11 +138,11 @@ namespace ERPSyatem.API.Controllers
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
-        public async Task<ActionResult> Delete(Guid id)
+        public async Task<ActionResult> Delete(Guid id, CancellationToken ct)
         {
             try
             {
-                await _employeeService.DeleteAsync(id);
+                await _employeeService.DeleteAsync(id, ct);
                 return NoContent();
             }
             catch (InvalidOperationException ex)

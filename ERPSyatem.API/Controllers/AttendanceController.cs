@@ -25,12 +25,12 @@ namespace ERPSyatem.API.Controllers
         [HttpPost("checkin")]
         [ProducesResponseType(typeof(AttendanceDto), 200)]
         [ProducesResponseType(400)]
-        public async Task<ActionResult<AttendanceDto>> CheckIn([FromBody] CheckInDto dto)
+        public async Task<ActionResult<AttendanceDto>> CheckIn([FromBody] CheckInDto dto, CancellationToken ct)
         {
             try
             {
                 var createdBy = User.Identity?.Name ?? "System";
-                var attendance = await _attendanceService.CheckInAsync(dto, createdBy);
+                var attendance = await _attendanceService.CheckInAsync(dto, createdBy,ct);
                 return Ok(attendance);
             }
             catch (InvalidOperationException ex)
@@ -45,12 +45,12 @@ namespace ERPSyatem.API.Controllers
         [HttpPost("checkout")]
         [ProducesResponseType(typeof(AttendanceDto), 200)]
         [ProducesResponseType(400)]
-        public async Task<ActionResult<AttendanceDto>> CheckOut([FromBody] CheckOutDto dto)
+        public async Task<ActionResult<AttendanceDto>> CheckOut([FromBody] CheckOutDto dto, CancellationToken ct)
         {
             try
             {
                 var modifiedBy = User.Identity?.Name ?? "System";
-                var attendance = await _attendanceService.CheckOutAsync(dto, modifiedBy);
+                var attendance = await _attendanceService.CheckOutAsync(dto, modifiedBy,ct);
                 return Ok(attendance);
             }
             catch (InvalidOperationException ex)
@@ -65,12 +65,12 @@ namespace ERPSyatem.API.Controllers
         [HttpPost("manual")]
         [ProducesResponseType(typeof(AttendanceDto), 200)]
         [ProducesResponseType(400)]
-        public async Task<ActionResult<AttendanceDto>> CreateManual([FromBody] ManualAttendanceDto dto)
+        public async Task<ActionResult<AttendanceDto>> CreateManual([FromBody] ManualAttendanceDto dto, CancellationToken ct)
         {
             try
             {
                 var createdBy = User.Identity?.Name ?? "System";
-                var attendance = await _attendanceService.CreateManualEntryAsync(dto, createdBy);
+                var attendance = await _attendanceService.CreateManualEntryAsync(dto, createdBy, ct);
                 return Ok(attendance);
             }
             catch (InvalidOperationException ex)
@@ -87,12 +87,12 @@ namespace ERPSyatem.API.Controllers
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
         public async Task<ActionResult<AttendanceDto>> Update(
-            Guid id, [FromBody] UpdateAttendanceDto dto)
+            Guid id, [FromBody] UpdateAttendanceDto dto, CancellationToken ct)
         {
             try
             {
                 var modifiedBy = User.Identity?.Name ?? "System";
-                var attendance = await _attendanceService.UpdateAsync(id, dto, modifiedBy);
+                var attendance = await _attendanceService.UpdateAsync(id, dto, modifiedBy,ct);
                 return Ok(attendance);
             }
             catch (InvalidOperationException ex)
@@ -108,11 +108,11 @@ namespace ERPSyatem.API.Controllers
         [ProducesResponseType(typeof(AttendanceSummaryDto), 200)]
         [ProducesResponseType(400)]
         public async Task<ActionResult<AttendanceSummaryDto>> GetSummary(
-            Guid employeeId, int month, int year)
+            Guid employeeId, int month, int year, CancellationToken ct)
         {
             try
             {
-                var summary = await _attendanceService.GetSummaryAsync(employeeId, month, year);
+                var summary = await _attendanceService.GetSummaryAsync(employeeId, month, year, ct);
                 return Ok(summary);
             }
             catch (InvalidOperationException ex)

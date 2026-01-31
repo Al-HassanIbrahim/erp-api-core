@@ -24,11 +24,11 @@ namespace ERPSyatem.API.Controllers
         [HttpPost]
         [ProducesResponseType(typeof(LeaveRequestDto), 200)]
         [ProducesResponseType(400)]
-        public async Task<ActionResult<LeaveRequestDto>> Create([FromBody] CreateLeaveRequestDto dto)
+        public async Task<ActionResult<LeaveRequestDto>> Create([FromBody] CreateLeaveRequestDto dto,CancellationToken ct)
         {
             try
             {
-                var leave = await _leaveService.CreateAsync(dto);
+                var leave = await _leaveService.CreateAsync(dto,ct);
                 return Ok(leave);
             }
             catch (InvalidOperationException ex)
@@ -43,9 +43,9 @@ namespace ERPSyatem.API.Controllers
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(LeaveRequestDetailDto), 200)]
         [ProducesResponseType(404)]
-        public async Task<ActionResult<LeaveRequestDetailDto>> GetById(Guid id)
+        public async Task<ActionResult<LeaveRequestDetailDto>> GetById(Guid id,CancellationToken ct)
         {
-            var leave = await _leaveService.GetByIdAsync(id);
+            var leave = await _leaveService.GetByIdAsync(id,ct);
             if (leave == null)
                 return NotFound(new { error = "Leave request not found" });
 
@@ -57,11 +57,11 @@ namespace ERPSyatem.API.Controllers
         /// </summary>
         [HttpGet("employee/{employeeId}")]
         [ProducesResponseType(typeof(IEnumerable<LeaveRequestDto>), 200)]
-        public async Task<ActionResult<IEnumerable<LeaveRequestDto>>> GetByEmployee(Guid employeeId)
+        public async Task<ActionResult<IEnumerable<LeaveRequestDto>>> GetByEmployee(Guid employeeId,CancellationToken ct)
         {
             try
             {
-                var leaves = await _leaveService.GetByEmployeeIdAsync(employeeId);
+                var leaves = await _leaveService.GetByEmployeeIdAsync(employeeId,ct);
                 return Ok(leaves);
             }
             catch (InvalidOperationException ex)
@@ -75,9 +75,9 @@ namespace ERPSyatem.API.Controllers
         /// </summary>
         [HttpGet("pending")]
         [ProducesResponseType(typeof(IEnumerable<LeaveRequestDto>), 200)]
-        public async Task<ActionResult<IEnumerable<LeaveRequestDto>>> GetPending()
+        public async Task<ActionResult<IEnumerable<LeaveRequestDto>>> GetPending(CancellationToken ct)
         {
-            var leaves = await _leaveService.GetPendingAsync();
+            var leaves = await _leaveService.GetPendingAsync(ct);
             return Ok(leaves);
         }
 
@@ -88,12 +88,12 @@ namespace ERPSyatem.API.Controllers
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
-        public async Task<ActionResult> Approve(Guid id, [FromBody] ApproveLeaveDto dto)
+        public async Task<ActionResult> Approve(Guid id, [FromBody] ApproveLeaveDto dto, CancellationToken ct)
         {
             try
             {
                 var approvedBy = User.Identity?.Name ?? "System";
-                await _leaveService.ApproveAsync(id, dto, approvedBy);
+                await _leaveService.ApproveAsync(id, dto, approvedBy,ct);
                 return NoContent();
             }
             catch (InvalidOperationException ex)
@@ -109,12 +109,12 @@ namespace ERPSyatem.API.Controllers
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
-        public async Task<ActionResult> Reject(Guid id, [FromBody] RejectLeaveDto dto)
+        public async Task<ActionResult> Reject(Guid id, [FromBody] RejectLeaveDto dto, CancellationToken ct)
         {
             try
             {
                 var rejectedBy = User.Identity?.Name ?? "System";
-                await _leaveService.RejectAsync(id, dto, rejectedBy);
+                await _leaveService.RejectAsync(id, dto, rejectedBy, ct);
                 return NoContent();
             }
             catch (InvalidOperationException ex)
@@ -130,12 +130,12 @@ namespace ERPSyatem.API.Controllers
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
-        public async Task<ActionResult> Cancel(Guid id, [FromBody] CancelLeaveDto dto)
+        public async Task<ActionResult> Cancel(Guid id, [FromBody] CancelLeaveDto dto, CancellationToken ct)
         {
             try
             {
                 var cancelledBy = User.Identity?.Name ?? "System";
-                await _leaveService.CancelAsync(id, dto.Reason, cancelledBy);
+                await _leaveService.CancelAsync(id, dto.Reason, cancelledBy, ct);
                 return NoContent();
             }
             catch (InvalidOperationException ex)
@@ -150,11 +150,11 @@ namespace ERPSyatem.API.Controllers
         [HttpGet("balance/{employeeId}/{year}")]
         [ProducesResponseType(typeof(LeaveBalanceDto), 200)]
         [ProducesResponseType(400)]
-        public async Task<ActionResult<LeaveBalanceDto>> GetBalance(Guid employeeId, int year)
+        public async Task<ActionResult<LeaveBalanceDto>> GetBalance(Guid employeeId, int year, CancellationToken ct)
         {
             try
             {
-                var balance = await _leaveService.GetBalanceAsync(employeeId, year);
+                var balance = await _leaveService.GetBalanceAsync(employeeId, year,ct);
                 return Ok(balance);
             }
             catch (InvalidOperationException ex)
@@ -170,11 +170,11 @@ namespace ERPSyatem.API.Controllers
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
-        public async Task<ActionResult> Delete(Guid id)
+        public async Task<ActionResult> Delete(Guid id, CancellationToken ct)
         {
             try
             {
-                await _leaveService.DeleteAsync(id);
+                await _leaveService.DeleteAsync(id,ct);
                 return NoContent();
             }
             catch (InvalidOperationException ex)
