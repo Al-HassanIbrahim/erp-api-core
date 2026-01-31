@@ -59,10 +59,11 @@ namespace ERPSystem.Application.Services.Core
                 throw BusinessErrors.InventoryModuleNotEnabled();
         }
 
-        public async Task EnsureHrEnabledAsync(CancellationToken ct = default)
+        public async Task EnsureHrAccessAsync(CancellationToken ct = default)
         {
             if (!await IsHrEnabledAsync(ct))
                 throw BusinessErrors.HrModuleNotEnabled();
+
         }
         public async Task EnsureContactEnabledAsync(CancellationToken cancellationToken = default)
         {
