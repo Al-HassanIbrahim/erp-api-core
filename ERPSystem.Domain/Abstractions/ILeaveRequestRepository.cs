@@ -20,6 +20,7 @@ namespace ERPSystem.Domain.Abstractions
         Task<IEnumerable<LeaveRequest>> GetApprovedByEmployeeAndPeriodAsync(
             Guid employeeId, DateOnly startDate, DateOnly endDate, int companyId, CancellationToken ct = default);
 
+        Task<bool> AnyByEmployeeAsync(Guid employeeId, int companyId, CancellationToken ct = default);
         Task AddAsync(LeaveRequest leaveRequest);
         Task UpdateAsync(LeaveRequest leaveRequest);
 
