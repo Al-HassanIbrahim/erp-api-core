@@ -4,8 +4,10 @@ using ERPSystem.Application.Interfaces;
 using ERPSystem.Domain.Abstractions;
 using ERPSystem.Domain.Entities.HR;
 using ERPSystem.Domain.Enums;
+using ERPSystem.Infrastructure.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace ERPSyatem.API.Controllers
 {
@@ -17,15 +19,18 @@ namespace ERPSyatem.API.Controllers
         private readonly IDepartmentRepository _departmentRepo;
         private readonly IEmployeeRepository _employeeRepo;
         private readonly ICurrentUserService _currentUser;
+        private readonly AppDbContext _context;
 
         public DepartmentController(
             IDepartmentRepository departmentRepo,
             IEmployeeRepository employeeRepo,
-            ICurrentUserService currentUser)
+            ICurrentUserService currentUser,
+            AppDbContext context)
         {
             _departmentRepo = departmentRepo;
             _employeeRepo = employeeRepo;
             _currentUser = currentUser;
+            _context = context;
         }
 
         /// <summary>Get all departments (company-scoped)</summary>
@@ -151,9 +156,9 @@ namespace ERPSyatem.API.Controllers
         public async Task<ActionResult> Delete(Guid id, CancellationToken ct)
         {
             try
-            {
-                var department = await _departmentRepo.GetByIdAsync(id, _currentUser.CompanyId, ct);
-                if (department == null)
+            {  
+                var dept = await _departmentRepo.GetByIdWithDetailsAsync(id, _currentUser.CompanyId, ct);
+                if (dept == null)
                     return NotFound(new { error = "Department not found" });
 
                 var employeeCount = await _departmentRepo.GetEmployeeCountAsync(id, _currentUser.CompanyId, ct);
@@ -161,6 +166,12 @@ namespace ERPSyatem.API.Controllers
                     return BadRequest(new
                     {
                         error = $"Cannot delete department with {employeeCount} employees. Please reassign them first."
+                    });
+                var posionCount = await _context.JobPositions.CountAsync(p => p.DepartmentId == id, ct);
+                if (posionCount > 0)
+                    return BadRequest(new
+                    {
+                        error = $"Cannot delete department with {posionCount} job positions. Please reassign or delete them first."
                     });
 
                 await _departmentRepo.DeleteAsync(id, _currentUser.CompanyId, ct);

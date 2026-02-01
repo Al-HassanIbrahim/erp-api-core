@@ -31,6 +31,7 @@ namespace ERPSystem.Infrastructure.Repositories.Hr
             return await Query()
                 .Include(d => d.Manager)
                 .Include(d => d.Employees)
+                .Include(d => d.Positions)
                 .FirstOrDefaultAsync(d => d.Id == id, ct);
         }
 
@@ -69,11 +70,10 @@ namespace ERPSystem.Infrastructure.Repositories.Hr
         // Interface: AddAsync بدون companyId
         public Task AddAsync(Department department, CancellationToken ct = default)
         {
-            // ct مش مستخدم داخل base.AddAsync (BaseRepo ما بيدعمش ct)
             return base.AddAsync(department);
         }
 
-        // Interface: UpdateAsync بدون companyId
+        
         public Task UpdateAsync(Department department, CancellationToken ct = default)
         {
             return base.UpdateAsync(department);
@@ -82,7 +82,25 @@ namespace ERPSystem.Infrastructure.Repositories.Hr
         public async Task DeleteAsync(Guid id, int companyId, CancellationToken ct = default)
         {
             EnsureCompany(companyId);
-            await base.DeleteAsync(id); // ct مش مستخدم (BaseRepo ما بيدعمش ct)
+            var department = await _context.Departments
+                .Include(d => d.Positions) 
+                .Include(d => d.Employees)
+                .FirstOrDefaultAsync(d => d.Id == id && d.CompanyId == companyId, ct);
+            if(department == null)
+            {
+                throw new KeyNotFoundException($"Department with ID {id} not found");
+            }
+            
+            if (department.Employees?.Any() == true)
+                throw new InvalidOperationException($"Cannot delete department with {department.Employees.Count} employees");
+            if (department.Positions?.Any() == true)
+            {
+                _context.JobPositions.RemoveRange(department.Positions);
+            }
+            _context.Departments.Remove(department);
+            await _context.SaveChangesAsync(ct);
+
+            //await base.DeleteAsync(id); 
         }
     }
 }
