@@ -1,23 +1,17 @@
-﻿using ERPSystem.Domain.Entities.Core;
-using ERPSystem.Domain.Entities.HR;
-using ERPSystem.Domain.Entities.Inventory;
-using ERPSystem.Domain.Entities.Products;
-using ERPSystem.Domain.Enums;
 ﻿using ERPSystem.Domain.Entities.Contacts;
 using ERPSystem.Domain.Entities.Core;
 using ERPSystem.Domain.Entities.Expenses;
+using ERPSystem.Domain.Entities.HR;
 using ERPSystem.Domain.Entities.Inventory;
 using ERPSystem.Domain.Entities.Products;
 using ERPSystem.Domain.Entities.Sales;
+using ERPSystem.Domain.Enums;
 using ERPSystem.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ERPSystem.Infrastructure.Data
 {
@@ -52,7 +46,7 @@ namespace ERPSystem.Infrastructure.Data
         public DbSet<Attendance> Attendances => Set<Attendance>();
         public DbSet<LeaveRequest> LeaveRequests => Set<LeaveRequest>();
         public DbSet<LeaveAttachment> LeaveAttachments => Set<LeaveAttachment>();
-        public DbSet<LeaveBalance> leaveBalances => Set<LeaveBalance>();
+        public DbSet<LeaveBalance> LeaveBalances => Set<LeaveBalance>();
         public DbSet<Payroll> Payrolls => Set<Payroll>();
         public DbSet<PayrollLineItem> PayrollLineItems => Set<PayrollLineItem>();
 
@@ -86,18 +80,15 @@ namespace ERPSystem.Infrastructure.Data
                 entity.HasIndex(e => e.Email).IsUnique();
                 entity.HasIndex(e => e.NationalId).IsUnique();
 
-                // Self-referencing relationship for Manager
                 entity.HasOne(e => e.Manager)
                     .WithMany(e => e.DirectReports)
                     .HasForeignKey(e => e.ReportsToId)
                     .OnDelete(DeleteBehavior.Restrict);
-
                 // Department relationship
                 entity.HasOne(e => e.Department)
                     .WithMany(d => d.Employees)
                     .HasForeignKey(e => e.DepartmentId)
                     .OnDelete(DeleteBehavior.Restrict);
-
                 // JobPosition relationship
                 entity.HasOne(e => e.Position)
                     .WithMany(p => p.Employees)
@@ -111,7 +102,6 @@ namespace ERPSystem.Infrastructure.Data
                 entity.HasKey(d => d.Id);
                 entity.HasIndex(d => d.Code).IsUnique();
                 entity.HasIndex(d => d.Name).IsUnique();
-
                 // Manager relationship
                 entity.HasOne(d => d.Manager)
                     .WithMany()
@@ -211,13 +201,62 @@ namespace ERPSystem.Infrastructure.Data
                     .OnDelete(DeleteBehavior.Cascade);
             });
 
-            // Seed data
+            foreach (var fk in modelBuilder.Model.GetEntityTypes().SelectMany(e => e.GetForeignKeys()))
+                fk.DeleteBehavior = DeleteBehavior.NoAction;
+
+            modelBuilder.Entity<Attendance>()
+                .HasOne(a => a.Employee)
+                .WithMany(e => e.Attendances)
+                .HasForeignKey(a => a.EmployeeId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<LeaveRequest>()
+                .HasOne(lr => lr.Employee)
+                .WithMany(e => e.LeaveRequests)
+                .HasForeignKey(lr => lr.EmployeeId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<LeaveBalance>()
+                .HasOne(lb => lb.Employee)
+                .WithMany()
+                .HasForeignKey(lb => lb.EmployeeId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Payroll>()
+                .HasOne(p => p.Employee)
+                .WithMany(e => e.Payrolls)
+                .HasForeignKey(p => p.EmployeeId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<PayrollLineItem>()
+                .HasOne(pli => pli.Payroll)
+                .WithMany(p => p.LineItems)
+                .HasForeignKey(pli => pli.PayrollId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<EmployeeDocument>()
+                .HasOne(ed => ed.Employee)
+                .WithMany(e => e.Documents)
+                .HasForeignKey(ed => ed.EmployeeId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<LeaveAttachment>()
+                .HasOne(la => la.LeaveRequest)
+                .WithMany(lr => lr.Attachments)
+                .HasForeignKey(la => la.LeaveRequestId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Employee>()
+                .HasOne(e => e.Manager)
+                .WithMany(e => e.DirectReports)
+                .HasForeignKey(e => e.ReportsToId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             SeedData(modelBuilder);
         }
 
         private void SeedData(ModelBuilder modelBuilder)
         {
-            // Seed Departments
             var hrDeptId = new Guid("10000000-0000-0000-0000-000000000001");
             var itDeptId = new Guid("10000000-0000-0000-0000-000000000002");
             var seedDate = new DateTime(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc);
@@ -243,7 +282,6 @@ namespace ERPSystem.Infrastructure.Data
                 }
             );
 
-            // Seed Positions
             var hrManagerId = new Guid("20000000-0000-0000-0000-000000000001");
             var devManagerId = new Guid("20000000-0000-0000-0000-000000000002");
             var seniorDevId = new Guid("20000000-0000-0000-0000-000000000003");
@@ -289,23 +327,13 @@ namespace ERPSystem.Infrastructure.Data
                     CreatedAt = seedDate
                 }
             );
-            // ========== DISABLE CASCADE DELETE GLOBALLY ==========
-            foreach (var relationship in modelBuilder.Model.GetEntityTypes()
-                .SelectMany(e => e.GetForeignKeys()))
-            {
-                relationship.DeleteBehavior = DeleteBehavior.NoAction;
-            }
 
-            // ========== UNIQUE INDEXES ==========
-
-            // Products
             modelBuilder.Entity<Product>()
                 .HasIndex(e => new { e.CompanyId, e.Code }).IsUnique();
 
             modelBuilder.Entity<Category>()
                 .HasIndex(e => new { e.CompanyId, e.Name }).IsUnique();
 
-            // Inventory
             modelBuilder.Entity<Warehouse>()
                 .HasIndex(e => new { e.CompanyId, e.Code }).IsUnique();
 
@@ -315,7 +343,6 @@ namespace ERPSystem.Infrastructure.Data
             modelBuilder.Entity<StockItem>()
                 .HasIndex(e => new { e.WarehouseId, e.ProductId }).IsUnique();
 
-            // Sales
             modelBuilder.Entity<Customer>()
                 .HasIndex(e => new { e.CompanyId, e.Code }).IsUnique();
 
@@ -331,11 +358,9 @@ namespace ERPSystem.Infrastructure.Data
             modelBuilder.Entity<SalesReturn>()
                 .HasIndex(e => new { e.CompanyId, e.ReturnNumber }).IsUnique();
 
-            // ExpenseCategory
             modelBuilder.Entity<ExpenseCategory>()
                 .HasIndex(e => new { e.CompanyId, e.Name }).IsUnique();
 
-            // Expense
             modelBuilder.Entity<Expense>()
                 .HasIndex(e => new { e.CompanyId, e.ExpenseDate });
             modelBuilder.Entity<Expense>()
