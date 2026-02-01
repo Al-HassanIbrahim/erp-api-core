@@ -63,7 +63,7 @@ namespace ERPSystem.Infrastructure.Repositories.Hr
 
             var query = Query()
                 .Where(lr => lr.EmployeeId == employeeId &&
-                             lr.Status == LeaveRequestStatus.Approved &&
+                             lr.Status == LeaveRequestStatus.Approved || lr.Status == LeaveRequestStatus.Pending &&
                              (lr.StartDate <= end && lr.EndDate >= start));
 
             if (excludeId.HasValue)
@@ -83,6 +83,12 @@ namespace ERPSystem.Infrastructure.Repositories.Hr
                              lr.StartDate <= endDate &&
                              lr.EndDate >= startDate)
                 .ToListAsync(ct);
+        }
+
+        public Task<bool> AnyByEmployeeAsync(Guid employeeId, int companyId, CancellationToken ct = default)
+        {
+            EnsureCompany(companyId);
+            return Query().AnyAsync(lr => lr.EmployeeId == employeeId, ct);
         }
 
         // CRUD: delegate to base (enforces CompanyId + blocks cross-company updates)
