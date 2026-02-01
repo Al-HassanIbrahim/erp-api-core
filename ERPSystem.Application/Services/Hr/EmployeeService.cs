@@ -21,19 +21,22 @@ namespace ERPSystem.Application.Services.Hr
         private readonly IPositionRepository _positionRepo;
         private readonly ICurrentUserService _cuurentUser;
         private readonly IModuleAccessService _moduleAccess;
+        private readonly ILeaveRequestRepository _leaveRepo;
 
         public EmployeeService(
             IEmployeeRepository employeeRepo,
             IDepartmentRepository departmentRepo,
             IPositionRepository positionRepo,
             ICurrentUserService currentUser,
-            IModuleAccessService moduleAccess)
+            IModuleAccessService moduleAccess,
+            ILeaveRequestRepository leaveRepo)
         {
             _employeeRepo = employeeRepo;
             _departmentRepo = departmentRepo;
             _positionRepo = positionRepo;
             _cuurentUser = currentUser;
             _moduleAccess = moduleAccess;
+            _leaveRepo = leaveRepo;
         }
 
         // ================== GUARDS ==================
@@ -322,7 +325,10 @@ namespace ERPSystem.Application.Services.Hr
                 throw new InvalidOperationException(
                     "Cannot delete employee with subordinates. Please reassign them first.");
 
-            await _employeeRepo.DeleteAsync(id, _cuurentUser.CompanyId);
+            if (await _leaveRepo.AnyByEmployeeAsync(id, _cuurentUser.CompanyId, ct))
+                throw new InvalidOperationException("Cannot delete employee with leave requests. Set status to Inactive/Terminated instead.");
+
+            await _employeeRepo.DeleteAsync(id, _cuurentUser.CompanyId,ct);
         }
 
         // ================== MAPPERS ==================

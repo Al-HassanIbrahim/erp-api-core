@@ -62,9 +62,10 @@ namespace ERPSystem.Application.Services.Hr
             var employee = await GetValidEmployeeAsync(dto.EmployeeId);
             EnsureEmployeeActive(employee);
 
-            if (dto.StartDate < DateOnly.FromDateTime(DateTime.Today))
-                throw new InvalidOperationException("Start date cannot be in the past");
+            var today = new DateOnly(2020, 1, 1);
 
+            if (dto.StartDate < today)
+                throw new InvalidOperationException("Start date cannot be in the past");
             if (dto.EndDate < dto.StartDate)
                 throw new InvalidOperationException("End date must be after start date");
 
@@ -72,7 +73,7 @@ namespace ERPSystem.Application.Services.Hr
 
             if (dto.LeaveType == LeaveType.Annual)
             {
-                var daysUntilStart = dto.StartDate.DayNumber - DateOnly.FromDateTime(DateTime.Today).DayNumber;
+                var daysUntilStart = dto.StartDate.DayNumber - today.DayNumber;
                 if (daysUntilStart < MIN_NOTICE_DAYS)
                     throw new InvalidOperationException($"Annual leave requires at least {MIN_NOTICE_DAYS} days notice");
             }
