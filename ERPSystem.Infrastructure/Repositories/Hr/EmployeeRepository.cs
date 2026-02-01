@@ -107,7 +107,7 @@ namespace ERPSystem.Infrastructure.Repositories.Hr
                 if (current == employeeId) return true;
                 if (!visited.Add(current)) return false;
 
-                // Query() scoped للشركة الحالية، فمش هيمشي خارجها
+                
                 var next = await Query()
                     .Where(e => e.Id == current)
                     .Select(e => e.ReportsToId)
@@ -129,8 +129,33 @@ namespace ERPSystem.Infrastructure.Repositories.Hr
         {
             EnsureCompany(companyId);
 
-            // base.DeleteAsync already scoped via GetByIdAsync()
-            await base.DeleteAsync(id);
+            var employee = await _context.Employees
+                .Include(e => e.Attendances)
+                .Include(e => e.LeaveRequests)
+                    .ThenInclude(lr => lr.Attachments)
+                .Include(e => e.Payrolls)
+                    .ThenInclude(p => p.LineItems)
+                .Include(e => e.Documents)
+                .FirstOrDefaultAsync(e => e.Id == id && e.CompanyId == companyId, ct);
+
+            if (employee == null)
+                throw new KeyNotFoundException($"Employee with ID {id} not found");
+
+            if (employee.Attendances?.Any() == true)
+                _context.Attendances.RemoveRange(employee.Attendances);
+
+            if (employee.LeaveRequests?.Any() == true)
+                _context.LeaveRequests.RemoveRange(employee.LeaveRequests);
+
+            if (employee.Payrolls?.Any() == true)
+                _context.Payrolls.RemoveRange(employee.Payrolls);
+
+            if (employee.Documents?.Any() == true)
+                _context.EmployeeDocuments.RemoveRange(employee.Documents);
+
+            _context.Employees.Remove(employee);
+
+            await _context.SaveChangesAsync(ct);
         }
     }
 }
