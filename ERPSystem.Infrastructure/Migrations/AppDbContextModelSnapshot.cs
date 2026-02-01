@@ -222,6 +222,119 @@ namespace ERPSystem.Infrastructure.Migrations
                     b.ToTable("Modules");
                 });
 
+            modelBuilder.Entity("ERPSystem.Domain.Entities.Expenses.Expense", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("CompanyId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("CreatedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("DeletedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ExpenseCategoryId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("ExpenseDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("PaymentMethod")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ReferenceNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("UpdatedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Vendor")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExpenseCategoryId");
+
+                    b.HasIndex("CompanyId", "ExpenseCategoryId");
+
+                    b.HasIndex("CompanyId", "ExpenseDate");
+
+                    b.ToTable("Expenses");
+                });
+
+            modelBuilder.Entity("ERPSystem.Domain.Entities.Expenses.ExpenseCategory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CompanyId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("CreatedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("DeletedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("UpdatedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CompanyId", "Name")
+                        .IsUnique();
+
+                    b.ToTable("ExpenseCategories");
+                });
+
             modelBuilder.Entity("ERPSystem.Domain.Entities.HR.Attendance", b =>
                 {
                     b.Property<Guid>("Id")
@@ -566,7 +679,7 @@ namespace ERPSystem.Infrastructure.Migrations
                     b.HasIndex("EmployeeId", "Year", "LeaveType")
                         .IsUnique();
 
-                    b.ToTable("leaveBalances");
+                    b.ToTable("LeaveBalances");
                 });
 
             modelBuilder.Entity("ERPSystem.Domain.Entities.HR.LeaveRequest", b =>
@@ -2078,12 +2191,23 @@ namespace ERPSystem.Infrastructure.Migrations
                     b.Navigation("Module");
                 });
 
+            modelBuilder.Entity("ERPSystem.Domain.Entities.Expenses.Expense", b =>
+                {
+                    b.HasOne("ERPSystem.Domain.Entities.Expenses.ExpenseCategory", "Category")
+                        .WithMany("Expenses")
+                        .HasForeignKey("ExpenseCategoryId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Category");
+                });
+
             modelBuilder.Entity("ERPSystem.Domain.Entities.HR.Attendance", b =>
                 {
                     b.HasOne("Employee", "Employee")
                         .WithMany("Attendances")
                         .HasForeignKey("EmployeeId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Employee");
@@ -2104,7 +2228,7 @@ namespace ERPSystem.Infrastructure.Migrations
                     b.HasOne("Employee", "Employee")
                         .WithMany("Documents")
                         .HasForeignKey("EmployeeId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Employee");
@@ -2125,7 +2249,7 @@ namespace ERPSystem.Infrastructure.Migrations
                     b.HasOne("ERPSystem.Domain.Entities.HR.LeaveRequest", "LeaveRequest")
                         .WithMany("Attachments")
                         .HasForeignKey("LeaveRequestId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("LeaveRequest");
@@ -2136,7 +2260,7 @@ namespace ERPSystem.Infrastructure.Migrations
                     b.HasOne("Employee", "Employee")
                         .WithMany()
                         .HasForeignKey("EmployeeId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Employee");
@@ -2147,7 +2271,7 @@ namespace ERPSystem.Infrastructure.Migrations
                     b.HasOne("Employee", "Employee")
                         .WithMany("LeaveRequests")
                         .HasForeignKey("EmployeeId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Employee");
@@ -2158,7 +2282,7 @@ namespace ERPSystem.Infrastructure.Migrations
                     b.HasOne("Employee", "Employee")
                         .WithMany("Payrolls")
                         .HasForeignKey("EmployeeId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Employee");
@@ -2169,7 +2293,7 @@ namespace ERPSystem.Infrastructure.Migrations
                     b.HasOne("ERPSystem.Domain.Entities.HR.Payroll", "Payroll")
                         .WithMany("LineItems")
                         .HasForeignKey("PayrollId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Payroll");
@@ -2470,7 +2594,7 @@ namespace ERPSystem.Infrastructure.Migrations
                     b.HasOne("Employee", "Manager")
                         .WithMany("DirectReports")
                         .HasForeignKey("ReportsToId")
-                        .OnDelete(DeleteBehavior.NoAction);
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Department");
 
@@ -2538,6 +2662,11 @@ namespace ERPSystem.Infrastructure.Migrations
             modelBuilder.Entity("ERPSystem.Domain.Entities.Core.Module", b =>
                 {
                     b.Navigation("CompanyModules");
+                });
+
+            modelBuilder.Entity("ERPSystem.Domain.Entities.Expenses.ExpenseCategory", b =>
+                {
+                    b.Navigation("Expenses");
                 });
 
             modelBuilder.Entity("ERPSystem.Domain.Entities.HR.Department", b =>

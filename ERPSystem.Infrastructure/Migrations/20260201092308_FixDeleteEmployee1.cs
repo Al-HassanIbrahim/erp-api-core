@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace ERPSystem.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class intial : Migration
+    public partial class FixDeleteEmployee1 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -988,7 +988,8 @@ namespace ERPSystem.Infrastructure.Migrations
                         name: "FK_Employees_Employees_ReportsToId",
                         column: x => x.ReportsToId,
                         principalTable: "Employees",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Employees_JobPositions_PositionId",
                         column: x => x.PositionId,
@@ -1018,11 +1019,12 @@ namespace ERPSystem.Infrastructure.Migrations
                         name: "FK_EmployeeDocuments_Employees_EmployeeId",
                         column: x => x.EmployeeId,
                         principalTable: "Employees",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "leaveBalances",
+                name: "LeaveBalances",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -1036,12 +1038,13 @@ namespace ERPSystem.Infrastructure.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_leaveBalances", x => x.Id);
+                    table.PrimaryKey("PK_LeaveBalances", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_leaveBalances_Employees_EmployeeId",
+                        name: "FK_LeaveBalances_Employees_EmployeeId",
                         column: x => x.EmployeeId,
                         principalTable: "Employees",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -1074,7 +1077,8 @@ namespace ERPSystem.Infrastructure.Migrations
                         name: "FK_LeaveRequests_Employees_EmployeeId",
                         column: x => x.EmployeeId,
                         principalTable: "Employees",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -1115,7 +1119,8 @@ namespace ERPSystem.Infrastructure.Migrations
                         name: "FK_Payrolls_Employees_EmployeeId",
                         column: x => x.EmployeeId,
                         principalTable: "Employees",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -1136,7 +1141,8 @@ namespace ERPSystem.Infrastructure.Migrations
                         name: "FK_LeaveAttachments_LeaveRequests_LeaveRequestId",
                         column: x => x.LeaveRequestId,
                         principalTable: "LeaveRequests",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -1157,7 +1163,8 @@ namespace ERPSystem.Infrastructure.Migrations
                         name: "FK_PayrollLineItems_Payrolls_PayrollId",
                         column: x => x.PayrollId,
                         principalTable: "Payrolls",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.InsertData(
@@ -1375,8 +1382,8 @@ namespace ERPSystem.Infrastructure.Migrations
                 column: "LeaveRequestId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_leaveBalances_EmployeeId_Year_LeaveType",
-                table: "leaveBalances",
+                name: "IX_LeaveBalances_EmployeeId_Year_LeaveType",
+                table: "LeaveBalances",
                 columns: new[] { "EmployeeId", "Year", "LeaveType" },
                 unique: true);
 
@@ -1558,7 +1565,8 @@ namespace ERPSystem.Infrastructure.Migrations
                 table: "Attendances",
                 column: "EmployeeId",
                 principalTable: "Employees",
-                principalColumn: "Id");
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Cascade);
 
             migrationBuilder.AddForeignKey(
                 name: "FK_Departments_Employees_ManagerId",
@@ -1612,7 +1620,7 @@ namespace ERPSystem.Infrastructure.Migrations
                 name: "LeaveAttachments");
 
             migrationBuilder.DropTable(
-                name: "leaveBalances");
+                name: "LeaveBalances");
 
             migrationBuilder.DropTable(
                 name: "PayrollLineItems");
