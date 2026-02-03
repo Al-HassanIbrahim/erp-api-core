@@ -1,5 +1,6 @@
 ﻿using ERPSystem.Domain.Entities.Contacts;
 using ERPSystem.Domain.Entities.Core;
+using ERPSystem.Domain.Entities.CRM;
 using ERPSystem.Domain.Entities.Expenses;
 using ERPSystem.Domain.Entities.HR;
 using ERPSystem.Domain.Entities.Inventory;
@@ -67,6 +68,10 @@ namespace ERPSystem.Infrastructure.Data
         // Expenses
         public DbSet<ExpenseCategory> ExpenseCategories => Set<ExpenseCategory>();
         public DbSet<Expense> Expenses => Set<Expense>();
+
+        // CRM
+        public DbSet<Lead> Leads => Set<Lead>();
+        public DbSet<Pipeline> Pipelines => Set<Pipeline>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -199,6 +204,52 @@ namespace ERPSystem.Infrastructure.Data
                     .WithMany(lr => lr.Attachments)
                     .HasForeignKey(la => la.LeaveRequestId)
                     .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // Lead Configuration
+            modelBuilder.Entity<Lead>(entity =>
+            {
+                entity.HasKey(l => l.Id);
+                entity.HasIndex(l => new { l.CompanyId, l.Stage });
+                entity.HasIndex(l => l.Email);
+                entity.HasIndex(l => l.AssignedToId);
+                entity.HasOne(l => l.ConvertedCustomer)
+                    .WithMany() 
+                    .HasForeignKey(l => l.ConvertedCustomerId)
+                    .OnDelete(DeleteBehavior.SetNull);
+                entity.HasOne(l => l.AssignedTo)
+                    .WithMany()
+                    .HasForeignKey(l => l.AssignedToId)
+                    .OnDelete(DeleteBehavior.SetNull);
+                entity.Property(l => l.Name).IsRequired().HasMaxLength(200);
+                entity.Property(l => l.CompanyName).IsRequired().HasMaxLength(200);
+                entity.Property(l => l.Email).HasMaxLength(100);
+                entity.Property(l => l.PhoneNumber).HasMaxLength(20);
+                entity.Property(l => l.DealValue).HasPrecision(18, 2);
+            });
+
+            // Pipeline Configuration
+            modelBuilder.Entity<Pipeline>(entity =>
+            {
+                entity.HasKey(p => p.Id);
+                entity.HasIndex(p => new { p.CompanyId, p.Stage });
+                entity.HasIndex(p => p.CustomerId);
+                entity.HasIndex(p => p.LeadId);
+                // Sales
+                entity.HasOne(p => p.Customer)
+                    .WithMany() 
+                    .HasForeignKey(p => p.CustomerId)
+                    .OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(p => p.SourceLead)
+                    .WithMany() 
+                    .HasForeignKey(p => p.LeadId)
+                    .OnDelete(DeleteBehavior.SetNull);
+                entity.HasOne(p => p.Owner)
+                    .WithMany()
+                    .HasForeignKey(p => p.OwnerId)
+                    .OnDelete(DeleteBehavior.SetNull);
+                entity.Property(p => p.DealName).IsRequired().HasMaxLength(200);
+                entity.Property(p => p.Amount).HasPrecision(18, 2);
             });
 
             foreach (var fk in modelBuilder.Model.GetEntityTypes().SelectMany(e => e.GetForeignKeys()))
