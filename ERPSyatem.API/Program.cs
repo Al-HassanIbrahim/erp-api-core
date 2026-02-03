@@ -1,5 +1,5 @@
-using System.Text;
 using ERPSystem.Application.Interfaces;
+using ERPSystem.Application.Services.Hr;
 using ERPSystem.Application.Services.Contacts;
 using ERPSystem.Application.Services.Core;
 using ERPSystem.Application.Services.Expenses;
@@ -10,6 +10,7 @@ using ERPSystem.Domain.Abstractions;
 using ERPSystem.Infrastructure.Data;
 using ERPSystem.Infrastructure.Identity;
 using ERPSystem.Infrastructure.Repositories;
+using ERPSystem.Infrastructure.Repositories.Hr;
 using ERPSystem.Infrastructure.Repositories.Contacts;
 using ERPSystem.Infrastructure.Repositories.Core;
 using ERPSystem.Infrastructure.Repositories.Expenses;
@@ -20,6 +21,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using System.Text;
 
 namespace ERPSyatem.API
 {
@@ -64,6 +66,21 @@ namespace ERPSyatem.API
             // Inventory Reports
             builder.Services.AddScoped<IInventoryReportsRepository, InventoryReportsRepository>();
             builder.Services.AddScoped<IInventoryReportsService, InventoryReportsService>();
+
+            // Hr Repository
+            builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
+            builder.Services.AddScoped<IDepartmentRepository, DepartmentRepository>();
+            builder.Services.AddScoped<IPositionRepository, PositionRepository>();
+            builder.Services.AddScoped<IAttendanceRepository, AttendanceRepository>();
+            builder.Services.AddScoped<ILeaveRequestRepository, LeaveRequestRepository>();
+            builder.Services.AddScoped<ILeaveBalanceRepository, LeaveBalanceRepository>();
+            builder.Services.AddScoped<IPayrollRepository, PayrollRepository>();
+
+            // Hr Services
+            builder.Services.AddScoped<IEmployeeService, EmployeeService>();
+            builder.Services.AddScoped<IAttendanceService, AttendanceService>();
+            builder.Services.AddScoped<ILeaveRequestService, LeaveRequestService>();
+            builder.Services.AddScoped<IPayrollService, PayrollService>();
 
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();

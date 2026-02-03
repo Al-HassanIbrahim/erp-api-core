@@ -26,6 +26,9 @@ namespace ERPSystem.Application.Exceptions
 
         public static BusinessException InventoryModuleNotEnabled() =>
             new("INVENTORY_MODULE_DISABLED", "Inventory module is not enabled for this company. Delivery/Return posting is not available.", 403);
+        // Hr Module
+        public static BusinessException HrModuleNotEnabled()
+        => new BusinessException("HR_MODULE_NOT_ENABLED", "HR module is not enabled for this company.", 403);
 
         public static BusinessException ContactModuleNotEnabled() =>
            new("Contact_MODULE_DISABLED", "Contact module is not enabled for this company.", 403);

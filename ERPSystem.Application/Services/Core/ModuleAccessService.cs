@@ -11,6 +11,7 @@ namespace ERPSystem.Application.Services.Core
 
         private const string SalesModuleCode = "SALES";
         private const string InventoryModuleCode = "INVENTORY";
+        private const string HrModuleCode = "HR";
         private const string ContactModuleCode = "CONTACT";
         private const string ExpensesModuleCode = "EXPENSES";
 
@@ -36,6 +37,7 @@ namespace ERPSystem.Application.Services.Core
         {
             return await IsModuleEnabledAsync(_currentUser.CompanyId, InventoryModuleCode, cancellationToken);
         }
+        public Task<bool> IsHrEnabledAsync(CancellationToken ct = default) => IsModuleEnabledAsync(_currentUser.CompanyId, HrModuleCode, ct);
         public async Task<bool> IsContactEnabledAsync(CancellationToken cancellationToken = default)
         {
             return await IsModuleEnabledAsync(_currentUser.CompanyId, ContactModuleCode, cancellationToken);
@@ -55,6 +57,13 @@ namespace ERPSystem.Application.Services.Core
         {
             if (!await IsInventoryEnabledAsync(cancellationToken))
                 throw BusinessErrors.InventoryModuleNotEnabled();
+        }
+
+        public async Task EnsureHrAccessAsync(CancellationToken ct = default)
+        {
+            if (!await IsHrEnabledAsync(ct))
+                throw BusinessErrors.HrModuleNotEnabled();
+
         }
         public async Task EnsureContactEnabledAsync(CancellationToken cancellationToken = default)
         {
