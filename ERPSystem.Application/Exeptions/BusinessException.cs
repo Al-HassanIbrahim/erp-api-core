@@ -34,6 +34,8 @@ namespace ERPSystem.Application.Exceptions
            new("Contact_MODULE_DISABLED", "Contact module is not enabled for this company.", 403);
         public static BusinessException ExpensesModuleNotEnabled() =>
            new("EXPENSES_MODULE_NOT_ENABLED", "Expenses module is not enabled for this company.", 403);
+        public static BusinessException CrmModuleNotEnabled() => 
+           new("CRM_MODULE_NOT_ENABLED", "CRM module is not enabled for this company.", 403);
 
         // Not Found
         public static BusinessException CustomerNotFound() =>
