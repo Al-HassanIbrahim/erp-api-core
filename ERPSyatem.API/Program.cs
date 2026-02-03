@@ -1,8 +1,9 @@
 using ERPSystem.Application.Interfaces;
-using ERPSystem.Application.Services.Hr;
 using ERPSystem.Application.Services.Contacts;
 using ERPSystem.Application.Services.Core;
+using ERPSystem.Application.Services.CRM;
 using ERPSystem.Application.Services.Expenses;
+using ERPSystem.Application.Services.Hr;
 using ERPSystem.Application.Services.Inventory;
 using ERPSystem.Application.Services.Products;
 using ERPSystem.Application.Services.Sales;
@@ -10,10 +11,11 @@ using ERPSystem.Domain.Abstractions;
 using ERPSystem.Infrastructure.Data;
 using ERPSystem.Infrastructure.Identity;
 using ERPSystem.Infrastructure.Repositories;
-using ERPSystem.Infrastructure.Repositories.Hr;
 using ERPSystem.Infrastructure.Repositories.Contacts;
 using ERPSystem.Infrastructure.Repositories.Core;
+using ERPSystem.Infrastructure.Repositories.CRM;
 using ERPSystem.Infrastructure.Repositories.Expenses;
+using ERPSystem.Infrastructure.Repositories.Hr;
 using ERPSystem.Infrastructure.Repositories.Inventory;
 using ERPSystem.Infrastructure.Repositories.Sales;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -109,6 +111,16 @@ namespace ERPSyatem.API
             builder.Services.AddScoped<IExpenseService, ExpenseService>();
             builder.Services.AddScoped<IExpenseCategoryService, ExpenseCategoryService>();
             builder.Services.AddScoped<IExpenseStatsService, ExpenseStatsService>();
+
+
+            // CRM Repo
+            builder.Services.AddScoped<ILeadRepository, LeadRepository>();
+            builder.Services.AddScoped<IPipelineRepository, PipelineRepository>();
+            // CRM Services
+            builder.Services.AddScoped<ILeadService, LeadService>();
+            builder.Services.AddScoped<IPipelineService, PipelineService>();
+
+
 
             #region Swagger
             builder.Services.AddSwaggerGen(c =>
