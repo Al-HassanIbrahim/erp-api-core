@@ -21,7 +21,7 @@ namespace ERPSystem.Infrastructure.Identity
             _config = config;
         }
 
-        public AuthResponse CreateToken(Guid userId, int companyId, string email, string[] roles)
+        public AuthResponse CreateToken(Guid userId, int companyId, string email, string[] roles, string[] permissions)
         {
             var keyString = _config["JWT:Key"] ?? throw new InvalidOperationException("JWT:Key is missing.");
             var issuer = _config["JWT:IssuerIP"] ?? throw new InvalidOperationException("JWT:IssuerIP is missing.");
@@ -35,18 +35,22 @@ namespace ERPSystem.Infrastructure.Identity
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var claims = new List<Claim>
-        {
-            // Standard claims
-            new Claim(JwtRegisteredClaimNames.Sub, userId.ToString()),
-            new Claim(JwtRegisteredClaimNames.Email, email),
+            {
+                // Standard claims
+                new Claim(JwtRegisteredClaimNames.Sub, userId.ToString()),
+                new Claim(JwtRegisteredClaimNames.Email, email),
 
-            // Custom claim for multi-tenancy scoping
-            new Claim("companyId", companyId.ToString()),
-        };
+                // Custom claim for multi-tenancy scoping
+                new Claim("companyId", companyId.ToString()),
+            };
 
             // Role claims (so [Authorize(Roles="...")] works)
             foreach (var role in roles)
                 claims.Add(new Claim(ClaimTypes.Role, role));
+
+            // Permission claims (for policy-based authorization)
+            foreach (var permission in permissions)
+                claims.Add(new Claim("permission", permission));
 
             var expiresAtUtc = DateTime.UtcNow.AddMinutes(expireMinutes);
 
@@ -66,7 +70,8 @@ namespace ERPSystem.Infrastructure.Identity
                 UserId: userId,
                 CompanyId: companyId,
                 Email: email,
-                Roles: roles
+                Roles: roles,
+                Permissions: permissions
             );
         }
     }

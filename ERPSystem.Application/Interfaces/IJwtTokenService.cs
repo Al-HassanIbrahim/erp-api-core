@@ -9,6 +9,6 @@ namespace ERPSystem.Application.Interfaces
 {
     public interface IJwtTokenService
     {
-        AuthResponse CreateToken(Guid userId,int companyId, string email, string[] roles);
+        AuthResponse CreateToken(Guid userId, int companyId, string email, string[] roles, string[] permissions);
     }
 }
