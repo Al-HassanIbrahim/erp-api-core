@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using ERPSystem.Domain.Abstractions;
 using ERPSystem.Domain.Entities.Contacts;
 using ERPSystem.Infrastructure.Data;
-using ERPSystem.Infrastructure.Migrations;
 using Microsoft.EntityFrameworkCore;
 
 namespace ERPSystem.Infrastructure.Repositories.Contacts
