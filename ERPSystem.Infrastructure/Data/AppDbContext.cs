@@ -72,6 +72,98 @@ namespace ERPSystem.Infrastructure.Data
         {
             base.OnModelCreating(modelBuilder);
 
+            // DECIMAL PRECISION CONFIGURATIONS
+           
+            // Inventory - InventoryDocumentLine
+            modelBuilder.Entity<InventoryDocumentLine>(entity =>
+            {
+                entity.Property(e => e.Quantity).HasPrecision(18, 4);
+                entity.Property(e => e.UnitCost).HasPrecision(18, 4);
+            });
+
+            // Inventory - StockItem
+            modelBuilder.Entity<StockItem>(entity =>
+            {
+                entity.Property(e => e.QuantityOnHand).HasPrecision(18, 4);
+                entity.Property(e => e.MinQuantity).HasPrecision(18, 4);
+                entity.Property(e => e.MaxQuantity).HasPrecision(18, 4);
+                entity.Property(e => e.AverageUnitCost).HasPrecision(18, 4);
+            });
+
+            // Products - Product
+            modelBuilder.Entity<Product>(entity =>
+            {
+                entity.Property(e => e.DefaultPrice).HasPrecision(18, 2);
+                entity.Property(e => e.MinQuantity).HasPrecision(18, 4);
+            });
+
+            // Sales - Customer
+            modelBuilder.Entity<Customer>(entity =>
+            {
+                entity.Property(e => e.CreditLimit).HasPrecision(18, 2);
+            });
+
+            // Sales - SalesInvoice
+            modelBuilder.Entity<SalesInvoice>(entity =>
+            {
+                entity.Property(e => e.SubTotal).HasPrecision(18, 2);
+                entity.Property(e => e.DiscountAmount).HasPrecision(18, 2);
+                entity.Property(e => e.TaxAmount).HasPrecision(18, 2);
+                entity.Property(e => e.GrandTotal).HasPrecision(18, 2);
+                entity.Property(e => e.PaidAmount).HasPrecision(18, 2);
+            });
+
+            // Sales - SalesInvoiceLine
+            modelBuilder.Entity<SalesInvoiceLine>(entity =>
+            {
+                entity.Property(e => e.Quantity).HasPrecision(18, 4);
+                entity.Property(e => e.UnitPrice).HasPrecision(18, 2);
+                entity.Property(e => e.DiscountPercent).HasPrecision(5, 2);
+                entity.Property(e => e.DiscountAmount).HasPrecision(18, 2);
+                entity.Property(e => e.TaxPercent).HasPrecision(5, 2);
+                entity.Property(e => e.TaxAmount).HasPrecision(18, 2);
+                entity.Property(e => e.LineTotal).HasPrecision(18, 2);
+                entity.Property(e => e.DeliveredQuantity).HasPrecision(18, 4);
+            });
+
+            // Sales - SalesDeliveryLine
+            modelBuilder.Entity<SalesDeliveryLine>(entity =>
+            {
+                entity.Property(e => e.Quantity).HasPrecision(18, 4);
+            });
+
+            // Sales - SalesReceipt
+            modelBuilder.Entity<SalesReceipt>(entity =>
+            {
+                entity.Property(e => e.Amount).HasPrecision(18, 2);
+            });
+
+            // Sales - SalesReceiptAllocation
+            modelBuilder.Entity<SalesReceiptAllocation>(entity =>
+            {
+                entity.Property(e => e.AllocatedAmount).HasPrecision(18, 2);
+            });
+
+            // Sales - SalesReturn
+            modelBuilder.Entity<SalesReturn>(entity =>
+            {
+                entity.Property(e => e.SubTotal).HasPrecision(18, 2);
+                entity.Property(e => e.TaxAmount).HasPrecision(18, 2);
+                entity.Property(e => e.GrandTotal).HasPrecision(18, 2);
+            });
+
+            // Sales - SalesReturnLine
+            modelBuilder.Entity<SalesReturnLine>(entity =>
+            {
+                entity.Property(e => e.Quantity).HasPrecision(18, 4);
+                entity.Property(e => e.UnitPrice).HasPrecision(18, 2);
+                entity.Property(e => e.TaxPercent).HasPrecision(5, 2);
+                entity.Property(e => e.TaxAmount).HasPrecision(18, 2);
+                entity.Property(e => e.LineTotal).HasPrecision(18, 2);
+            });
+
+
+
             // Employee Configration
             modelBuilder.Entity<Employee>(entity =>
             {
