@@ -1,8 +1,11 @@
+using System.Text;
+using ERPSyatem.API.Extensions;
+using ERPSyatem.API.Middleware;
 using ERPSystem.Application.Interfaces;
-using ERPSystem.Application.Services.Hr;
 using ERPSystem.Application.Services.Contacts;
 using ERPSystem.Application.Services.Core;
 using ERPSystem.Application.Services.Expenses;
+using ERPSystem.Application.Services.Hr;
 using ERPSystem.Application.Services.Inventory;
 using ERPSystem.Application.Services.Products;
 using ERPSystem.Application.Services.Sales;
@@ -10,10 +13,10 @@ using ERPSystem.Domain.Abstractions;
 using ERPSystem.Infrastructure.Data;
 using ERPSystem.Infrastructure.Identity;
 using ERPSystem.Infrastructure.Repositories;
-using ERPSystem.Infrastructure.Repositories.Hr;
 using ERPSystem.Infrastructure.Repositories.Contacts;
 using ERPSystem.Infrastructure.Repositories.Core;
 using ERPSystem.Infrastructure.Repositories.Expenses;
+using ERPSystem.Infrastructure.Repositories.Hr;
 using ERPSystem.Infrastructure.Repositories.Inventory;
 using ERPSystem.Infrastructure.Repositories.Sales;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -21,7 +24,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using System.Text;
 
 namespace ERPSyatem.API
 {
@@ -177,6 +179,9 @@ namespace ERPSyatem.API
                 };
             });
 
+            //PERMISSION POLICIES 
+            builder.Services.AddPermissionPolicies();
+
             //CORS
             builder.Services.AddCors(options =>
             {
@@ -200,6 +205,8 @@ namespace ERPSyatem.API
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
+
+            app.UseExceptionHandling();
 
             app.UseCors("MyPolicy");
             app.UseAuthentication();
