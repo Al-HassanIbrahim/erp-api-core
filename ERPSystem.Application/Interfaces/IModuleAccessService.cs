@@ -20,6 +20,8 @@ using System.Threading.Tasks;
             Task EnsureContactEnabledAsync(CancellationToken cancellationToken = default);
             Task EnsureExpensesEnabledAsync(CancellationToken cancellationToken = default);
             Task EnsureHrAccessAsync(CancellationToken ct = default);
+    }
+            Task EnsureHrAccessAsync(CancellationToken ct = default);
             Task EnsureCrmEnabledAsync(CancellationToken cancellationToken = default);
     }
     }

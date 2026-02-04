@@ -8,7 +8,12 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace ERPSystem.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class FixDeleteEmployee1 : Migration{
+<<<<<<<< HEAD:ERPSystem.Infrastructure/Migrations/20260201092308_FixDeleteEmployee1.cs
+    public partial class FixDeleteEmployee1 : Migration
+========
+    public partial class hr : Migration
+>>>>>>>> upstream/main:ERPSystem.Infrastructure/Migrations/20260203063359_hr.cs
+    {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
