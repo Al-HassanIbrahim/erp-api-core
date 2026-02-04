@@ -40,7 +40,7 @@ namespace ERPSystem.Infrastructure.Repositories.Hr
             EnsureCompany(companyId);
 
             return await Query()
-                .Include(d => d.Manager)
+                .Include(d => d.Manager).Include(d => d.Employees)
                 .ToListAsync(ct);
         }
 
@@ -66,8 +66,6 @@ namespace ERPSystem.Infrastructure.Repositories.Hr
             return await _context.Employees
                 .CountAsync(e => e.CompanyId == CompanyId && e.DepartmentId == departmentId, ct);
         }
-
-        // Interface: AddAsync بدون companyId
         public Task AddAsync(Department department, CancellationToken ct = default)
         {
             return base.AddAsync(department);
