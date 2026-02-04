@@ -1,3 +1,4 @@
+using System.Text;
 using ERPSystem.Application.Interfaces;
 using ERPSystem.Application.Services.Contacts;
 using ERPSystem.Application.Services.Core;
@@ -189,6 +190,9 @@ namespace ERPSyatem.API
                 };
             });
 
+            //PERMISSION POLICIES 
+            builder.Services.AddPermissionPolicies();
+
             //CORS
             builder.Services.AddCors(options =>
             {
@@ -212,6 +216,8 @@ namespace ERPSyatem.API
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
+
+            app.UseExceptionHandling();
 
             app.UseCors("MyPolicy");
             app.UseAuthentication();

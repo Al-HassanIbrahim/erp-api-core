@@ -8,10 +8,10 @@ namespace ERPSystem.Application.DTOs.Core
 {
     // Request DTO for registering an owner along with their company details
     public record RegisterOwnerRequest(
-     string FullName,
-     string Email,
-     string Password,
-     CompanyOnboardingRequest Company
+        string FullName,
+        string Email,
+        string Password,
+        CompanyOnboardingRequest Company
     );
 
     public record CompanyOnboardingRequest(
@@ -19,22 +19,21 @@ namespace ERPSystem.Application.DTOs.Core
         string? TaxNumber,
         string? Address
     );
+
     //--------------------------------------------------------
-     
+
     public record LoginRequest(
-    string Email,
-    string Password
+        string Email,
+        string Password
     );
+
     public record AuthResponse(
-    string AccessToken,
-    DateTime ExpiresAtUtc,
-    Guid UserId,
-    int CompanyId,
-    string Email,
-    string[] Roles
+        string AccessToken,
+        DateTime ExpiresAtUtc,
+        Guid UserId,
+        int CompanyId,
+        string Email,
+        string[] Roles,
+        string[] Permissions
     );
-
-
-
-
 }

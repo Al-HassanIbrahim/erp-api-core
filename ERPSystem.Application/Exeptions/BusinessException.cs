@@ -30,6 +30,9 @@ namespace ERPSystem.Application.Exceptions
         public static BusinessException HrModuleNotEnabled()
         => new BusinessException("HR_MODULE_NOT_ENABLED", "HR module is not enabled for this company.", 403);
 
+        public static BusinessException HrModuleNotEnabled()
+        => new BusinessException("HR_MODULE_NOT_ENABLED", "HR module is not enabled for this company.", 403);
+
         public static BusinessException ContactModuleNotEnabled() =>
            new("Contact_MODULE_DISABLED", "Contact module is not enabled for this company.", 403);
         public static BusinessException ExpensesModuleNotEnabled() =>
@@ -37,7 +40,7 @@ namespace ERPSystem.Application.Exceptions
         public static BusinessException CrmModuleNotEnabled() => 
            new("CRM_MODULE_NOT_ENABLED", "CRM module is not enabled for this company.", 403);
 
-        // Not Found
+        // Not Foundz
         public static BusinessException CustomerNotFound() =>
             new("CUSTOMER_NOT_FOUND", "Customer not found.", 404);
 
@@ -100,5 +103,30 @@ namespace ERPSystem.Application.Exceptions
         // Authorization
         public static BusinessException Unauthorized(string message = "You do not have access to this resource.") =>
             new("UNAUTHORIZED", message, 403);
+        //Roles
+        public static BusinessException RoleNameRequired() =>
+            new("ROLE_NAME_REQUIRED", "Role display name is required.", 400);
+
+        public static BusinessException RoleAlreadyExists(string roleName) =>
+            new("ROLE_ALREADY_EXISTS", $"Role '{roleName}' already exists for this company.", 409);
+
+        public static BusinessException RoleNotFound(string roleName) =>
+            new("ROLE_NOT_FOUND", $"Role '{roleName}' not found in this company.", 404);
+
+        public static BusinessException UnknownPermission(string permissionKey) =>
+            new("UNKNOWN_PERMISSION", $"Unknown permission: '{permissionKey}'.", 400);
+
+        public static BusinessException EmptyPermissionKey() =>
+            new("EMPTY_PERMISSION_KEY", "Permission key cannot be empty.", 400);
+
+        public static BusinessException RoleOperationFailed(string operation, string details) =>
+            new("ROLE_OPERATION_FAILED", $"Failed to {operation} role: {details}", 400);
+
+        public static BusinessException UserNotFound() =>
+            new("USER_NOT_FOUND", "User not found.", 404);
+
+        public static BusinessException CannotAssignRoleAcrossCompanies() =>
+            new("CROSS_COMPANY_ROLE_ASSIGNMENT", "Cannot assign or remove roles across companies.", 403);
+
     }
 }
