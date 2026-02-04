@@ -25,4 +25,8 @@
     <ProjectReference Include="..\ERPSystem.Infrastructure\ERPSystem.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwroot\" />
+  </ItemGroup>
+
 </Project>
