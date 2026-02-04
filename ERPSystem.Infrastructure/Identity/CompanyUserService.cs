@@ -1,4 +1,5 @@
-﻿using ERPSystem.Application.DTOs.Core;
+﻿using ERPSystem.Application.Authorization;
+using ERPSystem.Application.DTOs.Core;
 using ERPSystem.Application.Exceptions;
 using ERPSystem.Application.Interfaces;
 using Microsoft.AspNetCore.Identity;
@@ -11,8 +12,6 @@ namespace ERPSystem.Infrastructure.Identity
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole<Guid>> _roleManager;
         private readonly ICurrentUserService _currentUser;
-
-        private static readonly string[] AllowedRoles = { "CompanyOwner", "CompanyAdmin", "CompanyUser" };
 
         public CompanyUserService(
             UserManager<ApplicationUser> userManager,
@@ -34,14 +33,21 @@ namespace ERPSystem.Infrastructure.Identity
             foreach (var user in users)
             {
                 var roles = await _userManager.GetRolesAsync(user);
+                // Extract display names from scoped role names
+                var displayRoles = roles
+                    .Where(r => RoleKey.BelongsToCompany(r, _currentUser.CompanyId))
+                    .Select(r => RoleKey.GetDisplayName(r))
+                    .ToList();
+
                 result.Add(new CompanyUserDto
                 {
                     Id = user.Id,
                     Email = user.Email!,
                     FullName = user.FullName,
+                    PhoneNumber = user.PhoneNumber,
                     IsActive = user.LockoutEnd == null || user.LockoutEnd <= DateTimeOffset.UtcNow,
                     IsLockedOut = user.LockoutEnd != null && user.LockoutEnd > DateTimeOffset.UtcNow,
-                    Roles = roles.ToList()
+                    Roles = displayRoles
                 });
             }
             return result;
@@ -49,15 +55,27 @@ namespace ERPSystem.Infrastructure.Identity
 
         public async Task<CompanyUserDto> CreateAsync(CreateCompanyUserDto dto, CancellationToken ct = default)
         {
+            // Check email uniqueness
             if (await _userManager.FindByEmailAsync(dto.Email) != null)
                 throw new BusinessException("EMAIL_EXISTS", "Email already exists.", 409);
 
-            var rolesToAssign = dto.Roles?.Where(r => AllowedRoles.Contains(r)).ToList() ?? new List<string> { "CompanyUser" };
-
-            foreach (var role in rolesToAssign)
+            // Validate roles exist for company
+            var rolesToAssign = new List<string>();
+            if (dto.Roles != null && dto.Roles.Any())
             {
-                if (!await _roleManager.RoleExistsAsync(role))
-                    await _roleManager.CreateAsync(new IdentityRole<Guid>(role));
+                foreach (var displayName in dto.Roles.Distinct())
+                {
+                    var trimmed = displayName?.Trim();
+                    if (string.IsNullOrWhiteSpace(trimmed))
+                        continue;
+
+                    var scopedName = RoleKey.ForCompany(_currentUser.CompanyId, trimmed);
+                    var roleExists = await _roleManager.RoleExistsAsync(scopedName);
+                    if (!roleExists)
+                        throw BusinessErrors.RoleNotFound(trimmed);
+
+                    rolesToAssign.Add(scopedName);
+                }
             }
 
             var user = new ApplicationUser
@@ -66,63 +84,47 @@ namespace ERPSystem.Infrastructure.Identity
                 Email = dto.Email.Trim().ToLowerInvariant(),
                 UserName = dto.Email.Trim().ToLowerInvariant(),
                 FullName = dto.FullName?.Trim() ?? string.Empty,
+                PhoneNumber = dto.PhoneNumber?.Trim(),
                 CompanyId = _currentUser.CompanyId,
                 EmailConfirmed = true
             };
 
             var result = await _userManager.CreateAsync(user, dto.Password);
             if (!result.Succeeded)
-                throw new BusinessException("CREATE_FAILED", string.Join(", ", result.Errors.Select(e => e.Description)), 400);
+                throw new BusinessException("CREATE_FAILED", FormatErrors(result.Errors), 400);
 
-            await _userManager.AddToRolesAsync(user, rolesToAssign);
+            // Assign validated roles
+            if (rolesToAssign.Any())
+            {
+                var roleResult = await _userManager.AddToRolesAsync(user, rolesToAssign);
+                if (!roleResult.Succeeded)
+                    throw new BusinessException("ROLE_ASSIGN_FAILED", FormatErrors(roleResult.Errors), 400);
+            }
 
             return new CompanyUserDto
             {
                 Id = user.Id,
                 Email = user.Email,
                 FullName = user.FullName,
+                PhoneNumber = user.PhoneNumber,
                 IsActive = true,
                 IsLockedOut = false,
-                Roles = rolesToAssign
-            };
-        }
-
-        public async Task<CompanyUserDto> UpdateRolesAsync(Guid userId, UpdateUserRolesDto dto, CancellationToken ct = default)
-        {
-            var user = await _userManager.Users
-                .FirstOrDefaultAsync(u => u.Id == userId && u.CompanyId == _currentUser.CompanyId, ct)
-                ?? throw new BusinessException("USER_NOT_FOUND", "User not found.", 404);
-
-            var newRoles = dto.Roles.Where(r => AllowedRoles.Contains(r)).Distinct().ToList();
-            if (!newRoles.Any())
-                throw new BusinessException("INVALID_ROLES", "At least one valid role is required.", 400);
-
-            var currentRoles = await _userManager.GetRolesAsync(user);
-            await _userManager.RemoveFromRolesAsync(user, currentRoles);
-            await _userManager.AddToRolesAsync(user, newRoles);
-
-            return new CompanyUserDto
-            {
-                Id = user.Id,
-                Email = user.Email!,
-                FullName = user.FullName,
-                IsActive = user.LockoutEnd == null || user.LockoutEnd <= DateTimeOffset.UtcNow,
-                IsLockedOut = user.LockoutEnd != null && user.LockoutEnd > DateTimeOffset.UtcNow,
-                Roles = newRoles
+                Roles = rolesToAssign.Select(r => RoleKey.GetDisplayName(r)).ToList()
             };
         }
 
         public async Task<CompanyUserDto> UpdateStatusAsync(Guid userId, UpdateUserStatusDto dto, CancellationToken ct = default)
         {
-            var user = await _userManager.Users
-                .FirstOrDefaultAsync(u => u.Id == userId && u.CompanyId == _currentUser.CompanyId, ct)
-                ?? throw new BusinessException("USER_NOT_FOUND", "User not found.", 404);
+            var user = await GetUserInCompanyAsync(userId, ct);
 
+            // Prevent locking self
             if (user.Id == _currentUser.UserId && !dto.IsActive)
                 throw new BusinessException("CANNOT_LOCK_SELF", "Cannot lock your own account.", 400);
 
             if (dto.IsActive)
+            {
                 await _userManager.SetLockoutEndDateAsync(user, null);
+            }
             else
             {
                 await _userManager.SetLockoutEnabledAsync(user, true);
@@ -130,15 +132,152 @@ namespace ERPSystem.Infrastructure.Identity
             }
 
             var roles = await _userManager.GetRolesAsync(user);
+            var displayRoles = roles
+                .Where(r => RoleKey.BelongsToCompany(r, _currentUser.CompanyId))
+                .Select(r => RoleKey.GetDisplayName(r))
+                .ToList();
+
             return new CompanyUserDto
             {
                 Id = user.Id,
                 Email = user.Email!,
                 FullName = user.FullName,
+                PhoneNumber = user.PhoneNumber,
                 IsActive = dto.IsActive,
                 IsLockedOut = !dto.IsActive,
-                Roles = roles.ToList()
+                Roles = displayRoles
             };
         }
+
+        public async Task<CompanyUserDto> AssignRoleAsync(Guid userId, string roleDisplayName, CancellationToken ct = default)
+        {
+            var user = await GetUserInCompanyAsync(userId, ct);
+
+            var trimmed = roleDisplayName?.Trim();
+            if (string.IsNullOrWhiteSpace(trimmed))
+                throw BusinessErrors.RoleNameRequired();
+
+            var scopedName = RoleKey.ForCompany(_currentUser.CompanyId, trimmed);
+
+            // Validate role exists for this company
+            if (!await _roleManager.RoleExistsAsync(scopedName))
+                throw BusinessErrors.RoleNotFound(trimmed);
+
+            // Check if already assigned
+            if (await _userManager.IsInRoleAsync(user, scopedName))
+            {
+                // Already has role, just return current state
+                return await BuildUserDtoAsync(user);
+            }
+
+            var result = await _userManager.AddToRoleAsync(user, scopedName);
+            if (!result.Succeeded)
+                throw new BusinessException("ROLE_ASSIGN_FAILED", FormatErrors(result.Errors), 400);
+
+            return await BuildUserDtoAsync(user);
+        }
+
+        public async Task<CompanyUserDto> RemoveRoleAsync(Guid userId, string roleDisplayName, CancellationToken ct = default)
+        {
+            var user = await GetUserInCompanyAsync(userId, ct);
+
+            var trimmed = roleDisplayName?.Trim();
+            if (string.IsNullOrWhiteSpace(trimmed))
+                throw BusinessErrors.RoleNameRequired();
+
+            var scopedName = RoleKey.ForCompany(_currentUser.CompanyId, trimmed);
+
+            // Validate role exists for this company
+            if (!await _roleManager.RoleExistsAsync(scopedName))
+                throw BusinessErrors.RoleNotFound(trimmed);
+
+            // Check if user has this role
+            if (!await _userManager.IsInRoleAsync(user, scopedName))
+            {
+                // User doesn't have this role, just return current state
+                return await BuildUserDtoAsync(user);
+            }
+
+            var result = await _userManager.RemoveFromRoleAsync(user, scopedName);
+            if (!result.Succeeded)
+                throw new BusinessException("ROLE_REMOVE_FAILED", FormatErrors(result.Errors), 400);
+
+            return await BuildUserDtoAsync(user);
+        }
+
+        public async Task<CompanyUserDto> UpdateProfileAsync(Guid userId, AdminUpdateUserProfileDto dto, CancellationToken ct = default)
+        {
+            var user = await GetUserInCompanyAsync(userId, ct);
+
+            // Update FullName
+            user.FullName = dto.FullName?.Trim() ?? user.FullName;
+
+            // Update PhoneNumber (admin-managed)
+            user.PhoneNumber = dto.PhoneNumber?.Trim();
+
+            // Optionally update Email if provided and different
+            if (!string.IsNullOrWhiteSpace(dto.Email))
+            {
+                var normalizedEmail = dto.Email.Trim().ToLowerInvariant();
+                if (!string.Equals(user.Email, normalizedEmail, StringComparison.OrdinalIgnoreCase))
+                {
+                    // Check uniqueness
+                    var existingUser = await _userManager.FindByEmailAsync(normalizedEmail);
+                    if (existingUser != null && existingUser.Id != user.Id)
+                        throw new BusinessException("EMAIL_EXISTS", "Email already exists.", 409);
+
+                    user.Email = normalizedEmail;
+                    user.UserName = normalizedEmail;
+                    user.NormalizedEmail = normalizedEmail.ToUpperInvariant();
+                    user.NormalizedUserName = normalizedEmail.ToUpperInvariant();
+                }
+            }
+
+            var result = await _userManager.UpdateAsync(user);
+            if (!result.Succeeded)
+                throw new BusinessException("UPDATE_FAILED", FormatErrors(result.Errors), 400);
+
+            return await BuildUserDtoAsync(user);
+        }
+
+        #region Private Helpers
+
+        private async Task<ApplicationUser> GetUserInCompanyAsync(Guid userId, CancellationToken ct)
+        {
+            var user = await _userManager.Users
+                .FirstOrDefaultAsync(u => u.Id == userId && u.CompanyId == _currentUser.CompanyId, ct);
+
+            if (user == null)
+                throw BusinessErrors.UserNotFound();
+
+            return user;
+        }
+
+        private async Task<CompanyUserDto> BuildUserDtoAsync(ApplicationUser user)
+        {
+            var roles = await _userManager.GetRolesAsync(user);
+            var displayRoles = roles
+                .Where(r => RoleKey.BelongsToCompany(r, _currentUser.CompanyId))
+                .Select(r => RoleKey.GetDisplayName(r))
+                .ToList();
+
+            return new CompanyUserDto
+            {
+                Id = user.Id,
+                Email = user.Email!,
+                FullName = user.FullName,
+                PhoneNumber = user.PhoneNumber,
+                IsActive = user.LockoutEnd == null || user.LockoutEnd <= DateTimeOffset.UtcNow,
+                IsLockedOut = user.LockoutEnd != null && user.LockoutEnd > DateTimeOffset.UtcNow,
+                Roles = displayRoles
+            };
+        }
+
+        private static string FormatErrors(IEnumerable<IdentityError> errors)
+        {
+            return string.Join(", ", errors.Select(e => e.Description));
+        }
+
+        #endregion
     }
 }
