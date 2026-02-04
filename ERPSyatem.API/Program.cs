@@ -25,6 +25,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
+using ERPSyatem.API.Middleware;
+using ERPSyatem.API.Extensions;
 
 namespace ERPSyatem.API
 {
