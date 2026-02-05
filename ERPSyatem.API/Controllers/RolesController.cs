@@ -12,7 +12,7 @@ namespace ERPSyatem.API.Controllers;
 
 [ApiController]
 [Route("api/access/roles")]
-[Authorize]
+[Authorize(Policy =Permissions.Security.Roles.Manage)]
 public class RolesController : ControllerBase
 {
     private readonly RoleManager<IdentityRole<Guid>> _roleManager;

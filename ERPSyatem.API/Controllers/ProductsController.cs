@@ -8,7 +8,6 @@ namespace ERPSyatem.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
     public class ProductsController : ControllerBase
     {
         private readonly IProductService _productService;
@@ -35,7 +34,8 @@ namespace ERPSyatem.API.Controllers
         }
 
         [HttpPost]
-        [Authorize(Policy = Permissions.Products.Create)]
+        [Authorize(Policy =Permissions.Products.Manage)]
+      //  [Authorize(Policy = Permissions.Products.Create)]
         public async Task<IActionResult> Create([FromBody] CreateProductDto dto)
         {
             var id = await _productService.CreateAsync(dto);
@@ -43,7 +43,8 @@ namespace ERPSyatem.API.Controllers
         }
 
         [HttpPut("{id}")]
-        [Authorize(Policy = Permissions.Products.Update)]
+        [Authorize(Policy =Permissions.Products.Manage)]
+       // [Authorize(Policy = Permissions.Products.Update)]
         public async Task<IActionResult> Update(int id, [FromBody] UpdateProductDto dto)
         {
             if (id != dto.Id)
@@ -54,7 +55,8 @@ namespace ERPSyatem.API.Controllers
         }
 
         [HttpDelete("{id}")]
-        [Authorize(Policy = Permissions.Products.Delete)]
+        //[Authorize(Policy = Permissions.Products.Delete)]
+        [Authorize(Policy =Permissions.Products.Manage)]
         public async Task<IActionResult> Delete(int id)
         {
             await _productService.DeleteAsync(id);

@@ -8,7 +8,7 @@ namespace ERPSyatem.API.Controllers
 {
     [ApiController]
     [Route("api/expenses/stats")]
-    [Authorize(Policy =Permissions.Expenses.Items.Read)]
+    [Authorize(Policy =Permissions.Expenses.Stats.Read)]
     public class ExpenseStatsController : ControllerBase
     {
         private readonly IExpenseStatsService _service;

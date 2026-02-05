@@ -59,7 +59,8 @@ namespace ERPSyatem.API.Controllers
         /// The receipt represents a payment received.
         /// </summary>
         [HttpPost]
-        [Authorize(Policy = Permissions.Sales.Receipts.Create)]
+        [Authorize(Policy = Permissions.Sales.Receipts.Access)]
+      //  [Authorize(Policy = Permissions.Sales.Receipts.Create)]
         public async Task<IActionResult> Create([FromBody] CreateSalesReceiptRequest request, CancellationToken cancellationToken)
         {
             var result = await _service.CreateAsync(request, cancellationToken);
@@ -71,7 +72,8 @@ namespace ERPSyatem.API.Controllers
         /// Posting finalizes the receipt and applies allocations to invoices.
         /// </summary>
         [HttpPost("{id}/post")]
-        [Authorize(Policy = Permissions.Sales.Receipts.Post)]
+        [Authorize(Policy = Permissions.Sales.Receipts.Manage)]
+      //  [Authorize(Policy = Permissions.Sales.Receipts.Post)]
         public async Task<IActionResult> Post(int id, CancellationToken cancellationToken)
         {
             var result = await _service.PostAsync(id, cancellationToken);
@@ -90,7 +92,8 @@ namespace ERPSyatem.API.Controllers
         /// - Posted receipts are not deleted, only reversed.
         /// </remarks>
         [HttpPost("{id}/cancel")]
-        [Authorize(Policy = Permissions.Sales.Receipts.Cancel)]
+        [Authorize(Policy = Permissions.Sales.Receipts.Manage)]
+       // [Authorize(Policy = Permissions.Sales.Receipts.Cancel)]
         public async Task<IActionResult> Cancel(int id, CancellationToken cancellationToken)
         {
             var result = await _service.CancelAsync(id, cancellationToken);
@@ -107,7 +110,8 @@ namespace ERPSyatem.API.Controllers
         ///   to preserve accounting and audit integrity.
         /// </remarks>
         [HttpDelete("{id}")]
-        [Authorize(Policy = Permissions.Sales.Receipts.Delete)]
+        [Authorize(Policy = Permissions.Sales.Receipts.Access)]
+      //  [Authorize(Policy = Permissions.Sales.Receipts.Delete)]
         public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         {
             await _service.DeleteAsync(id, cancellationToken);

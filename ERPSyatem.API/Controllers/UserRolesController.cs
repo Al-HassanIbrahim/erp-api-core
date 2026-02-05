@@ -11,7 +11,7 @@ namespace ERPSyatem.API.Controllers;
 
 [ApiController]
 [Route("api/access/user-roles")]
-[Authorize]
+[Authorize(Policy =Permissions.Security.Roles.Manage)]
 public class UserRolesController : ControllerBase
 {
     private readonly UserManager<ApplicationUser> _userManager;

@@ -59,7 +59,8 @@ namespace ERPSyatem.API.Controllers
         /// The invoice can be modified until it is posted.
         /// </summary>
         [HttpPost]
-        [Authorize(Policy = Permissions.Sales.Invoices.Create)]
+        [Authorize(Policy = Permissions.Sales.Invoices.Access)]
+      //  [Authorize(Policy = Permissions.Sales.Invoices.Create)]
         public async Task<IActionResult> Create([FromBody] CreateSalesInvoiceRequest request, CancellationToken cancellationToken)
         {
             var result = await _service.CreateAsync(request, cancellationToken);
@@ -71,7 +72,8 @@ namespace ERPSyatem.API.Controllers
         /// Only invoices in Draft status can be modified.
         /// </summary>
         [HttpPut("{id}")]
-        [Authorize(Policy = Permissions.Sales.Invoices.Update)]
+        [Authorize(Policy = Permissions.Sales.Invoices.Access)]
+       // [Authorize(Policy = Permissions.Sales.Invoices.Update)]
         public async Task<IActionResult> Update(int id, [FromBody] UpdateSalesInvoiceRequest request, CancellationToken cancellationToken)
         {
             var result = await _service.UpdateAsync(id, request, cancellationToken);
@@ -83,7 +85,8 @@ namespace ERPSyatem.API.Controllers
         /// Once posted, the invoice becomes immutable and financially effective.
         /// </summary>
         [HttpPost("{id}/post")]
-        [Authorize(Policy = Permissions.Sales.Invoices.Post)]
+        [Authorize(Policy = Permissions.Sales.Invoices.Manage)]
+      //  [Authorize(Policy = Permissions.Sales.Invoices.Post)]
         public async Task<IActionResult> Post(int id, CancellationToken cancellationToken)
         {
             var result = await _service.PostAsync(id, cancellationToken);
@@ -105,7 +108,8 @@ namespace ERPSyatem.API.Controllers
         /// </remarks>
 
         [HttpPost("{id}/cancel")]
-        [Authorize(Policy = "sales.invoices.cancel")]
+        [Authorize(Policy = "sales.invoices.Manage")]
+       // [Authorize(Policy = "sales.invoices.cancel")]
         public async Task<IActionResult> Cancel(int id, CancellationToken cancellationToken)
         {
             var result = await _service.CancelAsync(id, cancellationToken);
@@ -126,7 +130,8 @@ namespace ERPSyatem.API.Controllers
         /// - Deletion should be used only when the invoice was created by mistake.
         /// </remarks>
         [HttpDelete("{id}")]
-        [Authorize(Policy = Permissions.Sales.Invoices.Delete)]
+        [Authorize(Policy = Permissions.Sales.Invoices.Access)]
+      //  [Authorize(Policy = Permissions.Sales.Invoices.Delete)]
         public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         {
             await _service.DeleteAsync(id, cancellationToken);

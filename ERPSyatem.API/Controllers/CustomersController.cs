@@ -38,7 +38,8 @@ namespace ERPSyatem.API.Controllers
         }
 
         [HttpPost]
-        [Authorize(Policy = Permissions.Sales.Customers.Create)]
+        [Authorize(Policy = Permissions.Sales.Customers.Manage)]
+       // [Authorize(Policy = Permissions.Sales.Customers.Create)]
         public async Task<IActionResult> Create([FromBody] CreateCustomerRequest request, CancellationToken cancellationToken)
         {
             var result = await _service.CreateAsync(request, cancellationToken);
@@ -46,7 +47,8 @@ namespace ERPSyatem.API.Controllers
         }
 
         [HttpPut("{id}")]
-        [Authorize(Policy = Permissions.Sales.Customers.Update)]
+        [Authorize(Policy = Permissions.Sales.Customers.Manage)]
+        //[Authorize(Policy = Permissions.Sales.Customers.Update)]
         public async Task<IActionResult> Update(int id, [FromBody] UpdateCustomerRequest request, CancellationToken cancellationToken)
         {
             var result = await _service.UpdateAsync(id, request, cancellationToken);
@@ -54,7 +56,8 @@ namespace ERPSyatem.API.Controllers
         }
 
         [HttpDelete("{id}")]
-        [Authorize(Policy = Permissions.Sales.Customers.Delete)]
+        [Authorize(Policy = Permissions.Sales.Customers.Manage)]
+     //   [Authorize(Policy = Permissions.Sales.Customers.Delete)]
         public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         {
             await _service.DeleteAsync(id, cancellationToken);

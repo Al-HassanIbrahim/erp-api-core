@@ -19,7 +19,8 @@ namespace ERPSyatem.API.Controllers
         }
 
         [HttpPost("in")]
-        [Authorize(Policy = Permissions.Inventory.Stock.StockIn)]
+       [Authorize(Policy = Permissions.Inventory.Stock.Manage)]
+       //[Authorize(Policy = Permissions.Inventory.Stock.StockIn)]
         public async Task<IActionResult> StockIn([FromBody] StockInRequest request, CancellationToken cancellationToken)
         {
             var result = await _inventoryService.StockInAsync(request, cancellationToken);
@@ -27,7 +28,8 @@ namespace ERPSyatem.API.Controllers
         }
 
         [HttpPost("out")]
-        [Authorize(Policy = Permissions.Inventory.Stock.StockOut)]
+        [Authorize(Policy = Permissions.Inventory.Stock.Manage)]
+      //  [Authorize(Policy = Permissions.Inventory.Stock.StockOut)]
         public async Task<IActionResult> StockOut([FromBody] StockOutRequest request, CancellationToken cancellationToken)
         {
             var result = await _inventoryService.StockOutAsync(request, cancellationToken);
@@ -35,7 +37,8 @@ namespace ERPSyatem.API.Controllers
         }
 
         [HttpPost("transfer")]
-        [Authorize(Policy = Permissions.Inventory.Stock.Transfer)]
+        [Authorize(Policy = Permissions.Inventory.Stock.Manage)]
+       // [Authorize(Policy = Permissions.Inventory.Stock.Transfer)]
         public async Task<IActionResult> Transfer([FromBody] StockTransferRequest request, CancellationToken cancellationToken)
         {
             var result = await _inventoryService.TransferAsync(request, cancellationToken);
@@ -43,7 +46,8 @@ namespace ERPSyatem.API.Controllers
         }
 
         [HttpPost("opening-balance")]
-        [Authorize(Policy = Permissions.Inventory.Stock.Opening)]
+        [Authorize(Policy = Permissions.Inventory.Stock.Manage)]
+      //  [Authorize(Policy = Permissions.Inventory.Stock.Opening)]
         public async Task<IActionResult> OpeningBalance([FromBody] OpeningBalanceRequest request, CancellationToken cancellationToken)
         {
             var result = await _inventoryService.OpeningBalanceAsync(request, cancellationToken);
@@ -51,7 +55,8 @@ namespace ERPSyatem.API.Controllers
         }
 
         [HttpPost("adjustment")]
-        [Authorize(Policy = Permissions.Inventory.Stock.Adjust)]
+        [Authorize(Policy = Permissions.Inventory.Stock.Manage)]
+        //[Authorize(Policy = Permissions.Inventory.Stock.Adjust)]
         public async Task<IActionResult> Adjustment([FromBody] StockAdjustmentRequest request, CancellationToken cancellationToken)
         {
             var result = await _inventoryService.AdjustmentAsync(request, cancellationToken);

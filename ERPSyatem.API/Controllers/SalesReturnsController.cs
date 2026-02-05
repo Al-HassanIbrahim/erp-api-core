@@ -58,7 +58,8 @@ namespace ERPSyatem.API.Controllers
         /// The return can be posted to affect inventory if enabled.
         /// </summary>
         [HttpPost]
-        [Authorize(Policy = Permissions.Sales.Returns.Create)]
+        [Authorize(Policy = Permissions.Sales.Returns.Access)]
+       // [Authorize(Policy = Permissions.Sales.Returns.Create)]
         public async Task<IActionResult> Create([FromBody] CreateSalesReturnRequest request, CancellationToken cancellationToken)
         {
             var result = await _service.CreateAsync(request, cancellationToken);
@@ -70,7 +71,8 @@ namespace ERPSyatem.API.Controllers
         /// returned quantitiesare added back to stock (StockIn).
         /// </summary>
         [HttpPost("{id}/post")]
-        [Authorize(Policy = Permissions.Sales.Returns.Post)]
+        [Authorize(Policy = Permissions.Sales.Returns.Manage)]
+      //  [Authorize(Policy = Permissions.Sales.Returns.Post)]
         public async Task<IActionResult> Post(int id, CancellationToken cancellationToken)
         {
             var result = await _service.PostAsync(id, cancellationToken);
@@ -86,7 +88,8 @@ namespace ERPSyatem.API.Controllers
         /// To reverse a posted return, a separate corrective document must be created.
         /// </remarks>
         [HttpPost("{id}/cancel")]
-        [Authorize(Policy = Permissions.Sales.Returns.Cancel)]
+        [Authorize(Policy = Permissions.Sales.Returns.Manage)]
+      //  [Authorize(Policy = Permissions.Sales.Returns.Cancel)]
         public async Task<IActionResult> Cancel(int id, CancellationToken cancellationToken)
         {
             var result = await _service.CancelAsync(id, cancellationToken);
@@ -104,7 +107,8 @@ namespace ERPSyatem.API.Controllers
         /// and has not caused any business or inventory impact.
         /// </remarks>
         [HttpDelete("{id}")]
-        [Authorize(Policy = Permissions.Sales.Returns.Delete)]
+        [Authorize(Policy = Permissions.Sales.Returns.Access)]
+      //  [Authorize(Policy = Permissions.Sales.Returns.Delete)]
         public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         {
             await _service.DeleteAsync(id, cancellationToken);

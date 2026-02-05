@@ -8,7 +8,6 @@ namespace ERPSyatem.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
     public class CategoryController : ControllerBase
     {
         private readonly ICategoryService _service;
@@ -38,7 +37,8 @@ namespace ERPSyatem.API.Controllers
         }
 
         [HttpPost]
-        [Authorize(Policy =Permissions.Products.Categories.Create)]
+        [Authorize(Policy =Permissions.Products.Categories.Manage)]
+    //    [Authorize(Policy =Permissions.Products.Categories.Create)]
         public async Task<IActionResult> Create([FromBody] CreateCategoryRequest request, CancellationToken cancellationToken)
         {
             var result = await _service.CreateAsync(request, cancellationToken);
@@ -46,7 +46,8 @@ namespace ERPSyatem.API.Controllers
         }
 
         [HttpPut("{id}")]
-        [Authorize(Policy =Permissions.Products.Categories.Update)]
+        [Authorize(Policy =Permissions.Products.Categories.Manage)]
+      //  [Authorize(Policy =Permissions.Products.Categories.Update)]
         public async Task<IActionResult> Update(int id, [FromBody] UpdateCategoryRequest request, CancellationToken cancellationToken)
         {
             var result = await _service.UpdateAsync(id, request, cancellationToken);
@@ -54,7 +55,8 @@ namespace ERPSyatem.API.Controllers
         }
 
         [HttpDelete("{id}")]
-        [Authorize(Policy =Permissions.Products.Categories.Delete)]
+        [Authorize(Policy =Permissions.Products.Categories.Manage)]
+        //[Authorize(Policy =Permissions.Products.Categories.Delete)]
         public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         {
             await _service.DeleteAsync(id, cancellationToken);

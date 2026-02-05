@@ -1,4 +1,5 @@
-﻿using ERPSystem.Application.DTOs.Inventory;
+﻿using ERPSystem.Application.Authorization;
+using ERPSystem.Application.DTOs.Inventory;
 using ERPSystem.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -7,7 +8,6 @@ namespace ERPSyatem.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
     public class WarehousesController : ControllerBase
     {
         private readonly IWarehouseService _warehouseService;
@@ -18,6 +18,7 @@ namespace ERPSyatem.API.Controllers
         }
 
         [HttpGet]
+        [Authorize(Policy =Permissions.Inventory.Warehouses.Read)]
         public async Task<IActionResult> GetAll([FromQuery] int? branchId)
         {
             var result = await _warehouseService.GetAllAsync(branchId);
@@ -25,6 +26,7 @@ namespace ERPSyatem.API.Controllers
         }
 
         [HttpGet("{id:int}")]
+        [Authorize(Policy =Permissions.Inventory.Warehouses.Read)]
         public async Task<IActionResult> GetById(int id)
         {
             var warehouse = await _warehouseService.GetByIdAsync(id);
@@ -32,6 +34,7 @@ namespace ERPSyatem.API.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = Permissions.Inventory.Warehouses.Manage)]
         public async Task<IActionResult> Create([FromBody] CreateWarehouseDto dto)
         {
             var id = await _warehouseService.CreateAsync(dto);
@@ -39,6 +42,7 @@ namespace ERPSyatem.API.Controllers
         }
 
         [HttpPut("{id:int}")]
+        [Authorize(Policy = Permissions.Inventory.Warehouses.Manage)]
         public async Task<IActionResult> Update(int id, [FromBody] UpdateWarehouseDto dto)
         {
             var updated = await _warehouseService.UpdateAsync(id, dto);
@@ -47,6 +51,7 @@ namespace ERPSyatem.API.Controllers
         }
 
         [HttpDelete("{id:int}")]
+        [Authorize(Policy = Permissions.Inventory.Warehouses.Manage)]
         public async Task<IActionResult> Delete(int id)
         {
             var deleted = await _warehouseService.DeleteAsync(id);

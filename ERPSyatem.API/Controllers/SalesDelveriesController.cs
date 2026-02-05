@@ -59,7 +59,8 @@ namespace ERPSyatem.API.Controllers
         /// This represents a planned delivery of goods.
         /// </summary>
         [HttpPost]
-        [Authorize(Policy = Permissions.Sales.Deliveries.Create)]
+        [Authorize(Policy = Permissions.Sales.Deliveries.Access)]
+        //[Authorize(Policy = Permissions.Sales.Deliveries.Create)]
         public async Task<IActionResult> Create([FromBody] CreateSalesDeliveryRequest request, CancellationToken cancellationToken)
         {
             var result = await _service.CreateAsync(request, cancellationToken);
@@ -72,7 +73,8 @@ namespace ERPSyatem.API.Controllers
         /// are reduced from the specified warehouse.
         /// </summary>
         [HttpPost("{id}/post")]
-        [Authorize(Policy = Permissions.Sales.Deliveries.Post)]
+        [Authorize(Policy = Permissions.Sales.Deliveries.Manage)]
+        //[Authorize(Policy = Permissions.Sales.Deliveries.Post)]
         public async Task<IActionResult> Post(int id, CancellationToken cancellationToken)
         {
             var result = await _service.PostAsync(id, cancellationToken);
@@ -88,7 +90,8 @@ namespace ERPSyatem.API.Controllers
         /// To reverse a posted delivery, create a sales return instead.
         /// </remarks>
         [HttpPost("{id}/cancel")]
-        [Authorize(Policy = Permissions.Sales.Deliveries.Cancel)]
+        [Authorize(Policy = Permissions.Sales.Deliveries.Manage)]
+        //[Authorize(Policy = Permissions.Sales.Deliveries.Cancel)]
         public async Task<IActionResult> Cancel(int id, CancellationToken cancellationToken)
         {
             var result = await _service.CancelAsync(id, cancellationToken);
@@ -103,7 +106,8 @@ namespace ERPSyatem.API.Controllers
         /// The record is marked as deleted and excluded from future queries.
         /// </remarks>
         [HttpDelete("{id}")]
-        [Authorize(Policy = Permissions.Sales.Deliveries.Delete)]
+        [Authorize(Policy = Permissions.Sales.Deliveries.Access)]
+        //[Authorize(Policy = Permissions.Sales.Deliveries.Delete)]
         public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         {
             await _service.DeleteAsync(id, cancellationToken);

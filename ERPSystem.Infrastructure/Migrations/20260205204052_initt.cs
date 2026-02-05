@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace ERPSystem.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class FixDeleteEmployee1 : Migration
+    public partial class initt : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -116,7 +116,7 @@ namespace ERPSystem.Infrastructure.Migrations
                     Phone = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Address = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     TaxNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CreditLimit = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    CreditLimit = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
@@ -236,6 +236,10 @@ namespace ERPSystem.Infrastructure.Migrations
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     CompanyId = table.Column<int>(type: "int", nullable: false),
                     FullName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ProfileImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DeletedByUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -275,11 +279,11 @@ namespace ERPSystem.Infrastructure.Migrations
                     CustomerId = table.Column<int>(type: "int", nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false),
                     PaymentStatus = table.Column<int>(type: "int", nullable: false),
-                    SubTotal = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    DiscountAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    TaxAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    GrandTotal = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    PaidAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    SubTotal = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    DiscountAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    TaxAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    GrandTotal = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    PaidAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     Notes = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     PostedByUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     PostedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
@@ -311,7 +315,7 @@ namespace ERPSystem.Infrastructure.Migrations
                     ReceiptNumber = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     ReceiptDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     CustomerId = table.Column<int>(type: "int", nullable: false),
-                    Amount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Amount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     PaymentMethod = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ReferenceNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Status = table.Column<int>(type: "int", nullable: false),
@@ -413,8 +417,8 @@ namespace ERPSystem.Infrastructure.Migrations
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CategoryId = table.Column<int>(type: "int", nullable: true),
                     UnitOfMeasureId = table.Column<int>(type: "int", nullable: false),
-                    DefaultPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    MinQuantity = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    DefaultPrice = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    MinQuantity = table.Column<decimal>(type: "decimal(18,4)", precision: 18, scale: 4, nullable: true),
                     Barcode = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
@@ -610,9 +614,9 @@ namespace ERPSystem.Infrastructure.Migrations
                     CustomerId = table.Column<int>(type: "int", nullable: false),
                     WarehouseId = table.Column<int>(type: "int", nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false),
-                    SubTotal = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    TaxAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    GrandTotal = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    SubTotal = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    TaxAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    GrandTotal = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     Reason = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Notes = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     PostedByUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
@@ -653,7 +657,7 @@ namespace ERPSystem.Infrastructure.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     SalesReceiptId = table.Column<int>(type: "int", nullable: false),
                     SalesInvoiceId = table.Column<int>(type: "int", nullable: false),
-                    AllocatedAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    AllocatedAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     IsDeleted = table.Column<bool>(type: "bit", nullable: false)
@@ -682,14 +686,14 @@ namespace ERPSystem.Infrastructure.Migrations
                     SalesInvoiceId = table.Column<int>(type: "int", nullable: false),
                     ProductId = table.Column<int>(type: "int", nullable: false),
                     UnitId = table.Column<int>(type: "int", nullable: false),
-                    Quantity = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    UnitPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    DiscountPercent = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    DiscountAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    TaxPercent = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    TaxAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    LineTotal = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    DeliveredQuantity = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Quantity = table.Column<decimal>(type: "decimal(18,4)", precision: 18, scale: 4, nullable: false),
+                    UnitPrice = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    DiscountPercent = table.Column<decimal>(type: "decimal(5,2)", precision: 5, scale: 2, nullable: false),
+                    DiscountAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    TaxPercent = table.Column<decimal>(type: "decimal(5,2)", precision: 5, scale: 2, nullable: false),
+                    TaxAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    LineTotal = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    DeliveredQuantity = table.Column<decimal>(type: "decimal(18,4)", precision: 18, scale: 4, nullable: false),
                     Notes = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
@@ -724,11 +728,11 @@ namespace ERPSystem.Infrastructure.Migrations
                     WarehouseId = table.Column<int>(type: "int", nullable: false),
                     ProductId = table.Column<int>(type: "int", nullable: false),
                     CompanyId = table.Column<int>(type: "int", nullable: false),
-                    QuantityOnHand = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    MinQuantity = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
-                    MaxQuantity = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    QuantityOnHand = table.Column<decimal>(type: "decimal(18,4)", precision: 18, scale: 4, nullable: false),
+                    MinQuantity = table.Column<decimal>(type: "decimal(18,4)", precision: 18, scale: 4, nullable: true),
+                    MaxQuantity = table.Column<decimal>(type: "decimal(18,4)", precision: 18, scale: 4, nullable: true),
                     LastUpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    AverageUnitCost = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    AverageUnitCost = table.Column<decimal>(type: "decimal(18,4)", precision: 18, scale: 4, nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     IsDeleted = table.Column<bool>(type: "bit", nullable: false)
@@ -757,10 +761,10 @@ namespace ERPSystem.Infrastructure.Migrations
                     InventoryDocumentId = table.Column<int>(type: "int", nullable: false),
                     ProductId = table.Column<int>(type: "int", nullable: false),
                     WarehouseId = table.Column<int>(type: "int", nullable: false),
-                    Quantity = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Quantity = table.Column<decimal>(type: "decimal(18,4)", precision: 18, scale: 4, nullable: false),
                     UnitId = table.Column<int>(type: "int", nullable: false),
                     LineType = table.Column<int>(type: "int", nullable: false),
-                    UnitCost = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    UnitCost = table.Column<decimal>(type: "decimal(18,4)", precision: 18, scale: 4, nullable: true),
                     Notes = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
@@ -795,11 +799,11 @@ namespace ERPSystem.Infrastructure.Migrations
                     SalesReturnId = table.Column<int>(type: "int", nullable: false),
                     ProductId = table.Column<int>(type: "int", nullable: false),
                     UnitId = table.Column<int>(type: "int", nullable: false),
-                    Quantity = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    UnitPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    TaxPercent = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    TaxAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    LineTotal = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Quantity = table.Column<decimal>(type: "decimal(18,4)", precision: 18, scale: 4, nullable: false),
+                    UnitPrice = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    TaxPercent = table.Column<decimal>(type: "decimal(5,2)", precision: 5, scale: 2, nullable: false),
+                    TaxAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    LineTotal = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     Notes = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
@@ -835,7 +839,7 @@ namespace ERPSystem.Infrastructure.Migrations
                     SalesInvoiceLineId = table.Column<int>(type: "int", nullable: false),
                     ProductId = table.Column<int>(type: "int", nullable: false),
                     UnitId = table.Column<int>(type: "int", nullable: false),
-                    Quantity = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Quantity = table.Column<decimal>(type: "decimal(18,4)", precision: 18, scale: 4, nullable: false),
                     Notes = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
@@ -1024,6 +1028,43 @@ namespace ERPSystem.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Leads",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CompanyId = table.Column<int>(type: "int", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    Email = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    PhoneNumber = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
+                    CompanyName = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    Source = table.Column<int>(type: "int", nullable: false),
+                    Stage = table.Column<int>(type: "int", nullable: false),
+                    DealValue = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: true),
+                    LastContactDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    AssignedToId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    ConvertedCustomerId = table.Column<int>(type: "int", nullable: true),
+                    ConvertedDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Leads", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Leads_Customers_ConvertedCustomerId",
+                        column: x => x.ConvertedCustomerId,
+                        principalTable: "Customers",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Leads_Employees_AssignedToId",
+                        column: x => x.AssignedToId,
+                        principalTable: "Employees",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "LeaveBalances",
                 columns: table => new
                 {
@@ -1121,6 +1162,44 @@ namespace ERPSystem.Infrastructure.Migrations
                         principalTable: "Employees",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Pipelines",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CompanyId = table.Column<int>(type: "int", nullable: false),
+                    DealName = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    CustomerId = table.Column<int>(type: "int", nullable: false),
+                    LeadId = table.Column<int>(type: "int", nullable: true),
+                    Amount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    Stage = table.Column<int>(type: "int", nullable: false),
+                    ExpectedCloseDate = table.Column<DateOnly>(type: "date", nullable: true),
+                    OwnerId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Pipelines", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Pipelines_Customers_CustomerId",
+                        column: x => x.CustomerId,
+                        principalTable: "Customers",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Pipelines_Employees_OwnerId",
+                        column: x => x.OwnerId,
+                        principalTable: "Employees",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Pipelines_Leads_LeadId",
+                        column: x => x.LeadId,
+                        principalTable: "Leads",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -1377,6 +1456,26 @@ namespace ERPSystem.Infrastructure.Migrations
                 column: "DepartmentId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Leads_AssignedToId",
+                table: "Leads",
+                column: "AssignedToId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Leads_CompanyId_Stage",
+                table: "Leads",
+                columns: new[] { "CompanyId", "Stage" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Leads_ConvertedCustomerId",
+                table: "Leads",
+                column: "ConvertedCustomerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Leads_Email",
+                table: "Leads",
+                column: "Email");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_LeaveAttachments_LeaveRequestId",
                 table: "LeaveAttachments",
                 column: "LeaveRequestId");
@@ -1402,6 +1501,26 @@ namespace ERPSystem.Infrastructure.Migrations
                 table: "Payrolls",
                 columns: new[] { "EmployeeId", "Month", "Year" },
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Pipelines_CompanyId_Stage",
+                table: "Pipelines",
+                columns: new[] { "CompanyId", "Stage" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Pipelines_CustomerId",
+                table: "Pipelines",
+                column: "CustomerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Pipelines_LeadId",
+                table: "Pipelines",
+                column: "LeadId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Pipelines_OwnerId",
+                table: "Pipelines",
+                column: "OwnerId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Products_CategoryId",
@@ -1626,6 +1745,9 @@ namespace ERPSystem.Infrastructure.Migrations
                 name: "PayrollLineItems");
 
             migrationBuilder.DropTable(
+                name: "Pipelines");
+
+            migrationBuilder.DropTable(
                 name: "SalesDeliveryLines");
 
             migrationBuilder.DropTable(
@@ -1657,6 +1779,9 @@ namespace ERPSystem.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "Payrolls");
+
+            migrationBuilder.DropTable(
+                name: "Leads");
 
             migrationBuilder.DropTable(
                 name: "SalesDeliveries");
