@@ -1,3 +1,4 @@
+using ERPSystem.Application.Authorization;
 using ERPSystem.Application.DTOs.Expenses;
 using ERPSystem.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -7,7 +8,7 @@ namespace ERPSyatem.API.Controllers
 {
     [ApiController]
     [Route("api/expenses/stats")]
-    [Authorize]
+    [Authorize(Policy =Permissions.Expenses.Items.Read)]
     public class ExpenseStatsController : ControllerBase
     {
         private readonly IExpenseStatsService _service;

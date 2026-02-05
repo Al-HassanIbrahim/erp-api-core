@@ -1,3 +1,4 @@
+using ERPSystem.Application.Authorization;
 using ERPSystem.Application.DTOs.Expenses;
 using ERPSystem.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -21,6 +22,7 @@ namespace ERPSyatem.API.Controllers
         /// Retrieves all expense categories for the current company.
         /// </summary>
         [HttpGet]
+        [Authorize(Policy =Permissions.Expenses.Items.Read)]
         public async Task<IActionResult> GetAll(CancellationToken ct)
         {
             var result = await _service.GetAllAsync(ct);
@@ -31,6 +33,7 @@ namespace ERPSyatem.API.Controllers
         /// Retrieves a specific expense category with stats.
         /// </summary>
         [HttpGet("{id}")]
+        [Authorize(Policy =Permissions.Expenses.Items.Read)]
         public async Task<IActionResult> GetById(int id, CancellationToken ct)
         {
             var result = await _service.GetByIdAsync(id, ct);
@@ -43,6 +46,7 @@ namespace ERPSyatem.API.Controllers
         /// Creates a new expense category.
         /// </summary>
         [HttpPost]
+        [Authorize(Policy =Permissions.Expenses.Items.Create)]
         public async Task<IActionResult> Create([FromBody] CreateExpenseCategoryDto dto, CancellationToken ct)
         {
             var result = await _service.CreateAsync(dto, ct);
@@ -53,6 +57,7 @@ namespace ERPSyatem.API.Controllers
         /// Updates an existing expense category.
         /// </summary>
         [HttpPut("{id}")]
+        [Authorize(Policy =Permissions.Expenses.Items.Update)]
         public async Task<IActionResult> Update(int id, [FromBody] UpdateExpenseCategoryDto dto, CancellationToken ct)
         {
             var result = await _service.UpdateAsync(id, dto, ct);
@@ -64,6 +69,7 @@ namespace ERPSyatem.API.Controllers
         /// Only categories without expenses can be deleted.
         /// </summary>
         [HttpDelete("{id}")]
+        [Authorize(Policy =Permissions.Expenses.Items.Delete)]
         public async Task<IActionResult> Delete(int id, CancellationToken ct)
         {
             await _service.DeleteAsync(id, ct);

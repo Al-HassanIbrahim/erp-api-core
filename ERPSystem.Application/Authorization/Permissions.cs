@@ -134,12 +134,12 @@ public static class Permissions
     {
         public static class Items
         {
-            public const string Read = "expenses.items.read";
             public const string Create = "expenses.items.create";
+            public const string Read = "expenses.items.read";
             public const string Update = "expenses.items.update";
             public const string Delete = "expenses.items.delete";
-            public const string Approve = "expenses.items.approve";
-            public const string Reject = "expenses.items.reject";
+            //public const string Approve = "expenses.items.approve";
+            //public const string Reject = "expenses.items.reject";
         }
 
         public static class Categories
