@@ -54,7 +54,7 @@ namespace ERPSyatem.API.Controllers
         }
 
         [HttpDelete("{id}")]
-        [Authorize(Policy =Permissions.Categories.Delete)]
+        [Authorize(Policy =Permissions.Products.Categories.Delete)]
         public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         {
             await _service.DeleteAsync(id, cancellationToken);
