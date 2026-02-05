@@ -1,9 +1,8 @@
 using System.Text;
-using ERPSyatem.API.Extensions;
-using ERPSyatem.API.Middleware;
 using ERPSystem.Application.Interfaces;
 using ERPSystem.Application.Services.Contacts;
 using ERPSystem.Application.Services.Core;
+using ERPSystem.Application.Services.CRM;
 using ERPSystem.Application.Services.Expenses;
 using ERPSystem.Application.Services.Hr;
 using ERPSystem.Application.Services.Inventory;
@@ -15,6 +14,7 @@ using ERPSystem.Infrastructure.Identity;
 using ERPSystem.Infrastructure.Repositories;
 using ERPSystem.Infrastructure.Repositories.Contacts;
 using ERPSystem.Infrastructure.Repositories.Core;
+using ERPSystem.Infrastructure.Repositories.CRM;
 using ERPSystem.Infrastructure.Repositories.Expenses;
 using ERPSystem.Infrastructure.Repositories.Hr;
 using ERPSystem.Infrastructure.Repositories.Inventory;
@@ -24,6 +24,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using System.Text;
+using ERPSyatem.API.Extensions;
+using ERPSyatem.API.Middleware;
 
 namespace ERPSyatem.API
 {
@@ -112,6 +115,16 @@ namespace ERPSyatem.API
             builder.Services.AddScoped<IExpenseService, ExpenseService>();
             builder.Services.AddScoped<IExpenseCategoryService, ExpenseCategoryService>();
             builder.Services.AddScoped<IExpenseStatsService, ExpenseStatsService>();
+
+
+            // CRM Repo
+            builder.Services.AddScoped<ILeadRepository, LeadRepository>();
+            builder.Services.AddScoped<IPipelineRepository, PipelineRepository>();
+            // CRM Services
+            builder.Services.AddScoped<ILeadService, LeadService>();
+            builder.Services.AddScoped<IPipelineService, PipelineService>();
+
+
 
             #region Swagger
             builder.Services.AddSwaggerGen(c =>
