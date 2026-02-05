@@ -153,7 +153,7 @@ public static class Permissions
 
     public static class Core
     {
-        public static class Companies
+        public static class Companie
         {
             public const string Read = "core.companies.read";
             public const string Update = "core.companies.update";
