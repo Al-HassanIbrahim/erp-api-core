@@ -1,4 +1,5 @@
-﻿using ERPSystem.Application.DTOs.Core;
+﻿using ERPSystem.Application.Authorization;
+using ERPSystem.Application.DTOs.Core;
 using ERPSystem.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -7,6 +8,7 @@ namespace ERPSyatem.API.Controllers
 {
     [ApiController]
     [Route("api/modules")]
+    //[Authorize(Policy =Permissions.Core.Modules.Read)]
     public class ModulesController : ControllerBase
     {
         private readonly IModuleService _service;
