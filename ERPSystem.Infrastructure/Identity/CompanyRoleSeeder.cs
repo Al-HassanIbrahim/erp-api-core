@@ -117,8 +117,8 @@ public static class CompanyRoleSeeder
             //Permissions.Expenses.Categories.Delete,
 
             // Contacts - Full access
-            Permissions.Contacts.Manage,
-            Permissions.Contacts.Read,
+            Permissions.Contacts.Contact.Manage,
+            Permissions.Contacts.Contact.Read,
 
             // HR - Full access
             Permissions.Hr.Employees.Manage,

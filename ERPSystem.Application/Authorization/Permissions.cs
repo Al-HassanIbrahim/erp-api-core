@@ -180,26 +180,29 @@ public static class Permissions
     }
     public static class Contacts
     {
-        public const string Manage = "contacts.manage";
-        public const string Read = "contacts.read";
+        public static class Contact
+        {
+            public const string Manage = "contacts.contacts.manage";
+            public const string Read = "contacts.contacts.read";
+        }
     }
 
     public static class Hr
     {
         public static class PayRolls
         {
-            public const string Manage = "hr.positions.manage";
-            public const string Access = "hr.positions.access";
-            public const string Read = "hr.positions.read";
+            public const string Manage = "hr.PayRolls.manage";
+            public const string Access = "hr.PayRolls.access";
+            public const string Read = "hr.PayRolls.read";
             //public const string Create = "hr.positions.create";
             //public const string Update = "hr.positions.update";
             //public const string Delete = "hr.positions.delete";
         }
         public static class LeaveRequests
         {
-            public const string Manage = "hr.positions.manage";
-            public const string Access = "hr.positions.access";
-            public const string Read = "hr.positions.read";
+            public const string Manage = "hr.LeaveRequests.manage";
+            public const string Access = "hr.LeaveRequests.access";
+            public const string Read = "hr.LeaveRequests.read";
             //public const string Create = "hr.positions.create";
             //public const string Update = "hr.positions.update";
             //public const string Delete = "hr.positions.delete";
@@ -238,18 +241,18 @@ public static class Permissions
     {
         public static class Leads
         {
-            public const string Manage = "hr.positions.manage";
-            public const string Access = "hr.positions.access";
-            public const string Read = "hr.positions.read";
+            public const string Manage = "crm.leads.manage";
+            public const string Access = "crm.leads.access";
+            public const string Read = "crm.leads.read";
             //public const string Create = "hr.positions.create";
             //public const string Update = "hr.positions.update";
             //public const string Delete = "hr.positions.delete";
         }
         public static class Customers
         {
-            public const string Manage = "hr.positions.manage";
-            public const string Access = "hr.positions.access";
-            public const string Read = "hr.positions.read";
+            public const string Manage = "crm.Customers.manage";
+            public const string Access = "crm.Customers.access";
+            public const string Read = "crm.Customers.read";
             //public const string Create = "hr.positions.create";
             //public const string Update = "hr.positions.update";
             //public const string Delete = "hr.positions.delete";
