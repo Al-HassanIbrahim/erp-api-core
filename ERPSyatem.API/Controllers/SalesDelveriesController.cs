@@ -1,4 +1,5 @@
-﻿using ERPSystem.Application.DTOs.Sales;
+﻿using ERPSystem.Application.Authorization;
+using ERPSystem.Application.DTOs.Sales;
 using ERPSystem.Application.Interfaces;
 using ERPSystem.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
@@ -27,6 +28,7 @@ namespace ERPSyatem.API.Controllers
         /// Supports filtering by invoice, status, and date range.
         /// </summary>
         [HttpGet]
+        [Authorize(Policy = Permissions.Sales.Deliveries.Read)]
         public async Task<IActionResult> GetAll(
             [FromQuery] int? invoiceId,
             [FromQuery] SalesDeliveryStatus? status,
@@ -43,6 +45,7 @@ namespace ERPSyatem.API.Controllers
         /// including delivery lines.
         /// </summary>
         [HttpGet("{id}")]
+        [Authorize(Policy = Permissions.Sales.Deliveries.Read)]
         public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken)
         {
             var result = await _service.GetByIdAsync(id, cancellationToken);
@@ -56,6 +59,7 @@ namespace ERPSyatem.API.Controllers
         /// This represents a planned delivery of goods.
         /// </summary>
         [HttpPost]
+        [Authorize(Policy = Permissions.Sales.Deliveries.Create)]
         public async Task<IActionResult> Create([FromBody] CreateSalesDeliveryRequest request, CancellationToken cancellationToken)
         {
             var result = await _service.CreateAsync(request, cancellationToken);
@@ -68,6 +72,7 @@ namespace ERPSyatem.API.Controllers
         /// are reduced from the specified warehouse.
         /// </summary>
         [HttpPost("{id}/post")]
+        [Authorize(Policy = Permissions.Sales.Deliveries.Post)]
         public async Task<IActionResult> Post(int id, CancellationToken cancellationToken)
         {
             var result = await _service.PostAsync(id, cancellationToken);
@@ -83,6 +88,7 @@ namespace ERPSyatem.API.Controllers
         /// To reverse a posted delivery, create a sales return instead.
         /// </remarks>
         [HttpPost("{id}/cancel")]
+        [Authorize(Policy = Permissions.Sales.Deliveries.Cancel)]
         public async Task<IActionResult> Cancel(int id, CancellationToken cancellationToken)
         {
             var result = await _service.CancelAsync(id, cancellationToken);
@@ -97,6 +103,7 @@ namespace ERPSyatem.API.Controllers
         /// The record is marked as deleted and excluded from future queries.
         /// </remarks>
         [HttpDelete("{id}")]
+        [Authorize(Policy = Permissions.Sales.Deliveries.Delete)]
         public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         {
             await _service.DeleteAsync(id, cancellationToken);

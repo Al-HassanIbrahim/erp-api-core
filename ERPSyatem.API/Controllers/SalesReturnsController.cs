@@ -1,4 +1,5 @@
-﻿using ERPSystem.Application.DTOs.Sales;
+﻿using ERPSystem.Application.Authorization;
+using ERPSystem.Application.DTOs.Sales;
 using ERPSystem.Application.Interfaces;
 using ERPSystem.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
@@ -27,6 +28,7 @@ namespace ERPSyatem.API.Controllers
         /// filtered by customer, status, or date range.
         /// </summary>
         [HttpGet]
+        [Authorize(Policy = Permissions.Sales.Returns.Read)]
         public async Task<IActionResult> GetAll(
             [FromQuery] int? customerId,
             [FromQuery] SalesReturnStatus? status,
@@ -42,6 +44,7 @@ namespace ERPSyatem.API.Controllers
         /// Retrieves a specific sales return document by its identifier.
         /// </summary>
         [HttpGet("{id}")]
+        [Authorize(Policy = Permissions.Sales.Returns.Read)]
         public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken)
         {
             var result = await _service.GetByIdAsync(id, cancellationToken);
@@ -55,6 +58,7 @@ namespace ERPSyatem.API.Controllers
         /// The return can be posted to affect inventory if enabled.
         /// </summary>
         [HttpPost]
+        [Authorize(Policy = Permissions.Sales.Returns.Create)]
         public async Task<IActionResult> Create([FromBody] CreateSalesReturnRequest request, CancellationToken cancellationToken)
         {
             var result = await _service.CreateAsync(request, cancellationToken);
@@ -66,6 +70,7 @@ namespace ERPSyatem.API.Controllers
         /// returned quantitiesare added back to stock (StockIn).
         /// </summary>
         [HttpPost("{id}/post")]
+        [Authorize(Policy = Permissions.Sales.Returns.Post)]
         public async Task<IActionResult> Post(int id, CancellationToken cancellationToken)
         {
             var result = await _service.PostAsync(id, cancellationToken);
@@ -81,6 +86,7 @@ namespace ERPSyatem.API.Controllers
         /// To reverse a posted return, a separate corrective document must be created.
         /// </remarks>
         [HttpPost("{id}/cancel")]
+        [Authorize(Policy = Permissions.Sales.Returns.Cancel)]
         public async Task<IActionResult> Cancel(int id, CancellationToken cancellationToken)
         {
             var result = await _service.CancelAsync(id, cancellationToken);
@@ -98,6 +104,7 @@ namespace ERPSyatem.API.Controllers
         /// and has not caused any business or inventory impact.
         /// </remarks>
         [HttpDelete("{id}")]
+        [Authorize(Policy = Permissions.Sales.Returns.Delete)]
         public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         {
             await _service.DeleteAsync(id, cancellationToken);

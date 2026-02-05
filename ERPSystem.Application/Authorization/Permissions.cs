@@ -60,7 +60,8 @@ public static class Permissions
         {
             public const string Read = "sales.receipts.read";
             public const string Create = "sales.receipts.create";
-            public const string Update = "sales.receipts.update";
+            public const string Post = "sales.receipts.post";
+            public const string Cancel = "sales.receipts.cancel";
             public const string Delete = "sales.receipts.delete";
         }
 
@@ -70,6 +71,8 @@ public static class Permissions
             public const string Create = "sales.returns.create";
             public const string Update = "sales.returns.update";
             public const string Delete = "sales.returns.delete";
+            public const string Post = "sales.returns.post";
+            public const string Cancel = "sales.returns.cancel";
         }
 
         public static class Customers
