@@ -116,21 +116,18 @@ public static class Permissions
         public const string Create = "products.create";
         public const string Update = "products.update";
         public const string Delete = "products.delete";
-    }
-    public static class Categories
-    {
-        public const string Read = "products.categories.read";
-        public const string Create = "products.categories.create";
-        public const string Update = "products.categories.update";
-        public const string Delete = "products.categories.delete";
-    }
-
-    public static class Contacts
-    {
-        public const string Read = "contacts.read";
-        public const string Create = "contacts.create";
-        public const string Update = "contacts.update";
-        public const string Delete = "contacts.delete";
+        public static class Categories
+        {
+            public const string Read = "products.categories.read";
+            public const string Create = "products.categories.create";
+            public const string Update = "products.categories.update";
+            public const string Delete = "products.categories.delete";
+        }
+        public static class UnitOfMeasures
+        {
+            public const string access = "Products.UnitOfMeasures.access";
+        }
+        
     }
 
     public static class Expenses
