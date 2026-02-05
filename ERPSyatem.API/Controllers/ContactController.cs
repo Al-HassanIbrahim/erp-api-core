@@ -34,19 +34,19 @@ namespace ERPSyatem.API.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateAsync(CreateContactRequest request, CancellationToken cancellationToken)
         {
-            var result = _contactService.Create(request, cancellationToken);
+            var result =await _contactService.Create(request, cancellationToken);
             return CreatedAtAction(nameof(GetContact), new { id = result.Id }, result);
         }
         [HttpPut]
         public async Task<IActionResult> UpdateAsync(UpdateContactDto request, CancellationToken cancellationToken)
         {
-            var result = _contactService.Update(request, cancellationToken);
+            var result = await _contactService.Update(request, cancellationToken);
             return Ok(result);
         }
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteAAsync(int id, CancellationToken cancellationToken)
         {
-            var result = _contactService.Delete(id, cancellationToken);
+            await _contactService.Delete(id, cancellationToken);
             return NoContent();
         }
     }
