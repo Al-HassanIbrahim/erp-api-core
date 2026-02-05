@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Authorization;
+
 namespace ERPSystem.Application.Authorization;
 
 /// <summary>
@@ -42,14 +44,15 @@ public static class Permissions
             public const string Update = "sales.invoices.update";
             public const string Delete = "sales.invoices.delete";
             public const string Post = "sales.invoices.post";
-            public const string Void = "sales.invoices.void";
+            public const string cancel = "sales.invoices.cancel";
         }
 
         public static class Deliveries
         {
             public const string Read = "sales.deliveries.read";
             public const string Create = "sales.deliveries.create";
-            public const string Update = "sales.deliveries.update";
+            public const string Post = "sales.deliveries.post";
+            public const string Cancel = "sales.deliveries.cancel";
             public const string Delete = "sales.deliveries.delete";
         }
 

@@ -1,4 +1,5 @@
-﻿using ERPSystem.Application.DTOs.Sales;
+﻿using ERPSystem.Application.Authorization;
+using ERPSystem.Application.DTOs.Sales;
 using ERPSystem.Application.Interfaces;
 using ERPSystem.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
@@ -27,6 +28,7 @@ namespace ERPSyatem.API.Controllers
         /// Supports filtering by customer, invoice status, and date range.
         /// </summary>
         [HttpGet]
+        [Authorize(Policy = Permissions.Sales.Invoices.Read)]
         public async Task<IActionResult> GetAll(
             [FromQuery] int? customerId,
             [FromQuery] SalesInvoiceStatus? status,
@@ -43,6 +45,7 @@ namespace ERPSyatem.API.Controllers
         /// including header and invoice lines.
         /// </summary>
         [HttpGet("{id}")]
+        [Authorize(Policy = Permissions.Sales.Invoices.Read)]
         public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken)
         {
             var result = await _service.GetByIdAsync(id, cancellationToken);
@@ -56,6 +59,7 @@ namespace ERPSyatem.API.Controllers
         /// The invoice can be modified until it is posted.
         /// </summary>
         [HttpPost]
+        [Authorize(Policy = Permissions.Sales.Invoices.Create)]
         public async Task<IActionResult> Create([FromBody] CreateSalesInvoiceRequest request, CancellationToken cancellationToken)
         {
             var result = await _service.CreateAsync(request, cancellationToken);
@@ -67,6 +71,7 @@ namespace ERPSyatem.API.Controllers
         /// Only invoices in Draft status can be modified.
         /// </summary>
         [HttpPut("{id}")]
+        [Authorize(Policy = Permissions.Sales.Invoices.Update)]
         public async Task<IActionResult> Update(int id, [FromBody] UpdateSalesInvoiceRequest request, CancellationToken cancellationToken)
         {
             var result = await _service.UpdateAsync(id, request, cancellationToken);
@@ -78,6 +83,7 @@ namespace ERPSyatem.API.Controllers
         /// Once posted, the invoice becomes immutable and financially effective.
         /// </summary>
         [HttpPost("{id}/post")]
+        [Authorize(Policy = Permissions.Sales.Invoices.Post)]
         public async Task<IActionResult> Post(int id, CancellationToken cancellationToken)
         {
             var result = await _service.PostAsync(id, cancellationToken);
@@ -99,6 +105,7 @@ namespace ERPSyatem.API.Controllers
         /// </remarks>
 
         [HttpPost("{id}/cancel")]
+        [Authorize(Policy = "sales.invoices.cancel")]
         public async Task<IActionResult> Cancel(int id, CancellationToken cancellationToken)
         {
             var result = await _service.CancelAsync(id, cancellationToken);
@@ -119,6 +126,7 @@ namespace ERPSyatem.API.Controllers
         /// - Deletion should be used only when the invoice was created by mistake.
         /// </remarks>
         [HttpDelete("{id}")]
+        [Authorize(Policy = Permissions.Sales.Invoices.Delete)]
         public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         {
             await _service.DeleteAsync(id, cancellationToken);

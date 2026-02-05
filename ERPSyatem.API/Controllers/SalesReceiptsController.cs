@@ -1,4 +1,5 @@
-﻿using ERPSystem.Application.DTOs.Sales;
+﻿using ERPSystem.Application.Authorization;
+using ERPSystem.Application.DTOs.Sales;
 using ERPSystem.Application.Interfaces;
 using ERPSystem.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
@@ -27,6 +28,7 @@ namespace ERPSyatem.API.Controllers
         /// Supports filtering by customer, receipt status, and date range.
         /// </summary>
         [HttpGet]
+        [Authorize(Policy = Permissions.Sales.Receipts.Read)]
         public async Task<IActionResult> GetAll(
             [FromQuery] int? customerId,
             [FromQuery] SalesReceiptStatus? status,
