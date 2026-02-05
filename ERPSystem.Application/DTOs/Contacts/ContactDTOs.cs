@@ -18,7 +18,7 @@ namespace ERPSystem.Application.DTOs.Contacts
         public ContactPersonType Type { get; set; }
         public bool Favorite { get; init; }
     }
-    public record ContectDetailsDto
+    public record ContactDetailsDto
     {
         public int Id { get; init; }
         public string FullName { get; init; } = default!;

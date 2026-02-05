@@ -9,8 +9,8 @@ namespace ERPSystem.Application.Interfaces
 {
     public interface IContactService
     {
-        Task<List<ContactDto>> GetAllAsync(CancellationToken cancellationToken);
-        Task<ContectDetailsDto?> GetContact(int Id,CancellationToken cancellationToken);
+        Task<List<ContactDetailsDto>> GetAllAsync(CancellationToken cancellationToken);
+        Task<ContactDetailsDto?> GetContact(int Id,CancellationToken cancellationToken);
         Task<ContactDto> Create(CreateContactRequest request,CancellationToken cancellationToken);
         Task<ContactDto> Update(UpdateContactDto request,CancellationToken cancellationToken);
         Task Delete(int id,CancellationToken cancellationToken);

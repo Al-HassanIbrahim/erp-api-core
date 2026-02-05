@@ -29,11 +29,11 @@ namespace ERPSystem.Application.Services.Contacts
 
 
 
-        public async Task<List<ContactDto>> GetAllAsync(CancellationToken cancellationToken)
+        public async Task<List<ContactDetailsDto>> GetAllAsync(CancellationToken cancellationToken)
         {
             await moduleAccess.EnsureContactEnabledAsync(cancellationToken);
             var contacts = await repo.GetAllContactsAsync(CurrentUser.CompanyId, cancellationToken);
-            return contacts.Select(c => new ContactDto
+            return contacts.Select(c => new ContactDetailsDto
             {
                 Id = c.Id,
                 FullName = c.FullName,
@@ -41,16 +41,20 @@ namespace ERPSystem.Application.Services.Contacts
                 Company = c.Company,
                 Position = c.Position,
                 Type = c.Type,
+                Location = c.Location,
+                Website = c.Website,
+                ProfileLink = c.ProfileLink,
+                Notes = c.Notes,
                 Favorite = c.Favorite
             }).ToList();
         }
 
-        public async Task<ContectDetailsDto?> GetContact(int Id, CancellationToken cancellationToken)
+        public async Task<ContactDetailsDto?> GetContact(int Id, CancellationToken cancellationToken)
         {
             await moduleAccess.EnsureContactEnabledAsync(cancellationToken);
             var contact = await repo.GetByIdAsync(Id, CurrentUser.CompanyId, cancellationToken);
             if (contact == null)  BusinessErrors.ContactNotFound();
-            return new ContectDetailsDto
+            return new ContactDetailsDto
             {
                 Id = contact.Id,
                 FullName = contact.FullName,

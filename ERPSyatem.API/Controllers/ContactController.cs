@@ -24,17 +24,17 @@ namespace ERPSyatem.API.Controllers
             return Ok(result);
         }
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetContact(int id,CancellationToken cancellationToken)
+        public async Task<IActionResult> GetContact(int id, CancellationToken cancellationToken)
         {
-            var result = await _contactService.GetContact(id,cancellationToken);
+            var result = await _contactService.GetContact(id, cancellationToken);
             if (result == null) return NotFound();
             return Ok(result);
         }
 
         [HttpPost]
-        public async Task <IActionResult> CreateAsync(CreateContactRequest request, CancellationToken cancellationToken)
+        public async Task<IActionResult> CreateAsync(CreateContactRequest request, CancellationToken cancellationToken)
         {
-            var result = _contactService.Create(request,cancellationToken);
+            var result = _contactService.Create(request, cancellationToken);
             return CreatedAtAction(nameof(GetContact), new { id = result.Id }, result);
         }
         [HttpPut]
@@ -43,7 +43,7 @@ namespace ERPSyatem.API.Controllers
             var result = _contactService.Update(request, cancellationToken);
             return Ok(result);
         }
-        [HttpDelete]
+        [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteAAsync(int id, CancellationToken cancellationToken)
         {
             var result = _contactService.Delete(id, cancellationToken);
