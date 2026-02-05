@@ -25,8 +25,8 @@ public static class CompanyRoleSeeder
             Permissions.Core.Users.Create,
             Permissions.Core.Users.Update,
             Permissions.Core.Users.Delete,
-            Permissions.Core.Companies.Read,
-            Permissions.Core.Companies.Update,
+            Permissions.Core.Companie.Read,
+            Permissions.Core.Companie.Update,
             Permissions.Core.Modules.Read,
             Permissions.Core.Modules.Manage,
 
@@ -44,32 +44,42 @@ public static class CompanyRoleSeeder
             Permissions.Hr.Positions.Update,
             Permissions.Hr.Positions.Delete,
 
-            // Sales - Full access
+            // Sales - Full access (updated keys)
             Permissions.Sales.Customers.Read,
             Permissions.Sales.Customers.Create,
             Permissions.Sales.Customers.Update,
             Permissions.Sales.Customers.Delete,
+
             Permissions.Sales.Invoices.Read,
             Permissions.Sales.Invoices.Create,
             Permissions.Sales.Invoices.Update,
             Permissions.Sales.Invoices.Delete,
             Permissions.Sales.Invoices.Post,
-            Permissions.Sales.Invoices.Void,
+            Permissions.Sales.Invoices.cancel,
+
             Permissions.Sales.Deliveries.Read,
             Permissions.Sales.Deliveries.Create,
-            Permissions.Sales.Deliveries.Update,
+            Permissions.Sales.Deliveries.Post,
+            Permissions.Sales.Deliveries.Cancel,
             Permissions.Sales.Deliveries.Delete,
+
             Permissions.Sales.Receipts.Read,
             Permissions.Sales.Receipts.Create,
-            Permissions.Sales.Receipts.Update,
+            Permissions.Sales.Receipts.Post,
+            Permissions.Sales.Receipts.Cancel,
             Permissions.Sales.Receipts.Delete,
+
             Permissions.Sales.Returns.Read,
             Permissions.Sales.Returns.Create,
             Permissions.Sales.Returns.Update,
             Permissions.Sales.Returns.Delete,
+            Permissions.Sales.Returns.Post,
+            Permissions.Sales.Returns.Cancel,
 
-            // Inventory - Full access
+            // Inventory - Full access (updated keys)
             Permissions.Inventory.Stock.Read,
+            Permissions.Inventory.Stock.StockIn,
+            Permissions.Inventory.Stock.StockOut,
             Permissions.Inventory.Stock.Adjust,
             Permissions.Inventory.Stock.Transfer,
             Permissions.Inventory.Stock.Opening,
@@ -79,29 +89,22 @@ public static class CompanyRoleSeeder
             Permissions.Inventory.Warehouses.Delete,
             Permissions.Inventory.Reports.Read,
 
-            // Products - Full access
-            Permissions.Products.Items.Read,
-            Permissions.Products.Items.Create,
-            Permissions.Products.Items.Update,
-            Permissions.Products.Items.Delete,
+            // Products - Full access (updated keys: Products.* is now top-level, not Products.Items.*)
+            Permissions.Products.Read,
+            Permissions.Products.Create,
+            Permissions.Products.Update,
+            Permissions.Products.Delete,
             Permissions.Products.Categories.Read,
             Permissions.Products.Categories.Create,
             Permissions.Products.Categories.Update,
             Permissions.Products.Categories.Delete,
+            Permissions.Products.UnitOfMeasures.access,
 
-            // Contacts - Full access
-            Permissions.Contacts.Items.Read,
-            Permissions.Contacts.Items.Create,
-            Permissions.Contacts.Items.Update,
-            Permissions.Contacts.Items.Delete,
-
-            // Expenses - Full access
+            // Expenses - Full access (Approve/Reject removed in Permissions class)
             Permissions.Expenses.Items.Read,
             Permissions.Expenses.Items.Create,
             Permissions.Expenses.Items.Update,
             Permissions.Expenses.Items.Delete,
-            Permissions.Expenses.Items.Approve,
-            Permissions.Expenses.Items.Reject,
             Permissions.Expenses.Categories.Read,
             Permissions.Expenses.Categories.Create,
             Permissions.Expenses.Categories.Update,
@@ -110,11 +113,11 @@ public static class CompanyRoleSeeder
 
         ["Admin"] = new[]
         {
-            // Core - Limited (can manage users but not delete, cannot manage modules)
+            // Core - Limited
             Permissions.Core.Users.Read,
             Permissions.Core.Users.Create,
             Permissions.Core.Users.Update,
-            Permissions.Core.Companies.Read,
+            Permissions.Core.Companie.Read,
             Permissions.Core.Modules.Read,
 
             // HR - Full access
@@ -131,32 +134,42 @@ public static class CompanyRoleSeeder
             Permissions.Hr.Positions.Update,
             Permissions.Hr.Positions.Delete,
 
-            // Sales - Full access
+            // Sales - Operational full (updated keys)
             Permissions.Sales.Customers.Read,
             Permissions.Sales.Customers.Create,
             Permissions.Sales.Customers.Update,
             Permissions.Sales.Customers.Delete,
+
             Permissions.Sales.Invoices.Read,
             Permissions.Sales.Invoices.Create,
             Permissions.Sales.Invoices.Update,
             Permissions.Sales.Invoices.Delete,
             Permissions.Sales.Invoices.Post,
-            Permissions.Sales.Invoices.Void,
+            Permissions.Sales.Invoices.cancel,
+
             Permissions.Sales.Deliveries.Read,
             Permissions.Sales.Deliveries.Create,
-            Permissions.Sales.Deliveries.Update,
+            Permissions.Sales.Deliveries.Post,
+            Permissions.Sales.Deliveries.Cancel,
             Permissions.Sales.Deliveries.Delete,
+
             Permissions.Sales.Receipts.Read,
             Permissions.Sales.Receipts.Create,
-            Permissions.Sales.Receipts.Update,
+            Permissions.Sales.Receipts.Post,
+            Permissions.Sales.Receipts.Cancel,
             Permissions.Sales.Receipts.Delete,
+
             Permissions.Sales.Returns.Read,
             Permissions.Sales.Returns.Create,
             Permissions.Sales.Returns.Update,
             Permissions.Sales.Returns.Delete,
+            Permissions.Sales.Returns.Post,
+            Permissions.Sales.Returns.Cancel,
 
-            // Inventory - Full access
+            // Inventory - Full access (updated keys)
             Permissions.Inventory.Stock.Read,
+            Permissions.Inventory.Stock.StockIn,
+            Permissions.Inventory.Stock.StockOut,
             Permissions.Inventory.Stock.Adjust,
             Permissions.Inventory.Stock.Transfer,
             Permissions.Inventory.Stock.Opening,
@@ -166,29 +179,22 @@ public static class CompanyRoleSeeder
             Permissions.Inventory.Warehouses.Delete,
             Permissions.Inventory.Reports.Read,
 
-            // Products - Full access
-            Permissions.Products.Items.Read,
-            Permissions.Products.Items.Create,
-            Permissions.Products.Items.Update,
-            Permissions.Products.Items.Delete,
+            // Products - Full access (updated keys)
+            Permissions.Products.Read,
+            Permissions.Products.Create,
+            Permissions.Products.Update,
+            Permissions.Products.Delete,
             Permissions.Products.Categories.Read,
             Permissions.Products.Categories.Create,
             Permissions.Products.Categories.Update,
             Permissions.Products.Categories.Delete,
+            Permissions.Products.UnitOfMeasures.access,
 
-            // Contacts - Full access
-            Permissions.Contacts.Items.Read,
-            Permissions.Contacts.Items.Create,
-            Permissions.Contacts.Items.Update,
-            Permissions.Contacts.Items.Delete,
-
-            // Expenses - Full access (including approve/reject)
+            // Expenses - Full access (Approve/Reject removed)
             Permissions.Expenses.Items.Read,
             Permissions.Expenses.Items.Create,
             Permissions.Expenses.Items.Update,
             Permissions.Expenses.Items.Delete,
-            Permissions.Expenses.Items.Approve,
-            Permissions.Expenses.Items.Reject,
             Permissions.Expenses.Categories.Read,
             Permissions.Expenses.Categories.Create,
             Permissions.Expenses.Categories.Update,
@@ -197,9 +203,10 @@ public static class CompanyRoleSeeder
 
         ["Manager"] = new[]
         {
-            // Core - Read only for users
+            // Core - Read only
             Permissions.Core.Users.Read,
-            Permissions.Core.Companies.Read,
+            Permissions.Core.Companie.Read,
+            Permissions.Core.Modules.Read,
 
             // HR - Read and limited write
             Permissions.Hr.Employees.Read,
@@ -208,81 +215,86 @@ public static class CompanyRoleSeeder
             Permissions.Hr.Departments.Read,
             Permissions.Hr.Positions.Read,
 
-            // Sales - Full operational access
+            // Sales - Operational (updated keys)
             Permissions.Sales.Customers.Read,
             Permissions.Sales.Customers.Create,
             Permissions.Sales.Customers.Update,
+
             Permissions.Sales.Invoices.Read,
             Permissions.Sales.Invoices.Create,
             Permissions.Sales.Invoices.Update,
             Permissions.Sales.Invoices.Post,
+            Permissions.Sales.Invoices.cancel,
+
             Permissions.Sales.Deliveries.Read,
             Permissions.Sales.Deliveries.Create,
-            Permissions.Sales.Deliveries.Update,
+            Permissions.Sales.Deliveries.Post,
+            Permissions.Sales.Deliveries.Cancel,
+
             Permissions.Sales.Receipts.Read,
             Permissions.Sales.Receipts.Create,
-            Permissions.Sales.Receipts.Update,
+            Permissions.Sales.Receipts.Post,
+            Permissions.Sales.Receipts.Cancel,
+
             Permissions.Sales.Returns.Read,
             Permissions.Sales.Returns.Create,
             Permissions.Sales.Returns.Update,
+            Permissions.Sales.Returns.Post,
+            Permissions.Sales.Returns.Cancel,
 
-            // Inventory - Operational access
+            // Inventory - Operational (updated keys)
             Permissions.Inventory.Stock.Read,
+            Permissions.Inventory.Stock.StockIn,
+            Permissions.Inventory.Stock.StockOut,
             Permissions.Inventory.Stock.Adjust,
             Permissions.Inventory.Stock.Transfer,
             Permissions.Inventory.Warehouses.Read,
             Permissions.Inventory.Reports.Read,
 
-            // Products - Read and update
-            Permissions.Products.Items.Read,
-            Permissions.Products.Items.Create,
-            Permissions.Products.Items.Update,
+            // Products - Read and update (updated keys)
+            Permissions.Products.Read,
+            Permissions.Products.Create,
+            Permissions.Products.Update,
             Permissions.Products.Categories.Read,
+            Permissions.Products.UnitOfMeasures.access,
 
-            // Contacts - Full access
-            Permissions.Contacts.Items.Read,
-            Permissions.Contacts.Items.Create,
-            Permissions.Contacts.Items.Update,
-
-            // Expenses - Can create and view, manager can approve
+            // Expenses - Create and view (Approve removed)
             Permissions.Expenses.Items.Read,
             Permissions.Expenses.Items.Create,
             Permissions.Expenses.Items.Update,
-            Permissions.Expenses.Items.Approve,
             Permissions.Expenses.Categories.Read,
         },
 
         ["User"] = new[]
         {
             // Core - Minimal
-            Permissions.Core.Companies.Read,
+            Permissions.Core.Companie.Read,
 
             // HR - Read only
             Permissions.Hr.Employees.Read,
             Permissions.Hr.Departments.Read,
             Permissions.Hr.Positions.Read,
 
-            // Sales - Operational (create/view)
+            // Sales - Create/view (updated keys)
             Permissions.Sales.Customers.Read,
             Permissions.Sales.Invoices.Read,
             Permissions.Sales.Invoices.Create,
             Permissions.Sales.Deliveries.Read,
             Permissions.Sales.Deliveries.Create,
             Permissions.Sales.Receipts.Read,
+            Permissions.Sales.Receipts.Create,
             Permissions.Sales.Returns.Read,
+            Permissions.Sales.Returns.Create,
 
-            // Inventory - Read only
+            // Inventory - Read only (updated keys)
             Permissions.Inventory.Stock.Read,
             Permissions.Inventory.Warehouses.Read,
             Permissions.Inventory.Reports.Read,
 
-            // Products - Read only
-            Permissions.Products.Items.Read,
+            // Products - Read only (updated keys)
+            Permissions.Products.Read,
             Permissions.Products.Categories.Read,
-
-            // Contacts - Read and create
-            Permissions.Contacts.Items.Read,
-            Permissions.Contacts.Items.Create,
+            Permissions.Products.UnitOfMeasures.access,
 
             // Expenses - Create own expenses
             Permissions.Expenses.Items.Read,
