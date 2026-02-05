@@ -14,5 +14,10 @@ namespace ERPSystem.Infrastructure.Identity
         public Company Company { get; set; } = default!;
         public string FullName { get; set; } = default!;
         public string? ProfileImageUrl { get; set; }
+
+        // Soft delete properties
+        public bool IsDeleted { get; set; } = false;
+        public DateTime? DeletedAt { get; set; }
+        public Guid? DeletedByUserId { get; set; }
     }
 }

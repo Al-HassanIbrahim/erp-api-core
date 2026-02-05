@@ -84,5 +84,15 @@ namespace ERPSyatem.API.Controllers
             var result = await _service.UpdateProfileAsync(userId, dto, ct);
             return Ok(result);
         }
+        /// <summary>
+        /// Soft deletes a user in current company.
+        /// </summary>
+        [HttpDelete("{userId:guid}")]
+        [Authorize(Policy = Permissions.Core.Users.Delete)]
+        public async Task<IActionResult> Delete(Guid userId, CancellationToken ct)
+        {
+            await _service.DeleteAsync(userId, ct);
+            return NoContent();
+        }
     }
 }

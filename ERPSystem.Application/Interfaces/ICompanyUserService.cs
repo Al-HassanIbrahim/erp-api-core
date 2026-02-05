@@ -22,5 +22,9 @@ namespace ERPSystem.Application.Interfaces
         /// Updates user profile (FullName, PhoneNumber, optionally Email) by admin.
         /// </summary>
         Task<CompanyUserDto> UpdateProfileAsync(Guid userId, AdminUpdateUserProfileDto dto, CancellationToken ct = default);
+        /// <summary>
+        /// Soft deletes a user in the current company.
+        /// </summary>
+        Task DeleteAsync(Guid userId, CancellationToken ct = default);
     }
 }

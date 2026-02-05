@@ -26,7 +26,7 @@ namespace ERPSystem.Infrastructure.Identity
         public async Task<IReadOnlyList<CompanyUserDto>> GetAllAsync(CancellationToken ct = default)
         {
             var users = await _userManager.Users
-                .Where(u => u.CompanyId == _currentUser.CompanyId)
+                .Where(u => u.CompanyId == _currentUser.CompanyId && !u.IsDeleted)
                 .ToListAsync(ct);
 
             var result = new List<CompanyUserDto>();
@@ -55,8 +55,11 @@ namespace ERPSystem.Infrastructure.Identity
 
         public async Task<CompanyUserDto> CreateAsync(CreateCompanyUserDto dto, CancellationToken ct = default)
         {
-            // Check email uniqueness
-            if (await _userManager.FindByEmailAsync(dto.Email) != null)
+            // Check email uniqueness (excluding soft-deleted users)
+            var existingUser = await _userManager.Users
+                .FirstOrDefaultAsync(u => u.Email == dto.Email.Trim().ToLowerInvariant() && !u.IsDeleted, ct);
+
+            if (existingUser != null)
                 throw new BusinessException("EMAIL_EXISTS", "Email already exists.", 409);
 
             // Validate roles exist for company
@@ -86,7 +89,8 @@ namespace ERPSystem.Infrastructure.Identity
                 FullName = dto.FullName?.Trim() ?? string.Empty,
                 PhoneNumber = dto.PhoneNumber?.Trim(),
                 CompanyId = _currentUser.CompanyId,
-                EmailConfirmed = true
+                EmailConfirmed = true,
+                IsDeleted = false
             };
 
             var result = await _userManager.CreateAsync(user, dto.Password);
@@ -221,9 +225,11 @@ namespace ERPSystem.Infrastructure.Identity
                 var normalizedEmail = dto.Email.Trim().ToLowerInvariant();
                 if (!string.Equals(user.Email, normalizedEmail, StringComparison.OrdinalIgnoreCase))
                 {
-                    // Check uniqueness
-                    var existingUser = await _userManager.FindByEmailAsync(normalizedEmail);
-                    if (existingUser != null && existingUser.Id != user.Id)
+                    // Check uniqueness (excluding soft-deleted users)
+                    var existingUser = await _userManager.Users
+                        .FirstOrDefaultAsync(u => u.Email == normalizedEmail && !u.IsDeleted && u.Id != user.Id);
+
+                    if (existingUser != null)
                         throw new BusinessException("EMAIL_EXISTS", "Email already exists.", 409);
 
                     user.Email = normalizedEmail;
@@ -240,12 +246,34 @@ namespace ERPSystem.Infrastructure.Identity
             return await BuildUserDtoAsync(user);
         }
 
+        public async Task DeleteAsync(Guid userId, CancellationToken ct = default)
+        {
+            var user = await GetUserInCompanyAsync(userId, ct);
+
+            // Prevent deleting self
+            if (user.Id == _currentUser.UserId)
+                throw new BusinessException("CANNOT_DELETE_SELF", "Cannot delete your own account.", 400);
+
+            // Soft delete
+            user.IsDeleted = true;
+            user.DeletedAt = DateTime.UtcNow;
+            user.DeletedByUserId = _currentUser.UserId;
+
+            // Also lock the account to prevent login
+            await _userManager.SetLockoutEnabledAsync(user, true);
+            await _userManager.SetLockoutEndDateAsync(user, DateTimeOffset.MaxValue);
+
+            var result = await _userManager.UpdateAsync(user);
+            if (!result.Succeeded)
+                throw new BusinessException("DELETE_FAILED", FormatErrors(result.Errors), 400);
+        }
+
         #region Private Helpers
 
         private async Task<ApplicationUser> GetUserInCompanyAsync(Guid userId, CancellationToken ct)
         {
             var user = await _userManager.Users
-                .FirstOrDefaultAsync(u => u.Id == userId && u.CompanyId == _currentUser.CompanyId, ct);
+                .FirstOrDefaultAsync(u => u.Id == userId && u.CompanyId == _currentUser.CompanyId && !u.IsDeleted, ct);
 
             if (user == null)
                 throw BusinessErrors.UserNotFound();
