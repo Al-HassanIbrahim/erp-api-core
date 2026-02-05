@@ -1,4 +1,5 @@
-﻿using ERPSystem.Application.Interfaces;
+﻿using ERPSystem.Application.Authorization;
+using ERPSystem.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -7,7 +8,7 @@ namespace ERPSyatem.API.Controllers
 
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
+    [Authorize(Policy =Permissions.Inventory.Reports.Read)]
     public class InventoryReportsController : ControllerBase
     {
         private readonly IInventoryReportsService _reportsService;

@@ -89,6 +89,8 @@ public static class Permissions
         public static class Stock
         {
             public const string Read = "inventory.stock.read";
+            public const string StockIn = "inventory.stock.stockIn";
+            public const string StockOut = "inventory.stock.stockOut";
             public const string Adjust = "inventory.stock.adjust";
             public const string Transfer = "inventory.stock.transfer";
             public const string Opening = "inventory.stock.opening";
