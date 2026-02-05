@@ -1,4 +1,5 @@
-﻿using ERPSystem.Application.DTOs.Sales;
+﻿using ERPSystem.Application.Authorization;
+using ERPSystem.Application.DTOs.Sales;
 using ERPSystem.Application.Exceptions;
 using ERPSystem.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -19,6 +20,7 @@ namespace ERPSyatem.API.Controllers
         }
 
         [HttpGet]
+        [Authorize(Policy = Permissions.Sales.Customers.Read)]
         public async Task<IActionResult> GetAll([FromQuery] bool? isActive, CancellationToken cancellationToken)
         {
             var result = await _service.GetAllAsync(isActive, cancellationToken);
@@ -26,6 +28,7 @@ namespace ERPSyatem.API.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize(Policy = Permissions.Sales.Customers.Read)]
         public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken)
         {
             var result = await _service.GetByIdAsync(id, cancellationToken);
@@ -35,6 +38,7 @@ namespace ERPSyatem.API.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = Permissions.Sales.Customers.Create)]
         public async Task<IActionResult> Create([FromBody] CreateCustomerRequest request, CancellationToken cancellationToken)
         {
             var result = await _service.CreateAsync(request, cancellationToken);
@@ -42,6 +46,7 @@ namespace ERPSyatem.API.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Policy = Permissions.Sales.Customers.Update)]
         public async Task<IActionResult> Update(int id, [FromBody] UpdateCustomerRequest request, CancellationToken cancellationToken)
         {
             var result = await _service.UpdateAsync(id, request, cancellationToken);
@@ -49,6 +54,7 @@ namespace ERPSyatem.API.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Policy = Permissions.Sales.Customers.Delete)]
         public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         {
             await _service.DeleteAsync(id, cancellationToken);
