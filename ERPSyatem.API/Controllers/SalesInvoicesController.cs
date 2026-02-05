@@ -108,7 +108,7 @@ namespace ERPSyatem.API.Controllers
         /// </remarks>
 
         [HttpPost("{id}/cancel")]
-        [Authorize(Policy = "sales.invoices.Manage")]
+        [Authorize(Policy = Permissions.Sales.Invoices.Manage)]
        // [Authorize(Policy = "sales.invoices.cancel")]
         public async Task<IActionResult> Cancel(int id, CancellationToken cancellationToken)
         {
@@ -130,7 +130,7 @@ namespace ERPSyatem.API.Controllers
         /// - Deletion should be used only when the invoice was created by mistake.
         /// </remarks>
         [HttpDelete("{id}")]
-        [Authorize(Policy = Permissions.Sales.Invoices.Access)]
+        [Authorize(Policy = Permissions.Sales.Invoices.Manage)]
       //  [Authorize(Policy = Permissions.Sales.Invoices.Delete)]
         public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         {

@@ -90,7 +90,7 @@ namespace ERPSyatem.API.Controllers
         /// To reverse a posted delivery, create a sales return instead.
         /// </remarks>
         [HttpPost("{id}/cancel")]
-        [Authorize(Policy = Permissions.Sales.Deliveries.Manage)]
+        [Authorize(Policy = Permissions.Sales.Deliveries.Access)]
         //[Authorize(Policy = Permissions.Sales.Deliveries.Cancel)]
         public async Task<IActionResult> Cancel(int id, CancellationToken cancellationToken)
         {
@@ -106,7 +106,7 @@ namespace ERPSyatem.API.Controllers
         /// The record is marked as deleted and excluded from future queries.
         /// </remarks>
         [HttpDelete("{id}")]
-        [Authorize(Policy = Permissions.Sales.Deliveries.Access)]
+        [Authorize(Policy = Permissions.Sales.Deliveries.Manage)]
         //[Authorize(Policy = Permissions.Sales.Deliveries.Delete)]
         public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         {

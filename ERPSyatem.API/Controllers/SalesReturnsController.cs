@@ -88,7 +88,7 @@ namespace ERPSyatem.API.Controllers
         /// To reverse a posted return, a separate corrective document must be created.
         /// </remarks>
         [HttpPost("{id}/cancel")]
-        [Authorize(Policy = Permissions.Sales.Returns.Manage)]
+        [Authorize(Policy = Permissions.Sales.Returns.Access)]
       //  [Authorize(Policy = Permissions.Sales.Returns.Cancel)]
         public async Task<IActionResult> Cancel(int id, CancellationToken cancellationToken)
         {
@@ -107,7 +107,7 @@ namespace ERPSyatem.API.Controllers
         /// and has not caused any business or inventory impact.
         /// </remarks>
         [HttpDelete("{id}")]
-        [Authorize(Policy = Permissions.Sales.Returns.Access)]
+        [Authorize(Policy = Permissions.Sales.Returns.Manage)]
       //  [Authorize(Policy = Permissions.Sales.Returns.Delete)]
         public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         {

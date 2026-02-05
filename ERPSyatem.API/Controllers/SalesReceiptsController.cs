@@ -110,7 +110,7 @@ namespace ERPSyatem.API.Controllers
         ///   to preserve accounting and audit integrity.
         /// </remarks>
         [HttpDelete("{id}")]
-        [Authorize(Policy = Permissions.Sales.Receipts.Access)]
+        [Authorize(Policy = Permissions.Sales.Receipts.Manage)]
       //  [Authorize(Policy = Permissions.Sales.Receipts.Delete)]
         public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         {
