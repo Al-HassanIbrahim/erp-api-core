@@ -1,3 +1,4 @@
+using ERPSystem.Application.Authorization;
 using ERPSystem.Application.DTOs.Products;
 using ERPSystem.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -7,7 +8,7 @@ namespace ERPSyatem.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
+    [Authorize(Policy =Permissions.Products.UnitOfMeasures.access)]
     public class UnitOfMeasureController : ControllerBase
     {
         private readonly IUnitOfMeasureService _service;
