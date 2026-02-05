@@ -1,3 +1,4 @@
+using ERPSystem.Application.Authorization;
 using ERPSystem.Application.DTOs.Products;
 using ERPSystem.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -18,6 +19,7 @@ namespace ERPSyatem.API.Controllers
         }
 
         [HttpGet]
+        [Authorize(Policy =Permissions.Categories.Read)]
         public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
         {
             var result = await _service.GetAllAsync(cancellationToken);
@@ -25,6 +27,7 @@ namespace ERPSyatem.API.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize(Policy =Permissions.Categories.Read)]
         public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken)
         {
             var result = await _service.GetByIdAsync(id, cancellationToken);
@@ -35,6 +38,7 @@ namespace ERPSyatem.API.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy =Permissions.Categories.Create)]
         public async Task<IActionResult> Create([FromBody] CreateCategoryRequest request, CancellationToken cancellationToken)
         {
             var result = await _service.CreateAsync(request, cancellationToken);
@@ -42,6 +46,7 @@ namespace ERPSyatem.API.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Policy =Permissions.Categories.Update)]
         public async Task<IActionResult> Update(int id, [FromBody] UpdateCategoryRequest request, CancellationToken cancellationToken)
         {
             var result = await _service.UpdateAsync(id, request, cancellationToken);
@@ -49,6 +54,7 @@ namespace ERPSyatem.API.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Policy =Permissions.Categories.Delete)]
         public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         {
             await _service.DeleteAsync(id, cancellationToken);
