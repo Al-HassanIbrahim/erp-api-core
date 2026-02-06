@@ -99,11 +99,14 @@ public static class Permissions
 
     public static class Products
     {
-        public const string Manage = "products.manage";
-        public const string Read = "products.read";
-        //public const string Create = "products.create";
-        //public const string Update = "products.update";
-        //public const string Delete = "products.delete";
+        public static class Product
+        {
+            public const string Manage = "products.Products.manage";
+            public const string Read = "products.Products.read";
+            //public const string Create = "products.create";
+            //public const string Update = "products.update";
+            //public const string Delete = "products.delete";
+        }
         public static class Categories
         {
             public const string Manage = "products.categories.manage";

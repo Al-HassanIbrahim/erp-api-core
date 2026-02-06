@@ -91,8 +91,8 @@ public static class CompanyRoleSeeder
             Permissions.Inventory.Reports.Read,
 
             // Products - Full access (updated keys: Products.* is now top-level, not Products.Items.*)
-            Permissions.Products.Manage,
-            Permissions.Products.Read,
+            Permissions.Products.Product.Manage,
+            Permissions.Products.Product.Read,
             //Permissions.Products.Create,
             //Permissions.Products.Update,
             //Permissions.Products.Delete,

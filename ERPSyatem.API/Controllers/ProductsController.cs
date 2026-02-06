@@ -18,7 +18,7 @@ namespace ERPSyatem.API.Controllers
         }
 
         [HttpGet]
-        [Authorize(Policy = Permissions.Products.Read)]
+        [Authorize(Policy = Permissions.Products.Product.Read)]
         public async Task<IActionResult> GetAll()
         {
             var products = await _productService.GetAllAsync();
@@ -26,7 +26,7 @@ namespace ERPSyatem.API.Controllers
         }
 
         [HttpGet("{id}")]
-        [Authorize(Policy = Permissions.Products.Read)]
+        [Authorize(Policy = Permissions.Products.Product.Read)]
         public async Task<IActionResult> GetById(int id)
         {
             var product = await _productService.GetByIdAsync(id);
@@ -34,7 +34,7 @@ namespace ERPSyatem.API.Controllers
         }
 
         [HttpPost]
-        [Authorize(Policy =Permissions.Products.Manage)]
+        [Authorize(Policy =Permissions.Products.Product.Manage)]
       //  [Authorize(Policy = Permissions.Products.Create)]
         public async Task<IActionResult> Create([FromBody] CreateProductDto dto)
         {
@@ -43,7 +43,7 @@ namespace ERPSyatem.API.Controllers
         }
 
         [HttpPut("{id}")]
-        [Authorize(Policy =Permissions.Products.Manage)]
+        [Authorize(Policy =Permissions.Products.Product.Manage)]
        // [Authorize(Policy = Permissions.Products.Update)]
         public async Task<IActionResult> Update(int id, [FromBody] UpdateProductDto dto)
         {
@@ -56,7 +56,7 @@ namespace ERPSyatem.API.Controllers
 
         [HttpDelete("{id}")]
         //[Authorize(Policy = Permissions.Products.Delete)]
-        [Authorize(Policy =Permissions.Products.Manage)]
+        [Authorize(Policy =Permissions.Products.Product.Manage)]
         public async Task<IActionResult> Delete(int id)
         {
             await _productService.DeleteAsync(id);
