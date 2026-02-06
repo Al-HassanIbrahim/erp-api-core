@@ -42,6 +42,7 @@ namespace ERPSystem.Application.Services.Contacts
                 Position = c.Position,
                 Type = c.Type,
                 Location = c.Location,
+                PhoneNumber = c.PhoneNumber,
                 Website = c.Website,
                 ProfileLink = c.ProfileLink,
                 Notes = c.Notes,
