@@ -26,6 +26,8 @@ namespace ERPSystem.Application.Services.Core
                 Id = company.Id,
                 Name = company.Name,
                 CommercialName = company.CommercialName,
+                TaxNumber = company.TaxNumber,
+                Phone = company.Phone,
                 Address = company.Address,
                 IsActive = company.IsActive,
                 CreatedAt = company.CreatedAt
@@ -39,6 +41,8 @@ namespace ERPSystem.Application.Services.Core
 
             company.Name = dto.Name.Trim();
             company.CommercialName = dto.CommercialName?.Trim();
+            company.TaxNumber = dto.TaxNumber.Trim();
+            company.Phone = dto.Phone?.Trim();
             company.Address = dto.Address?.Trim();
             company.UpdatedAt = DateTime.UtcNow;
             company.UpdatedByUserId = _currentUser.UserId;
@@ -51,7 +55,9 @@ namespace ERPSystem.Application.Services.Core
                 Id = company.Id,
                 Name = company.Name,
                 CommercialName = company.CommercialName,
+                Phone = company.Phone,
                 Address = company.Address,
+                TaxNumber = company.TaxNumber,
                 IsActive = company.IsActive,
                 CreatedAt = company.CreatedAt
             };

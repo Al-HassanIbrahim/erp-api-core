@@ -11,6 +11,8 @@ namespace ERPSystem.Domain.Entities.Core
     {
         public string Name { get; set; } = default!;
         public string? CommercialName { get; set; }
+        public string? TaxNumber { get; set; }
+        public string? Phone { get; set; }
         public string? Address { get; set; }
         public bool IsActive { get; set; } = true;
 

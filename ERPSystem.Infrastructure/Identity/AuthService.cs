@@ -46,6 +46,9 @@ namespace ERPSystem.Infrastructure.Identity
                 {
                     Name = request.Company.Name.Trim(),
                     Address = request.Company.Address?.Trim(),
+                    TaxNumber = request.Company.TaxNumber?.Trim(),
+                    CommercialName = request.Company.CommercialName?.Trim(),
+                    Phone = request.Company.PhoneNumber?.Trim(),
                     IsActive = true,
                     CreatedAt = DateTime.UtcNow
                 };

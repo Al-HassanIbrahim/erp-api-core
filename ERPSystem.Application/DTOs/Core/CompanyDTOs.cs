@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,6 +12,8 @@ namespace ERPSystem.Application.DTOs.Core
         public int Id { get; set; }
         public string Name { get; set; } = default!;
         public string? CommercialName { get; set; }
+        public string? TaxNumber { get; set; }
+        public string? Phone { get; set; }
         public string? Address { get; set; }
         public bool IsActive { get; set; }
         public DateTime CreatedAt { get; set; }
@@ -20,6 +23,9 @@ namespace ERPSystem.Application.DTOs.Core
     {
         public string Name { get; set; } = default!;
         public string? CommercialName { get; set; }
+        public string? TaxNumber { get; set; }
+        [Phone]
+        public string? Phone { get; set; }
         public string? Address { get; set; }
     }
 }
