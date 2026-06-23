@@ -56,6 +56,17 @@ namespace ERPSystem.Infrastructure.Identity
                 _db.Companies.Add(company);
                 await _db.SaveChangesAsync(ct);
 
+                var defaultBranch = new ERPSystem.Domain.Entities.Core.Branch
+                {
+                    CompanyId = company.Id,
+                    Code = "MAIN",
+                    Name = "الفرع الرئيسي",
+                    IsActive = true,
+                };
+
+                await _db.Branches.AddAsync(defaultBranch); // أو باستخدام Repository لو تفضل
+                await _db.SaveChangesAsync();
+
                 // 3) Seed default roles for this company
                 await CompanyRoleSeeder.SeedCompanyRolesAsync(_roleManager, company.Id, ct);
 
