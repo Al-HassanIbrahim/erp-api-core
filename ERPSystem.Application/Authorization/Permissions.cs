@@ -261,4 +261,10 @@ public static class Permissions
             //public const string Delete = "hr.positions.delete";
         }
     }
+    public static class Purchasing
+    {
+        public const string Read = "purchasing.read";
+        public const string Write = "purchasing.write";
+        public const string Post = "purchasing.post";
+    }
 }
