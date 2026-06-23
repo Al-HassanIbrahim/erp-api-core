@@ -156,6 +156,11 @@ public static class CompanyRoleSeeder
             Permissions.CRM.Customers.Manage,
             Permissions.CRM.Customers.Access,
             Permissions.CRM.Customers.Read,
+
+            // Purchusing
+            Permissions.Purchasing.Read,
+            Permissions.Purchasing.Write,
+            Permissions.Purchasing.Post,
         },
 
         //["Admin"] = new[]
