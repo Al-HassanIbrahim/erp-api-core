@@ -263,8 +263,17 @@ public static class Permissions
     }
     public static class Purchasing
     {
-        public const string Read = "purchasing.read";
-        public const string Write = "purchasing.write";
-        public const string Post = "purchasing.post";
+        public static class Purchases
+        {
+            public const string Read = "purchasing.purchases.read";
+            public const string Write = "purchasing.purchases.write";
+            public const string Post = "purchasing.purchases.post";
+        }
+        public static class suppliers
+        {
+            public const string Read = "purchasing.suppliers.read";
+            public const string Write = "purchasing.suppliers.write";
+            public const string Post = "purchasing.suppliers.post";
+        }
     }
 }
