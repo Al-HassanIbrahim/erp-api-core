@@ -25,6 +25,7 @@ namespace ERPSystem.Infrastructure.Data
 
         // Core
         public DbSet<Company> Companies => Set<Company>();
+        public DbSet<Branch> Branches => Set<Branch>();
         public DbSet<Module> Modules => Set<Module>();
         public DbSet<CompanyModule> CompanyModules => Set<CompanyModule>();
 
@@ -349,6 +350,9 @@ namespace ERPSystem.Infrastructure.Data
             });
 
             // Unique Indexes
+            modelBuilder.Entity<Branch>()
+                .HasIndex(b => new { b.CompanyId, b.Code }).IsUnique();
+
             modelBuilder.Entity<Product>()
                 .HasIndex(e => new { e.CompanyId, e.Code }).IsUnique();
 
