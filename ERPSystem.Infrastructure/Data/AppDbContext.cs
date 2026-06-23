@@ -459,6 +459,19 @@ namespace ERPSystem.Infrastructure.Data
                 .OnDelete(DeleteBehavior.Restrict);
 
             SeedData(modelBuilder);
+            // ==========================================
+            // GLOBAL CONFIGURATIONS
+            // ==========================================
+           
+            modelBuilder.Entity<Domain.Entities.Core.DocumentSequence>(b =>
+            {
+                b.ToTable("System_DocumentSequences");
+                b.HasKey(x => x.Id);
+                b.HasIndex(x => new { x.CompanyId, x.DocumentType, x.YearMonth }).IsUnique();
+                b.Property(x => x.DocumentType).HasMaxLength(50).IsRequired();
+                b.Property(x => x.YearMonth).HasMaxLength(6).IsRequired();
+            });
+          
         }
 
         private void SeedData(ModelBuilder modelBuilder)
