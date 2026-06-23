@@ -90,8 +90,8 @@ namespace ERPSystem.Application.Services.Core
         }
         public async Task EnsurePurchasingEnabledAsync(CancellationToken cancellationToken = default)
         {
-            if (!await IsCrmEnabledAsync(cancellationToken))
-                throw BusinessErrors.CrmModuleNotEnabled();
+            if (!await IsPurchaseEnabledAsync(cancellationToken))
+                throw BusinessErrors.PurchasingModuleNotEnabled();
         }
 
     }
