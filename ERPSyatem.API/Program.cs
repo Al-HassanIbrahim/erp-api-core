@@ -52,6 +52,7 @@ namespace ERPSyatem.API
             builder.Services.AddScoped<ICompanyModuleService, CompanyModuleService>();
             builder.Services.AddScoped<ICompanyUserService, CompanyUserService>();
             builder.Services.AddScoped<IMyAccountService, MyAccountService>();
+            builder.Services.AddScoped<IDocumentSequenceService, DocumentSequenceService>();
 
             //Product
             builder.Services.AddScoped<IProductRepository, ProductRepository>();
