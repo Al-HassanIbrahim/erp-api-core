@@ -78,6 +78,16 @@ namespace ERPSystem.Infrastructure.Data
         {
             base.OnModelCreating(modelBuilder);
 
+            // ==========================================
+            // 1. ADDING SEQUENCES FOR DOCUMENT NUMBERING
+            // ==========================================
+            modelBuilder.HasSequence<int>("SalesInvoiceSeq").StartsAt(1).IncrementsBy(1);
+            modelBuilder.HasSequence<int>("SalesDeliverySeq").StartsAt(1).IncrementsBy(1);
+            modelBuilder.HasSequence<int>("SalesReceiptSeq").StartsAt(1).IncrementsBy(1);
+            modelBuilder.HasSequence<int>("SalesReturnSeq").StartsAt(1).IncrementsBy(1);
+
+            modelBuilder.HasSequence<int>("InventoryDocumentSeq").StartsAt(1).IncrementsBy(1);
+
             // DECIMAL PRECISION CONFIGURATIONS
 
             // Inventory - InventoryDocumentLine
