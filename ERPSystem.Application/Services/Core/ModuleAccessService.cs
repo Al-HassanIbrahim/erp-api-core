@@ -15,6 +15,7 @@ namespace ERPSystem.Application.Services.Core
         private const string ContactModuleCode = "CONTACT";
         private const string ExpensesModuleCode = "EXPENSES";
         private const string CRMModuleCode = "CRM"; 
+        private const string PurchasingModuleCode = "PURCHASING"; 
         public ModuleAccessService(
             ICompanyModuleRepository companyModuleRepository,
             ICurrentUserService currentUser)
@@ -50,6 +51,10 @@ namespace ERPSystem.Application.Services.Core
         {
             return await IsModuleEnabledAsync(_currentUser.CompanyId, CRMModuleCode, cancellationToken);
         }
+        public async Task<bool> IsPurchaseEnabledAsync(CancellationToken cancellationToken = default)
+        {
+            return await IsModuleEnabledAsync(_currentUser.CompanyId, PurchasingModuleCode, cancellationToken);
+        }
 
         public async Task EnsureSalesEnabledAsync(CancellationToken cancellationToken = default)
         {
@@ -79,6 +84,11 @@ namespace ERPSystem.Application.Services.Core
                 throw BusinessErrors.ExpensesModuleNotEnabled();
         }
         public async Task EnsureCrmEnabledAsync(CancellationToken cancellationToken = default)
+        {
+            if (!await IsCrmEnabledAsync(cancellationToken))
+                throw BusinessErrors.CrmModuleNotEnabled();
+        }
+        public async Task EnsurePurchasingEnabledAsync(CancellationToken cancellationToken = default)
         {
             if (!await IsCrmEnabledAsync(cancellationToken))
                 throw BusinessErrors.CrmModuleNotEnabled();

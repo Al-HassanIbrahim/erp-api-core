@@ -21,6 +21,7 @@ using System.Threading.Tasks;
             Task EnsureExpensesEnabledAsync(CancellationToken cancellationToken = default);
             Task EnsureHrAccessAsync(CancellationToken ct = default);
             Task EnsureCrmEnabledAsync(CancellationToken cancellationToken = default);
+            Task EnsurePurchasingEnabledAsync(CancellationToken cancellationToken = default);
     }
     }
 
