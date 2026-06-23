@@ -12,6 +12,7 @@ namespace ERPSystem.Infrastructure.Data
             {
                 new() { Key = "SALES",     Name = "Sales",     Description = "Sales management module",     IsActive = true },
                 new() { Key = "INVENTORY", Name = "Inventory", Description = "Inventory management module", IsActive = true },
+                new() { Key = "PURCHASING",Name = "Purchasing",Description = "Purchasing and Suppliers module", IsActive = true },
                 new() { Key = "CONTACT",  Name = "CONTACT",  Description = "Contacts management module",  IsActive = true },
                 new() { Key = "EXPENSES",  Name = "Expenses",  Description = "Expenses management module",  IsActive = true },
                 new() { Key = "HR",        Name = "HR",        Description = "Human Resources module",      IsActive = true },
