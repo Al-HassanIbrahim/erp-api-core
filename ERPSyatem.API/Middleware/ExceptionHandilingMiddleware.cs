@@ -1,5 +1,6 @@
-﻿using System.Text.Json;
-using ERPSystem.Application.Exceptions;
+﻿using ERPSystem.Application.Exceptions;
+using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 namespace ERPSyatem.API.Middleware
 {
@@ -24,6 +25,11 @@ namespace ERPSyatem.API.Middleware
             {
                 _logger.LogWarning(ex, "Business exception: {Code} - {Message}", ex.Code, ex.Message);
                 await HandleExceptionAsync(context, ex.HttpStatusCode, ex.Code, ex.Message);
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                _logger.LogWarning(ex, "Concurrency conflict detected.");
+                await HandleExceptionAsync(context, 409, "CONCURRENCY_CONFLICT", "عفواً، تم تعديل هذه البيانات أو المستند بواسطة مستخدم آخر في نفس اللحظة. يرجى تحديث الصفحة وإعادة المحاولة.");
             }
             catch (UnauthorizedAccessException ex)
             {

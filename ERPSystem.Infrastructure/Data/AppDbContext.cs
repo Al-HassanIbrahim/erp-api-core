@@ -471,7 +471,15 @@ namespace ERPSystem.Infrastructure.Data
                 b.Property(x => x.DocumentType).HasMaxLength(50).IsRequired();
                 b.Property(x => x.YearMonth).HasMaxLength(6).IsRequired();
             });
-          
+            foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+            {
+                if (typeof(AuditableEntity).IsAssignableFrom(entityType.ClrType))
+                {
+                    modelBuilder.Entity(entityType.ClrType)
+                        .Property(nameof(AuditableEntity.RowVersion))
+                        .IsRowVersion();
+                }
+            }
         }
 
         private void SeedData(ModelBuilder modelBuilder)
