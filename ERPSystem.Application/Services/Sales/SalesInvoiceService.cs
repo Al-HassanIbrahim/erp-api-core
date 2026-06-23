@@ -15,6 +15,7 @@ namespace ERPSystem.Application.Services.Sales
         private readonly IUnitOfMeasureRepository _unitRepository;
         private readonly ICurrentUserService _currentUser;
         private readonly IModuleAccessService _moduleAccess;
+        private readonly IDocumentSequenceService _sequenceService;
 
         public SalesInvoiceService(
             ISalesInvoiceRepository repository,
@@ -22,7 +23,8 @@ namespace ERPSystem.Application.Services.Sales
             IProductRepository productRepository,
             IUnitOfMeasureRepository unitRepository,
             ICurrentUserService currentUser,
-            IModuleAccessService moduleAccess)
+            IModuleAccessService moduleAccess,
+            IDocumentSequenceService sequenceService)
         {
             _repository = repository;
             _customerRepository = customerRepository;
@@ -30,6 +32,7 @@ namespace ERPSystem.Application.Services.Sales
             _unitRepository = unitRepository;
             _currentUser = currentUser;
             _moduleAccess = moduleAccess;
+            _sequenceService = sequenceService;
         }
 
         public async Task<IReadOnlyList<SalesInvoiceListDto>> GetAllAsync(
@@ -88,7 +91,8 @@ namespace ERPSystem.Application.Services.Sales
             {
                 CompanyId = _currentUser.CompanyId,
                 BranchId = request.BranchId,
-                InvoiceNumber = await _repository.GenerateInvoiceNumberAsync(_currentUser.CompanyId, cancellationToken),
+                InvoiceNumber = await _sequenceService.GenerateNextNumberAsync(_currentUser.CompanyId, "SalesInvoice", "INV", cancellationToken),
+
                 InvoiceDate = request.InvoiceDate,
                 DueDate = request.DueDate,
                 CustomerId = request.CustomerId,

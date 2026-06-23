@@ -17,6 +17,8 @@ namespace ERPSystem.Application.Services.Sales
         private readonly ICurrentUserService _currentUser;
         private readonly IModuleAccessService _moduleAccess;
         private readonly IInventoryService _inventoryService;
+        private readonly IDocumentSequenceService _sequenceService;
+
 
         public SalesReturnService(
             ISalesReturnRepository repository,
@@ -25,7 +27,8 @@ namespace ERPSystem.Application.Services.Sales
             IWarehouseRepository warehouseRepository,
             ICurrentUserService currentUser,
             IModuleAccessService moduleAccess,
-            IInventoryService inventoryService)
+            IInventoryService inventoryService,
+            IDocumentSequenceService documentSequenceService)
         {
             _repository = repository;
             _customerRepository = customerRepository;
@@ -34,6 +37,7 @@ namespace ERPSystem.Application.Services.Sales
             _currentUser = currentUser;
             _moduleAccess = moduleAccess;
             _inventoryService = inventoryService;
+            _sequenceService = documentSequenceService;
         }
 
         public async Task<IReadOnlyList<SalesReturnListDto>> GetAllAsync(
@@ -98,7 +102,7 @@ namespace ERPSystem.Application.Services.Sales
             {
                 CompanyId = _currentUser.CompanyId,
                 BranchId = request.BranchId,
-                ReturnNumber = await _repository.GenerateReturnNumberAsync(_currentUser.CompanyId, cancellationToken),
+                ReturnNumber = await _sequenceService.GenerateNextNumberAsync(_currentUser.CompanyId, "SalesReturn", "RET", cancellationToken),
                 ReturnDate = request.ReturnDate,
                 SalesInvoiceId = request.SalesInvoiceId,
                 CustomerId = request.CustomerId,

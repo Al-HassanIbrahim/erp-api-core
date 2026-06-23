@@ -18,23 +18,26 @@ namespace ERPSystem.Application.Services.Inventory
         private readonly IProductRepository _productRepository;
         private readonly IWarehouseRepository _warehouseRepository;
         private readonly ICurrentUserService _currentUser;
+        private readonly IDocumentSequenceService _sequenceService;
 
         public InventoryService(
             IInventoryRepository inventoryRepository,
             IProductRepository productRepository,
             IWarehouseRepository warehouseRepository,
-            ICurrentUserService currentUser)
+            ICurrentUserService currentUser,
+            IDocumentSequenceService sequenceService)
         {
             _inventoryRepository = inventoryRepository;
             _productRepository = productRepository;
             _warehouseRepository = warehouseRepository;
             _currentUser = currentUser;
+            _sequenceService = sequenceService;
         }
 
-        private string GenerateDocumentNumber(string prefix)
-        {
-            return $"{prefix}-{DateTime.UtcNow:yyyyMMddHHmmss}-{Guid.NewGuid().ToString("N")[..4].ToUpper()}";
-        }
+        //private string GenerateDocumentNumber(string prefix)
+        //{
+        //    return $"{prefix}-{DateTime.UtcNow:yyyyMMddHHmmss}-{Guid.NewGuid().ToString("N")[..4].ToUpper()}";
+        //}
 
         /// <summary>
         /// Loads a product and ensures it is active and belongs to the current user's company.
@@ -213,7 +216,8 @@ namespace ERPSystem.Application.Services.Inventory
                 document.Lines.Add(docLine);
             }
 
-            document.DocNumber = GenerateDocumentNumber("IN");
+            // document.DocNumber = await _inventoryRepository.GenerateDocumentNumberAsync("IN", _currentUser.CompanyId, cancellationToken);
+            document.DocNumber = await _sequenceService.GenerateNextNumberAsync(_currentUser.CompanyId,"InventoryDocument","IN",cancellationToken);
 
             await _inventoryRepository.AddDocumentAsync(document, cancellationToken);
             await _inventoryRepository.SaveChangesAsync(cancellationToken);
@@ -302,7 +306,8 @@ namespace ERPSystem.Application.Services.Inventory
                 document.Lines.Add(docLine);
             }
 
-            document.DocNumber = GenerateDocumentNumber("OUT");
+            //document.DocNumber = await _inventoryRepository.GenerateDocumentNumberAsync("OUT", _currentUser.CompanyId, cancellationToken);
+            document.DocNumber = await _sequenceService.GenerateNextNumberAsync(_currentUser.CompanyId, "InventoryDocument", "OUT", cancellationToken);
 
             await _inventoryRepository.AddDocumentAsync(document, cancellationToken);
             await _inventoryRepository.SaveChangesAsync(cancellationToken);
@@ -420,7 +425,8 @@ namespace ERPSystem.Application.Services.Inventory
                 document.Lines.Add(inLine);
             }
 
-            document.DocNumber = GenerateDocumentNumber("TRF");
+            //document.DocNumber = await _inventoryRepository.GenerateDocumentNumberAsync("TRF", _currentUser.CompanyId, cancellationToken);
+            document.DocNumber = await _sequenceService.GenerateNextNumberAsync(_currentUser.CompanyId, "InventoryDocument", "TRF", cancellationToken);
 
             await _inventoryRepository.AddDocumentAsync(document, cancellationToken);
             await _inventoryRepository.SaveChangesAsync(cancellationToken);
@@ -507,7 +513,8 @@ namespace ERPSystem.Application.Services.Inventory
                 document.Lines.Add(docLine);
             }
 
-            document.DocNumber = GenerateDocumentNumber("OPEN");
+            //document.DocNumber = await _inventoryRepository.GenerateDocumentNumberAsync("OPEN", _currentUser.CompanyId, cancellationToken);
+            document.DocNumber = await _sequenceService.GenerateNextNumberAsync(_currentUser.CompanyId, "InventoryDocument", "OPEN", cancellationToken);
 
             await _inventoryRepository.AddDocumentAsync(document, cancellationToken);
             await _inventoryRepository.SaveChangesAsync(cancellationToken);
@@ -645,7 +652,8 @@ namespace ERPSystem.Application.Services.Inventory
                 }
             }
 
-            document.DocNumber = GenerateDocumentNumber("ADJ");
+            //document.DocNumber = await _inventoryRepository.GenerateDocumentNumberAsync("ADJ", _currentUser.CompanyId, cancellationToken);
+            document.DocNumber = await _sequenceService.GenerateNextNumberAsync(_currentUser.CompanyId, "InventoryDocument", "ADJ", cancellationToken);
 
             await _inventoryRepository.AddDocumentAsync(document, cancellationToken);
             await _inventoryRepository.SaveChangesAsync(cancellationToken);

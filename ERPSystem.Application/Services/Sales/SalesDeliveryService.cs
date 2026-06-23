@@ -5,6 +5,7 @@ using ERPSystem.Application.Interfaces;
 using ERPSystem.Domain.Abstractions;
 using ERPSystem.Domain.Entities.Sales;
 using ERPSystem.Domain.Enums;
+using System.Reflection.Metadata;
 
 namespace ERPSystem.Application.Services.Sales
 {
@@ -16,6 +17,8 @@ namespace ERPSystem.Application.Services.Sales
         private readonly ICurrentUserService _currentUser;
         private readonly IModuleAccessService _moduleAccess;
         private readonly IInventoryService _inventoryService;
+        private readonly IDocumentSequenceService _sequenceService;
+
 
         public SalesDeliveryService(
             ISalesDeliveryRepository repository,
@@ -23,7 +26,8 @@ namespace ERPSystem.Application.Services.Sales
             IWarehouseRepository warehouseRepository,
             ICurrentUserService currentUser,
             IModuleAccessService moduleAccess,
-            IInventoryService inventoryService)
+            IInventoryService inventoryService,
+            IDocumentSequenceService documentSequenceService)
         {
             _repository = repository;
             _invoiceRepository = invoiceRepository;
@@ -31,6 +35,7 @@ namespace ERPSystem.Application.Services.Sales
             _currentUser = currentUser;
             _moduleAccess = moduleAccess;
             _inventoryService = inventoryService;
+            _sequenceService = documentSequenceService;
         }
 
         public async Task<IReadOnlyList<SalesDeliveryListDto>> GetAllAsync(
@@ -101,7 +106,8 @@ namespace ERPSystem.Application.Services.Sales
             {
                 CompanyId = _currentUser.CompanyId,
                 BranchId = request.BranchId,
-                DeliveryNumber = await _repository.GenerateDeliveryNumberAsync(_currentUser.CompanyId, cancellationToken),
+                DeliveryNumber = await _sequenceService.GenerateNextNumberAsync(_currentUser.CompanyId, "SalesDelivery", "DEL", cancellationToken),
+
                 DeliveryDate = request.DeliveryDate,
                 SalesInvoiceId = request.SalesInvoiceId,
                 CustomerId = invoice.CustomerId,
