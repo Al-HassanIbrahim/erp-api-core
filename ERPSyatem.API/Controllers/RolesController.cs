@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
-namespace ERPSyatem.API.Controllers;
+namespace ERPSystem.API.Controllers;
 
 [ApiController]
 [Route("api/access/roles")]

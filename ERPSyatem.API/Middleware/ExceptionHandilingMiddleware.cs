@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 
-namespace ERPSyatem.API.Middleware
+namespace ERPSystem.API.Middleware
 {
     public class ExceptionHandlingMiddleware
     {

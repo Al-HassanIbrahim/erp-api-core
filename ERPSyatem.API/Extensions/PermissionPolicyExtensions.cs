@@ -2,7 +2,7 @@ using System.Reflection;
 using ERPSystem.Application.Authorization;
 using Microsoft.AspNetCore.Authorization;
 
-namespace ERPSyatem.API.Extensions;
+namespace ERPSystem.API.Extensions;
 
 public static class PermissionPolicyExtensions
 {

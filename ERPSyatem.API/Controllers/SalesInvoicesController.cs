@@ -5,7 +5,7 @@ using ERPSystem.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace ERPSyatem.API.Controllers
+namespace ERPSystem.API.Controllers
 {
     /// <summary>
     /// Manages sales invoices lifecycle including creation, modification,

@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using static ERPSystem.Application.Authorization.Permissions;
 
-namespace ERPSyatem.API.Controllers
+namespace ERPSystem.API.Controllers
 {
     /// <summary>
     /// Manages supplier payments and their allocation against purchase invoices.

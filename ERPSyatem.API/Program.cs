@@ -1,5 +1,5 @@
-using ERPSyatem.API.Extensions;
-using ERPSyatem.API.Middleware;
+using ERPSystem.API.Extensions;
+using ERPSystem.API.Middleware;
 using ERPSystem.Application.Interfaces;
 using ERPSystem.Application.Services.Contacts;
 using ERPSystem.Application.Services.Core;
@@ -32,7 +32,7 @@ using Microsoft.OpenApi.Models;
 using System.Text;
 using System.Text;
 
-namespace ERPSyatem.API
+namespace ERPSystem.API
 {
     public class Program
     {

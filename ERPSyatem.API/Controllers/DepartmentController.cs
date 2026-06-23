@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace ERPSyatem.API.Controllers
+namespace ERPSystem.API.Controllers
 {
     [Authorize]
     [Route("api/[controller]")]

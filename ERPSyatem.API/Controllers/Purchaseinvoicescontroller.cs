@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using static ERPSystem.Application.Authorization.Permissions;
 
-namespace ERPSyatem.API.Controllers
+namespace ERPSystem.API.Controllers
 {
     /// <summary>
     /// Manages purchase invoices: draft creation, editing, posting, and deletion.

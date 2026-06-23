@@ -4,7 +4,7 @@ using ERPSystem.Application.DTOs.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace ERPSyatem.API.Controllers;
+namespace ERPSystem.API.Controllers;
 
 [Route("api/access/permissions")]
 [ApiController]

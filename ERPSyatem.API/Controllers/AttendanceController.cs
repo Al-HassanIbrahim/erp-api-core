@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using static ERPSystem.Application.DTOs.HR.Attendance.Check;
 
-namespace ERPSyatem.API.Controllers
+namespace ERPSystem.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]

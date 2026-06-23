@@ -5,7 +5,7 @@ using ERPSystem.Domain.Entities.HR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace ERPSyatem.API.Controllers
+namespace ERPSystem.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]

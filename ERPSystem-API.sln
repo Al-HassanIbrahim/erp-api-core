@@ -9,7 +9,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ERPSystem.Application", "ER
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ERPSystem.Infrastructure", "ERPSystem.Infrastructure\ERPSystem.Infrastructure.csproj", "{C5B29E57-869C-49C2-87A4-CB07B9299E32}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ERPSyatem.API", "ERPSyatem.API\ERPSyatem.API.csproj", "{A1C648EE-DE0B-405B-915D-8FE8D5B09C28}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ERPSystem.API", "ERPSyatem.API\ERPSystem.API.csproj", "{A1C648EE-DE0B-405B-915D-8FE8D5B09C28}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
