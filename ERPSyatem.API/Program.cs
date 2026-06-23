@@ -1,4 +1,5 @@
-using System.Text;
+using ERPSyatem.API.Extensions;
+using ERPSyatem.API.Middleware;
 using ERPSystem.Application.Interfaces;
 using ERPSystem.Application.Services.Contacts;
 using ERPSystem.Application.Services.Core;
@@ -7,6 +8,7 @@ using ERPSystem.Application.Services.Expenses;
 using ERPSystem.Application.Services.Hr;
 using ERPSystem.Application.Services.Inventory;
 using ERPSystem.Application.Services.Products;
+using ERPSystem.Application.Services.Purchasing;
 using ERPSystem.Application.Services.Sales;
 using ERPSystem.Domain.Abstractions;
 using ERPSystem.Infrastructure.Data;
@@ -18,15 +20,17 @@ using ERPSystem.Infrastructure.Repositories.CRM;
 using ERPSystem.Infrastructure.Repositories.Expenses;
 using ERPSystem.Infrastructure.Repositories.Hr;
 using ERPSystem.Infrastructure.Repositories.Inventory;
+using ERPSystem.Infrastructure.Repositories.Purchase;
 using ERPSystem.Infrastructure.Repositories.Sales;
+using ERPSystem.Infrastructure.Shared;
+using ERPSystem.Infrastructure.Shared.PdfGeneration;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
-using ERPSyatem.API.Extensions;
-using ERPSyatem.API.Middleware;
+using System.Text;
 
 namespace ERPSyatem.API
 {
@@ -74,7 +78,7 @@ namespace ERPSyatem.API
             builder.Services.AddScoped<IInventoryReportsRepository, InventoryReportsRepository>();
             builder.Services.AddScoped<IInventoryReportsService, InventoryReportsService>();
 
-            // Hr Repository
+            // Hr
             builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
             builder.Services.AddScoped<IDepartmentRepository, DepartmentRepository>();
             builder.Services.AddScoped<IPositionRepository, PositionRepository>();
@@ -83,7 +87,6 @@ namespace ERPSyatem.API
             builder.Services.AddScoped<ILeaveBalanceRepository, LeaveBalanceRepository>();
             builder.Services.AddScoped<IPayrollRepository, PayrollRepository>();
 
-            // Hr Services
             builder.Services.AddScoped<IEmployeeService, EmployeeService>();
             builder.Services.AddScoped<IAttendanceService, AttendanceService>();
             builder.Services.AddScoped<ILeaveRequestService, LeaveRequestService>();
@@ -104,6 +107,21 @@ namespace ERPSyatem.API
             builder.Services.AddScoped<ISalesReceiptService, SalesReceiptService>();
             builder.Services.AddScoped<ISalesReturnService, SalesReturnService>();
 
+            // Purchasing
+            builder.Services.AddScoped<IUnitOfWork, PurchasingUnitOfWork>();
+            builder.Services.AddScoped<ISupplierRepository, SupplierRepository>();
+            builder.Services.AddScoped<IPurchaseInvoiceRepository, PurchaseInvoiceRepository>();
+            builder.Services.AddScoped<IPurchaseReturnRepository, PurchaseReturnRepository>();
+            builder.Services.AddScoped<ISupplierPaymentRepository, SupplierPaymentRepository>();
+            
+            // Fix ambiguous reference by fully qualifying ISupplierService and SupplierService
+            builder.Services.AddScoped<ISupplierService,SupplierService>();
+
+            builder.Services.AddScoped<IPurchaseInvoiceService, PurchaseInvoiceService>();
+            builder.Services.AddScoped<IPurchaseReturnService, PurchaseReturnService>();
+            builder.Services.AddScoped<ISupplierPaymentService, SupplierPaymentService>();
+
+
             // Contact
             builder.Services.AddScoped<IContactRepository, ContactRepository>();
            
@@ -118,10 +136,10 @@ namespace ERPSyatem.API
             builder.Services.AddScoped<IExpenseStatsService, ExpenseStatsService>();
 
 
-            // CRM Repo
+            // CRM 
             builder.Services.AddScoped<ILeadRepository, LeadRepository>();
             builder.Services.AddScoped<IPipelineRepository, PipelineRepository>();
-            // CRM Services
+
             builder.Services.AddScoped<ILeadService, LeadService>();
             builder.Services.AddScoped<IPipelineService, PipelineService>();
 
