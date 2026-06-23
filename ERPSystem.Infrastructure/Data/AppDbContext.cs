@@ -1,10 +1,12 @@
-﻿using ERPSystem.Domain.Entities.Contacts;
+﻿using ERPSystem.Domain.Abstractions;
+using ERPSystem.Domain.Entities.Contacts;
 using ERPSystem.Domain.Entities.Core;
 using ERPSystem.Domain.Entities.CRM;
 using ERPSystem.Domain.Entities.Expenses;
 using ERPSystem.Domain.Entities.HR;
 using ERPSystem.Domain.Entities.Inventory;
 using ERPSystem.Domain.Entities.Products;
+using ERPSystem.Domain.Entities.Purchase;
 using ERPSystem.Domain.Entities.Sales;
 using ERPSystem.Domain.Enums;
 using ERPSystem.Infrastructure.Identity;
@@ -62,6 +64,16 @@ namespace ERPSystem.Infrastructure.Data
         public DbSet<SalesReceiptAllocation> SalesReceiptAllocations => Set<SalesReceiptAllocation>();
         public DbSet<SalesReturn> SalesReturns => Set<SalesReturn>();
         public DbSet<SalesReturnLine> SalesReturnLines => Set<SalesReturnLine>();
+
+        // Purchasing
+        public DbSet<Domain.Entities.Core.DocumentSequence> PurchasingDocumentSequences => Set<Domain.Entities.Core.DocumentSequence>();
+        public DbSet<Supplier> Suppliers => Set<Supplier>();
+        public DbSet<PurchaseInvoice> PurchaseInvoices => Set<PurchaseInvoice>();
+        public DbSet<PurchaseInvoiceLine> PurchaseInvoiceLines => Set<PurchaseInvoiceLine>();
+        public DbSet<PurchaseReturn> PurchaseReturns => Set<PurchaseReturn>();
+        public DbSet<PurchaseReturnLine> PurchaseReturnLines => Set<PurchaseReturnLine>();
+        public DbSet<SupplierPayment> SupplierPayments => Set<SupplierPayment>();
+        public DbSet<SupplierPaymentAllocation> SupplierPaymentAllocations => Set<SupplierPaymentAllocation>();
 
         // Contacts
         public DbSet<Contact> Contacts => Set<Contact>();
@@ -177,6 +189,124 @@ namespace ERPSystem.Infrastructure.Data
                 entity.Property(e => e.TaxAmount).HasPrecision(18, 2);
                 entity.Property(e => e.LineTotal).HasPrecision(18, 2);
             });
+
+            // ==========================================
+            // PURCHASING MODULE CONFIGURATIONS
+            // ==========================================
+
+            modelBuilder.Entity<Supplier>(entity =>
+            {
+                entity.ToTable("Purchasing_Suppliers");
+                entity.HasQueryFilter(x => !x.IsDeleted);
+                entity.HasIndex(x => new { x.CompanyId, x.Code }).IsUnique().HasDatabaseName("UIX_Supplier_Company_Code");
+                entity.Property(x => x.CreditLimit).HasPrecision(18, 2).HasDefaultValue(0m);
+                entity.Property(x => x.RowVersion).IsRowVersion();
+            });
+
+            modelBuilder.Entity<PurchaseInvoice>(entity =>
+            {
+                entity.ToTable("Purchasing_Invoices");
+                entity.HasQueryFilter(x => !x.IsDeleted);
+                entity.HasIndex(x => new { x.CompanyId, x.InvoiceNumber }).IsUnique().HasDatabaseName("UIX_PurchInvoice_Company_Number");
+                entity.Property(x => x.Status).HasConversion<string>().HasMaxLength(20);
+                entity.Property(x => x.PaymentStatus).HasConversion<string>().HasMaxLength(20);
+                entity.Property(x => x.SubTotal).HasPrecision(18, 2);
+                entity.Property(x => x.DiscountAmount).HasPrecision(18, 2);
+                entity.Property(x => x.TaxAmount).HasPrecision(18, 2);
+                entity.Property(x => x.GrandTotal).HasPrecision(18, 2);
+                entity.Property(x => x.PaidAmount).HasPrecision(18, 2);
+                entity.Property(x => x.RowVersion).IsRowVersion();
+
+                entity.HasOne(x => x.Supplier).WithMany(x => x.PurchaseInvoices).HasForeignKey(x => x.SupplierId).OnDelete(DeleteBehavior.Restrict);
+                entity.HasIndex(x => x.WarehouseId).HasDatabaseName("IX_PurchInvoice_WarehouseId");
+            });
+
+            modelBuilder.Entity<PurchaseInvoiceLine>(entity =>
+            {
+                entity.ToTable("Purchasing_InvoiceLines");
+                entity.HasQueryFilter(x => !x.IsDeleted);
+                entity.Property(x => x.ConversionRate).HasPrecision(18, 4).HasDefaultValue(1.0000m);
+                entity.Property(x => x.Quantity).HasPrecision(18, 4);
+                entity.Property(x => x.UnitPrice).HasPrecision(18, 2);
+                entity.Property(x => x.DiscountPercent).HasPrecision(5, 2);
+                entity.Property(x => x.TaxPercent).HasPrecision(5, 2);
+                entity.Property(x => x.DiscountAmount).HasPrecision(18, 2);
+                entity.Property(x => x.TaxAmount).HasPrecision(18, 2);
+                entity.Property(x => x.LineTotal).HasPrecision(18, 2);
+                entity.HasIndex(x => x.ProductId).HasDatabaseName("IX_PurchInvoiceLine_ProductId");
+                entity.HasIndex(x => x.UnitId).HasDatabaseName("IX_PurchInvoiceLine_UnitId");
+            });
+
+            modelBuilder.Entity<PurchaseReturn>(entity =>
+            {
+                entity.ToTable("Purchasing_Returns");
+                entity.HasQueryFilter(x => !x.IsDeleted);
+                entity.HasIndex(x => new { x.CompanyId, x.ReturnNumber }).IsUnique().HasDatabaseName("UIX_PurchReturn_Company_Number");
+                entity.Property(x => x.Status).HasConversion<string>().HasMaxLength(20);
+                entity.Property(x => x.SubTotal).HasPrecision(18, 2);
+                entity.Property(x => x.TaxAmount).HasPrecision(18, 2);
+                entity.Property(x => x.GrandTotal).HasPrecision(18, 2);
+                entity.Property(x => x.RowVersion).IsRowVersion();
+
+                entity.HasOne(x => x.Supplier).WithMany(x => x.PurchaseReturns).HasForeignKey(x => x.SupplierId).OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(x => x.PurchaseInvoice).WithMany().HasForeignKey(x => x.PurchaseInvoiceId).IsRequired(false).OnDelete(DeleteBehavior.Restrict);
+                entity.HasIndex(x => x.WarehouseId).HasDatabaseName("IX_PurchReturn_WarehouseId");
+            });
+
+            modelBuilder.Entity<PurchaseReturnLine>(entity =>
+            {
+                entity.ToTable("Purchasing_ReturnLines");
+                entity.HasQueryFilter(x => !x.IsDeleted);
+                entity.Property(x => x.ConversionRate).HasPrecision(18, 4).HasDefaultValue(1.0000m);
+                entity.Property(x => x.Quantity).HasPrecision(18, 4);
+                entity.Property(x => x.UnitPrice).HasPrecision(18, 2);
+                entity.Property(x => x.TaxPercent).HasPrecision(5, 2);
+                entity.Property(x => x.TaxAmount).HasPrecision(18, 2);
+                entity.Property(x => x.LineTotal).HasPrecision(18, 2);
+                entity.HasIndex(x => x.ProductId).HasDatabaseName("IX_PurchReturnLine_ProductId");
+                entity.HasIndex(x => x.UnitId).HasDatabaseName("IX_PurchReturnLine_UnitId");
+            });
+
+            modelBuilder.Entity<SupplierPayment>(entity =>
+            {
+                entity.ToTable("Purchasing_SupplierPayments");
+                entity.HasQueryFilter(x => !x.IsDeleted);
+                entity.HasIndex(x => new { x.CompanyId, x.PaymentNumber }).IsUnique().HasDatabaseName("UIX_SupplierPayment_Company_Number");
+                entity.Property(x => x.Status).HasConversion<string>().HasMaxLength(20);
+                entity.Property(x => x.Amount).HasPrecision(18, 2);
+                entity.Property(x => x.RowVersion).IsRowVersion();
+
+                entity.HasOne(x => x.Supplier).WithMany(x => x.SupplierPayments).HasForeignKey(x => x.SupplierId).OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<SupplierPaymentAllocation>(entity =>
+            {
+                entity.ToTable("Purchasing_PaymentAllocations");
+                entity.HasQueryFilter(x => !x.IsDeleted);
+                entity.Property(x => x.AllocatedAmount).HasPrecision(18, 2);
+
+                entity.HasOne(x => x.PurchaseInvoice).WithMany(x => x.PaymentAllocations).HasForeignKey(x => x.PurchaseInvoiceId).OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // Override specific relationships with Cascade (Purchasing)
+            modelBuilder.Entity<PurchaseInvoiceLine>()
+                .HasOne(x => x.PurchaseInvoice)
+                .WithMany(x => x.Lines)
+                .HasForeignKey(x => x.PurchaseInvoiceId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<PurchaseReturnLine>()
+                .HasOne(x => x.PurchaseReturn)
+                .WithMany(x => x.Lines)
+                .HasForeignKey(x => x.PurchaseReturnId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<SupplierPaymentAllocation>()
+                .HasOne(x => x.SupplierPayment)
+                .WithMany(x => x.Allocations)
+                .HasForeignKey(x => x.SupplierPaymentId)
+                .OnDelete(DeleteBehavior.Cascade);
+
 
             // Employee Configuration
             modelBuilder.Entity<Employee>(entity =>
