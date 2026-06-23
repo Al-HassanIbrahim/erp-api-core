@@ -17,10 +17,13 @@ namespace ERPSyatem.API.Controllers
     public class SalesDeliveriesController : ControllerBase
     {
         private readonly ISalesDeliveryService _service;
+        private readonly IPdfExportService _pdfExportService;
 
-        public SalesDeliveriesController(ISalesDeliveryService service)
+
+        public SalesDeliveriesController(ISalesDeliveryService service, IPdfExportService pdfExportService)
         {
             _service = service;
+            _pdfExportService = pdfExportService;
         }
 
         /// <summary>
@@ -112,6 +115,23 @@ namespace ERPSyatem.API.Controllers
         {
             await _service.DeleteAsync(id, cancellationToken);
             return NoContent();
+        }
+
+        /// <summary>Exports a single Sales Delivery to PDF.</summary>
+        [HttpGet("{id:int}/pdf")]
+        [Authorize(Policy = Permissions.Sales.Deliveries.Read)]
+        public async Task<IActionResult> GetDeliveryPdf(
+            [FromRoute] int id,
+            [FromQuery] string lang = "ar",
+            CancellationToken ct = default)
+        {
+            lang = lang.ToLowerInvariant();
+            if (lang != "ar" && lang != "en")
+                return BadRequest("Invalid language. Accepted values: 'ar', 'en'.");
+
+            var bytes = await _pdfExportService.GenerateSalesDeliveryPdfAsync(id, lang, ct);
+            var fileName = lang == "ar" ? $"تسليم-{id}.pdf" : $"Delivery-{id}.pdf";
+            return File(bytes, "application/pdf", fileName);
         }
     }
 }

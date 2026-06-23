@@ -14,13 +14,16 @@ namespace ERPSyatem.API.Controllers
     [ApiController]
     [Route("api/sales/invoices")]
     [Authorize]
+
     public class SalesInvoicesController : ControllerBase
     {
         private readonly ISalesInvoiceService _service;
+        private readonly IPdfExportService _pdfExportService;
 
-        public SalesInvoicesController(ISalesInvoiceService service)
+        public SalesInvoicesController(ISalesInvoiceService service, IPdfExportService pdfExportService)
         {
             _service = service;
+            _pdfExportService = pdfExportService;
         }
 
         /// <summary>
@@ -137,5 +140,46 @@ namespace ERPSyatem.API.Controllers
             await _service.DeleteAsync(id, cancellationToken);
             return NoContent();
         }
+
+        /// <summary>Exports a single Sales Invoice to PDF.</summary>
+        [HttpGet("{id:int}/pdf")]
+        [Authorize(Policy = Permissions.Sales.Invoices.Read)]
+        public async Task<IActionResult> GetInvoicePdf(
+            [FromRoute] int id,
+            [FromQuery] string lang = "ar",
+            CancellationToken ct = default)
+        {
+            lang = lang.ToLowerInvariant();
+            if (lang != "ar" && lang != "en")
+                return BadRequest("Invalid language. Accepted values: 'ar', 'en'.");
+
+            var bytes = await _pdfExportService.GenerateSalesInvoicePdfAsync(id, lang, ct);
+            var fileName = lang == "ar" ? $"فاتورة-{id}.pdf" : $"Invoice-{id}.pdf";
+            return File(bytes, "application/pdf", fileName);
+        }
+
+        /// <summary>
+        /// Exports a filtered list of sales invoices to a single combined PDF document.
+        /// </summary>
+        //[HttpGet("pdf")]
+        //[Authorize(Policy = Permissions.Sales.Invoices.Read)]
+        //public async Task<IActionResult> GetFilteredInvoicesPdf(
+        //    [FromQuery] int? customerId,
+        //    [FromQuery] SalesInvoiceStatus? status,
+        //    [FromQuery] DateTime? fromDate,
+        //    [FromQuery] DateTime? toDate,
+        //    [FromQuery] string lang = "ar",
+        //    CancellationToken cancellationToken = default)
+        //{
+        //    lang = lang.ToLowerInvariant();
+        //    if (lang != "ar" && lang != "en")
+        //        return BadRequest("Invalid language. Accepted values: 'ar', 'en'.");
+
+        //    // Call the new service method that handles bulk generation
+        //    var bytes = await _pdfExportService.GenerateSalesInvoicesBulkPdfAsync(customerId, status, fromDate, toDate, lang, cancellationToken);
+
+        //    var fileName = lang == "ar" ? "تقرير_الفواتير.pdf" : "Invoices_Report.pdf";
+        //    return File(bytes, "application/pdf", fileName);
+        //}
     }
 }
