@@ -124,7 +124,11 @@ namespace ERPSyatem.API
             builder.Services.AddScoped<ILeadService, LeadService>();
             builder.Services.AddScoped<IPipelineService, PipelineService>();
 
-
+            // Register QuestPDF Community license (free for < $1M revenue)
+            QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
+            // Register PDF export service
+            builder.Services.AddScoped<ERPSystem.Application.Interfaces.IPdfExportService,
+                                        PdfExportService>();
 
             #region Swagger
             builder.Services.AddSwaggerGen(c =>
@@ -220,6 +224,9 @@ namespace ERPSyatem.API
                 app.UseSwaggerUI();
             }
 
+            // Register embedded Arabic/Latin fonts for PDF generation
+            PdfFontRegistrar.RegisterAll();
+            
             app.UseExceptionHandling();
 
             app.UseCors("MyPolicy");
