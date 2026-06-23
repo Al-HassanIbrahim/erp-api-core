@@ -19,10 +19,16 @@ namespace ERPSystem.Domain.Abstractions
             DateTime? fromDate = null,
             DateTime? toDate = null,
             CancellationToken cancellationToken = default);
-        Task<string> GenerateInvoiceNumberAsync(int companyId, CancellationToken cancellationToken = default);
         Task AddAsync(SalesInvoice invoice, CancellationToken cancellationToken = default);
         void Update(SalesInvoice invoice);
         void Delete(SalesInvoice invoice);
         Task SaveChangesAsync(CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Loads a SalesInvoice with all navigations required for PDF generation:
+        /// Customer, Lines (with Product and Unit).
+        /// Returns null if not found or if the record is soft-deleted.
+        /// </summary>
+        Task<SalesInvoice?> GetByIdWithDetailsAsync(int id, int companyId, CancellationToken ct);
     }
 }

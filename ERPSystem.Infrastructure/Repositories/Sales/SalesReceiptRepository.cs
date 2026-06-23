@@ -62,14 +62,6 @@ namespace ERPSystem.Infrastructure.Repositories.Sales
                 .ToListAsync(cancellationToken);
         }
 
-        public async Task<string> GenerateReceiptNumberAsync(int companyId, CancellationToken cancellationToken = default)
-        {
-            var count = await _context.SalesReceipts
-                .CountAsync(r => r.CompanyId == companyId, cancellationToken);
-
-            return $"RCP-{DateTime.UtcNow:yyyyMM}-{(count + 1):D5}";
-        }
-
         public async Task AddAsync(SalesReceipt receipt, CancellationToken cancellationToken = default)
         {
             await _context.SalesReceipts.AddAsync(receipt, cancellationToken);
@@ -90,5 +82,12 @@ namespace ERPSystem.Infrastructure.Repositories.Sales
         {
             await _context.SaveChangesAsync(cancellationToken);
         }
+        /// <inheritdoc />
+        public async Task<SalesReceipt?> GetByIdWithDetailsAsync(int id, int companyId, CancellationToken ct)
+            => await _context.SalesReceipts
+                .Include(x => x.Customer)
+                .Include(x => x.Allocations)
+                    .ThenInclude(a => a.SalesInvoice)
+                .FirstOrDefaultAsync(x => x.Id == id && x.CompanyId == companyId && !x.IsDeleted, ct);
     }
 }

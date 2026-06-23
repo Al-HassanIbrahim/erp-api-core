@@ -19,10 +19,15 @@ namespace ERPSystem.Domain.Abstractions
             DateTime? fromDate = null,
             DateTime? toDate = null,
             CancellationToken cancellationToken = default);
-        Task<string> GenerateReceiptNumberAsync(int companyId, CancellationToken cancellationToken = default);
         Task AddAsync(SalesReceipt receipt, CancellationToken cancellationToken = default);
         void Update(SalesReceipt receipt);
         void Delete(SalesReceipt receipt);
         Task SaveChangesAsync(CancellationToken cancellationToken = default);
+        /// <summary>
+        /// Loads a SalesReceipt with all navigations required for PDF generation:
+        /// Customer, Allocations (with SalesInvoice).
+        /// Returns null if not found or if the record is soft-deleted.
+        /// </summary>
+        Task<SalesReceipt?> GetByIdWithDetailsAsync(int id, int companyId, CancellationToken ct);
     }
 }

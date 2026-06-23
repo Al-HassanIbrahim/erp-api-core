@@ -19,10 +19,15 @@ namespace ERPSystem.Domain.Abstractions
             DateTime? fromDate = null,
             DateTime? toDate = null,
             CancellationToken cancellationToken = default);
-        Task<string> GenerateDeliveryNumberAsync(int companyId, CancellationToken cancellationToken = default);
         Task AddAsync(SalesDelivery delivery, CancellationToken cancellationToken = default);
         void Update(SalesDelivery delivery);
         void Delete(SalesDelivery delivery);
         Task SaveChangesAsync(CancellationToken cancellationToken = default);
+        /// <summary>
+        /// Loads a SalesDelivery with all navigations required for PDF generation:
+        /// Customer, SalesInvoice, Warehouse, Lines (with Product, Unit, SalesInvoiceLine).
+        /// Returns null if not found or if the record is soft-deleted.
+        /// </summary>
+        Task<SalesDelivery?> GetByIdWithDetailsAsync(int id, int companyId, CancellationToken ct);
     }
 }

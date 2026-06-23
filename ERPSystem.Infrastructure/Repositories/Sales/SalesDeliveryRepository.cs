@@ -73,14 +73,6 @@ namespace ERPSystem.Infrastructure.Repositories.Sales
                 .ToListAsync(cancellationToken);
         }
 
-        public async Task<string> GenerateDeliveryNumberAsync(int companyId, CancellationToken cancellationToken = default)
-        {
-            var count = await _context.SalesDeliveries
-                .CountAsync(d => d.CompanyId == companyId, cancellationToken);
-
-            return $"DEL-{DateTime.UtcNow:yyyyMM}-{(count + 1):D5}";
-        }
-
         public async Task AddAsync(SalesDelivery delivery, CancellationToken cancellationToken = default)
         {
             await _context.SalesDeliveries.AddAsync(delivery, cancellationToken);
@@ -101,5 +93,19 @@ namespace ERPSystem.Infrastructure.Repositories.Sales
         {
             await _context.SaveChangesAsync(cancellationToken);
         }
+        /// <inheritdoc />
+        public async Task<SalesDelivery?> GetByIdWithDetailsAsync(int id, int companyId, CancellationToken ct)
+            => await _context.SalesDeliveries
+                .Include(x => x.Customer)
+                .Include(x => x.SalesInvoice)
+                .Include(x => x.Warehouse)
+                .Include(x => x.Lines)
+                    .ThenInclude(l => l.Product)
+                .Include(x => x.Lines)
+                    .ThenInclude(l => l.Unit)
+                .Include(x => x.Lines)
+                    .ThenInclude(l => l.SalesInvoiceLine)
+                .FirstOrDefaultAsync(x => x.Id == id && x.CompanyId == companyId && !x.IsDeleted, ct);
+
     }
 }
