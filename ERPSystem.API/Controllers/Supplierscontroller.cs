@@ -38,7 +38,7 @@ namespace ERPSystem.API.Controllers
         /// </summary>
         /// <response code="200">List of suppliers (may be empty).</response>
         [HttpGet]
-        [Authorize(Policy = Purchasing.Read)]
+        [Authorize(Policy = Purchasing.suppliers.Read)]
         [ProducesResponseType(typeof(IReadOnlyList<SupplierListDto>), StatusCodes.Status200OK)]
         public async Task<ActionResult<IReadOnlyList<SupplierListDto>>> GetAll(
             CancellationToken ct)
@@ -58,7 +58,7 @@ namespace ERPSystem.API.Controllers
         /// <response code="200">Supplier found.</response>
         /// <response code="404">Supplier not found in this company.</response>
         [HttpGet("{id:int}")]
-        [Authorize(Policy = Purchasing.Read)]
+        [Authorize(Policy = Purchasing.suppliers.Read)]
         [ProducesResponseType(typeof(SupplierDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         public async Task<ActionResult<SupplierDto>> GetById(
@@ -81,7 +81,7 @@ namespace ERPSystem.API.Controllers
         /// <response code="400">Validation failed (missing required fields, out-of-range values).</response>
         /// <response code="409">A supplier with the same code already exists.</response>
         [HttpPost]
-        [Authorize(Policy = Purchasing.Write)]
+        [Authorize(Policy = Purchasing.suppliers.Write)]
         [ProducesResponseType(typeof(SupplierDto), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
@@ -108,7 +108,7 @@ namespace ERPSystem.API.Controllers
         /// <response code="404">Supplier not found.</response>
         /// <response code="409">Duplicate supplier code conflict.</response>
         [HttpPut("{id:int}")]
-        [Authorize(Policy = Purchasing.Write)]
+        [Authorize(Policy = Purchasing.suppliers.Write)]
         [ProducesResponseType(typeof(SupplierDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
@@ -135,7 +135,7 @@ namespace ERPSystem.API.Controllers
         /// <response code="404">Supplier not found.</response>
         /// <response code="422">Supplier has active purchasing documents and cannot be deleted.</response>
         [HttpDelete("{id:int}")]
-        [Authorize(Policy = Purchasing.Write)]
+        [Authorize(Policy = Purchasing.suppliers.Write)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status422UnprocessableEntity)]

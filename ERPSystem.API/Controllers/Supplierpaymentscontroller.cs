@@ -44,7 +44,7 @@ namespace ERPSystem.API.Controllers
         /// </summary>
         /// <response code="200">List of payment summaries (may be empty).</response>
         [HttpGet]
-        [Authorize(Policy = Purchasing.Read)]
+        [Authorize(Policy = Purchasing.suppliers.Read)]
         [ProducesResponseType(typeof(IReadOnlyList<SupplierPaymentListDto>), StatusCodes.Status200OK)]
         public async Task<ActionResult<IReadOnlyList<SupplierPaymentListDto>>> GetAll(
             CancellationToken ct)
@@ -63,7 +63,7 @@ namespace ERPSystem.API.Controllers
         /// <param name="id">Payment primary key.</param>
         /// <response code="200">Payment found.</response>
         /// <response code="404">Payment not found in this company.</response>
-        [Authorize(Policy = Purchasing.Read)]
+        [Authorize(Policy = Purchasing.suppliers.Read)]
         [HttpGet("{id:int}")]
         [ProducesResponseType(typeof(SupplierPaymentDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
@@ -96,7 +96,7 @@ namespace ERPSystem.API.Controllers
         /// <response code="404">Referenced supplier or invoice not found.</response>
         /// <response code="422">Business rule violation (e.g. allocation exceeds payment amount, invoice supplier mismatch).</response>
         [HttpPost]
-        [Authorize(Policy = Purchasing.Write)]
+        [Authorize(Policy = Purchasing.suppliers.Write)]
         [ProducesResponseType(typeof(SupplierPaymentDto), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
@@ -134,7 +134,7 @@ namespace ERPSystem.API.Controllers
         /// <response code="404">Payment not found.</response>
         /// <response code="422">Payment is not in Draft status, has no allocations, or a business rule was violated.</response>
         [HttpPost("{id:int}/post")]
-        [Authorize(Policy = Purchasing.Post)]
+        [Authorize(Policy = Purchasing.suppliers.Post)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status422UnprocessableEntity)]
@@ -167,7 +167,7 @@ namespace ERPSystem.API.Controllers
         /// <response code="404">Payment not found.</response>
         /// <response code="422">Payment is not in Posted status.</response>
         [HttpPost("{id:int}/cancel")]
-        [Authorize(Policy = Purchasing.Write)]
+        [Authorize(Policy = Purchasing.suppliers.Write)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status422UnprocessableEntity)]

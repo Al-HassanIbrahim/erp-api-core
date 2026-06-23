@@ -46,7 +46,7 @@ namespace ERPSystem.API.Controllers
         /// </summary>
         /// <response code="200">List of return summaries (may be empty).</response>
         [HttpGet]
-        [Authorize(Policy = Purchasing.Read)]
+        [Authorize(Policy = Purchasing.Purchases.Read)]
         [ProducesResponseType(typeof(IReadOnlyList<PurchaseReturnListDto>), StatusCodes.Status200OK)]
         public async Task<ActionResult<IReadOnlyList<PurchaseReturnListDto>>> GetAll(
             CancellationToken ct)
@@ -66,7 +66,7 @@ namespace ERPSystem.API.Controllers
         /// <response code="200">Return found.</response>
         /// <response code="404">Return not found in this company.</response>
         [HttpGet("{id:int}")]
-        [Authorize(Policy = Purchasing.Read)]
+        [Authorize(Policy = Purchasing.Purchases.Read)]
         [ProducesResponseType(typeof(PurchaseReturnDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         public async Task<ActionResult<PurchaseReturnDto>> GetById(
@@ -98,7 +98,7 @@ namespace ERPSystem.API.Controllers
         /// <response code="404">Referenced supplier, warehouse, or invoice not found.</response>
         /// <response code="422">Business rule violation (e.g. supplier inactive, quantity over-return).</response>
         [HttpPost]
-        [Authorize(Policy = Purchasing.Write)]
+        [Authorize(Policy = Purchasing.Purchases.Write)]
         [ProducesResponseType(typeof(PurchaseReturnDto), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
@@ -136,7 +136,7 @@ namespace ERPSystem.API.Controllers
         /// <response code="404">Return not found.</response>
         /// <response code="422">Return is not in Draft status, has no lines, or a business rule was violated.</response>
         [HttpPost("{id:int}/post")]
-        [Authorize(Policy = Purchasing.Post)]
+        [Authorize(Policy = Purchasing.Purchases.Post)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status422UnprocessableEntity)]
@@ -162,7 +162,7 @@ namespace ERPSystem.API.Controllers
         /// <response code="404">Return not found.</response>
         /// <response code="422">Return is not in Draft status.</response>
         [HttpDelete("{id:int}")]
-        [Authorize(Policy = Purchasing.Write)]
+        [Authorize(Policy = Purchasing.Purchases.Write)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status422UnprocessableEntity)]

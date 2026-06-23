@@ -44,7 +44,7 @@ namespace ERPSystem.API.Controllers
         /// </summary>
         /// <response code="200">List of invoice summaries (may be empty).</response>
         [HttpGet]
-        [Authorize(Policy = Purchasing.Read)]
+        [Authorize(Policy = Purchasing.Purchases.Read)]
         [ProducesResponseType(typeof(IReadOnlyList<PurchaseInvoiceListDto>), StatusCodes.Status200OK)]
         public async Task<ActionResult<IReadOnlyList<PurchaseInvoiceListDto>>> GetAll(
             CancellationToken ct)
@@ -66,7 +66,7 @@ namespace ERPSystem.API.Controllers
         [HttpGet("{id:int}")]
         [ProducesResponseType(typeof(PurchaseInvoiceDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-        [Authorize(Policy = Purchasing.Read)]
+        [Authorize(Policy = Purchasing.Purchases.Read)]
         public async Task<ActionResult<PurchaseInvoiceDto>> GetById(
             int id,
             CancellationToken ct)
@@ -89,7 +89,7 @@ namespace ERPSystem.API.Controllers
         /// <response code="404">Referenced supplier or warehouse not found.</response>
         /// <response code="422">Business rule violation (e.g. supplier inactive).</response>
         [HttpPost]
-        [Authorize(Policy = Purchasing.Write)]
+        [Authorize(Policy = Purchasing.Purchases.Write)]
         [ProducesResponseType(typeof(PurchaseInvoiceDto), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
@@ -120,7 +120,7 @@ namespace ERPSystem.API.Controllers
         /// <response code="404">Invoice, supplier, or warehouse not found.</response>
         /// <response code="422">Invoice is not in Draft status.</response>
         [HttpPut("{id:int}")]
-        [Authorize(Policy = Purchasing.Write)]
+        [Authorize(Policy = Purchasing.Purchases.Write)]
         [ProducesResponseType(typeof(PurchaseInvoiceDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
@@ -156,7 +156,7 @@ namespace ERPSystem.API.Controllers
         /// <response code="404">Invoice not found.</response>
         /// <response code="422">Invoice is not in Draft status, has no lines, or a business rule was violated.</response>
         [HttpPost("{id:int}/post")]
-        [Authorize(Policy = Purchasing.Post)]
+        [Authorize(Policy = Purchasing.Purchases.Post)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status422UnprocessableEntity)]
@@ -182,7 +182,7 @@ namespace ERPSystem.API.Controllers
         /// <response code="404">Invoice not found.</response>
         /// <response code="422">Invoice is not in Draft status.</response>
         [HttpDelete("{id:int}")]
-        [Authorize(Policy = Purchasing.Write)]
+        [Authorize(Policy = Purchasing.Purchases.Write)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status422UnprocessableEntity)]
