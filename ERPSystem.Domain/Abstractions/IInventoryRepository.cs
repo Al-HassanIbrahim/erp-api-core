@@ -15,5 +15,7 @@ namespace ERPSystem.Domain.Abstractions
         Task AddStockItemAsync(StockItem stockItem, CancellationToken cancellationToken = default);
 
         Task SaveChangesAsync(CancellationToken cancellationToken = default);
+
+       // public Task<string> GenerateDocumentNumberAsync(string prefix, int companyId, CancellationToken cancellationToken = default);
     }
 }

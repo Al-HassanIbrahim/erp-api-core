@@ -39,5 +39,14 @@ namespace ERPSystem.Infrastructure.Repositories.Inventory
         {
             return _dbContext.SaveChangesAsync(cancellationToken);
         }
+    //    public async Task<string> GenerateDocumentNumberAsync(string prefix, int companyId, CancellationToken cancellationToken = default)
+    //    {
+    //        var nextVal = await _dbContext.Database
+    //            .SqlQueryRaw<int>("SELECT NEXT VALUE FOR InventoryDocumentSeq")
+    //            .SingleAsync(cancellationToken);
+
+    //        // ex: IN-202606-C1-00001 | OUT-202606-C1-00002
+    //        return $"{prefix}-{DateTime.UtcNow:yyyyMM}-C{companyId}-{nextVal:D5}";
+    //    }
     }
 }
