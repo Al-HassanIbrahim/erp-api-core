@@ -18,7 +18,7 @@ namespace ERPSystem.Infrastructure.Identity
 
         public JwtTokenService(IConfiguration config)
         {
-            _config = config;
+            _config = config; //read from appsettings
         }
 
         public AuthResponse CreateToken(Guid userId, int companyId, string email, string[] roles, string[] permissions)
@@ -62,7 +62,7 @@ namespace ERPSystem.Infrastructure.Identity
                 signingCredentials: creds
             );
 
-            var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
+            var tokenString = new JwtSecurityTokenHandler().WriteToken(token); //convert the token to string 
 
             return new AuthResponse(
                 AccessToken: tokenString,
@@ -76,3 +76,10 @@ namespace ERPSystem.Infrastructure.Identity
         }
     }
 }
+
+
+// why in infrastructure 
+/*
+ JwtTokenService is placed in the Infrastructure layer because it implements a framework- and configuration-dependent mechanism for issuing JWT access tokens.
+The Application layer depends only on the abstraction (IJwtTokenService), ensuring separation of concerns, replaceability of the token mechanism, and improved testability.
+ */
