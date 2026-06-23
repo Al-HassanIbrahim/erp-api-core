@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static ERPSystem.Application.Authorization.Permissions.Sales;
 namespace ERPSystem.Application.Exceptions
 {
     public class BusinessException : Exception
@@ -60,6 +61,16 @@ namespace ERPSystem.Application.Exceptions
             new("WAREHOUSE_NOT_FOUND", "Warehouse not found.", 404);
         public static BusinessException ContactNotFound() =>
             new("Contact_NOT_FOUND", "Contact not found.", 404);
+        public static BusinessException SalesInvoiceNotFound(int invoiceId) =>
+            new("SALES_INVOICE_NOT_FOUND", $"Invoice {invoiceId} not found.", 404);
+        public static BusinessException CompanyNotFound(int companyId) =>
+            new("COMPANYID_NOT_FOUND", $"CompanyId {companyId} not found.", 404);
+        public static BusinessException SalesReturnNotFound(int returnid) =>
+            new("RETURNID_NOT_FOUND", $"ReturnId {returnid} not found.", 404);
+        public static BusinessException SalesReceiptNotFound(int receiptid) =>
+            new("RECEIPTID_NOT_FOUND", $"ReceiptId {receiptid} not found.", 404);
+        public static BusinessException SalesDeliveryNotFound(int deliveryid) =>
+            new("DELIVERYID_NOT_FOUND", $"DeliveryId {deliveryid} not found.", 404);
 
         // Validation
         public static BusinessException InvalidStatus(string message) =>
@@ -125,5 +136,57 @@ namespace ERPSystem.Application.Exceptions
         public static BusinessException CannotAssignRoleAcrossCompanies() =>
             new("CROSS_COMPANY_ROLE_ASSIGNMENT", "Cannot assign or remove roles across companies.", 403);
 
+        // ── Purchasing Module ─────────────────────────────────────
+
+        public static BusinessException PurchasingModuleNotEnabled() =>
+            new("PURCHASING_MODULE_DISABLED",
+                "Purchasing module is not enabled for this company.", 403);
+
+        public static BusinessException SupplierNotFound(int supplierId) =>
+            new("SUPPLIER_NOT_FOUND", $"Supplier {supplierId} not found.", 404);
+
+        public static BusinessException DuplicateSupplierCode(string code) =>
+            new("DUPLICATE_SUPPLIER_CODE",
+                $"Supplier code '{code}' is already in use.", 409);
+
+        public static BusinessException PurchaseInvoiceNotFound(int invoiceId) =>
+            new("PURCHASE_INVOICE_NOT_FOUND",
+                $"Purchase invoice {invoiceId} not found.", 404);
+
+        public static BusinessException PurchaseReturnNotFound(int returnId) =>
+            new("PURCHASE_RETURN_NOT_FOUND",
+                $"Purchase return {returnId} not found.", 404);
+
+        public static BusinessException SupplierPaymentNotFound(int paymentId) =>
+            new("SUPPLIER_PAYMENT_NOT_FOUND",
+                $"Supplier payment {paymentId} not found.", 404);
+        //  // Fix 10 — Optimistic concurrency conflict
+        public static Exception ConcurrencyConflict() =>
+            new InvalidOperationException(
+                "The record was modified by another user. " +
+                "Please reload the record and try again.");
+
+        //  // Fix 9 — Supplier has active purchasing history
+        public static Exception SupplierHasActiveDocuments() =>
+            new InvalidOperationException(
+                "This supplier cannot be deleted because they have active " +
+                "purchase invoices, returns, or payments on record.");
+
+        //  // Fix 3 — Over-return
+        public static Exception ReturnQuantityExceeded(string productName, decimal available) =>
+            new InvalidOperationException(
+                $"Return quantity for '{productName}' exceeds the available " +
+                $"returnable quantity of {available:N4} units.");
+
+        //  // Fix 4 — Invoice belongs to a different supplier
+        public static Exception InvoiceSupplierMismatch(string invoiceNumber) =>
+            new InvalidOperationException(
+                $"Invoice '{invoiceNumber}' belongs to a different supplier " +
+                "than the one selected for this payment.");
+
+        //  // Fix 5 — Invalid line field value
+        public static Exception InvalidLineValue(string fieldName) =>
+            new InvalidOperationException(
+                $"Invalid line value: {fieldName}.");
     }
 }
