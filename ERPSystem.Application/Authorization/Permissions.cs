@@ -276,4 +276,21 @@ public static class Permissions
             public const string Post = "purchasing.suppliers.post";
         }
     }
+
+    public static class Import
+    {
+        public static class Jobs
+        {
+            /// <summary>
+            /// Allows listing all import jobs and viewing job summaries and row-level results.
+            /// </summary>
+            public const string Read = "Import.Jobs.Read";
+
+            /// <summary>
+            /// Allows uploading files, triggering new import jobs, and cancelling running jobs.
+            /// Implies <see cref="Read"/> for the creation response.
+            /// </summary>
+            public const string Manage = "Import.Jobs.Manage";
+        }
+    }
 }

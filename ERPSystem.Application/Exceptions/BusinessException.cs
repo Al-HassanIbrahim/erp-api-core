@@ -136,7 +136,7 @@ namespace ERPSystem.Application.Exceptions
         public static BusinessException CannotAssignRoleAcrossCompanies() =>
             new("CROSS_COMPANY_ROLE_ASSIGNMENT", "Cannot assign or remove roles across companies.", 403);
 
-        // ── Purchasing Module ─────────────────────────────────────
+        // Purchasing Module
 
         public static BusinessException PurchasingModuleNotEnabled() =>
             new("PURCHASING_MODULE_DISABLED",
@@ -188,5 +188,57 @@ namespace ERPSystem.Application.Exceptions
         public static Exception InvalidLineValue(string fieldName) =>
             new InvalidOperationException(
                 $"Invalid line value: {fieldName}.");
+
+        // Bulk Import Errors
+        /// <summary>Job not found or belongs to a different company.</summary>
+        public static BusinessException ImportJobNotFound(int id) =>
+            new("IMPORT_JOB_NOT_FOUND", $"Import job with ID {id} was not found.", 404);
+
+        /// <summary>Entity type string is not supported by the import pipeline.</summary>
+        public static BusinessException ImportUnknownEntityType(string type) =>
+            new("IMPORT_UNKNOWN_ENTITY_TYPE",
+                $"Entity type '{type}' is not supported. Supported: Product, Category, UnitOfMeasure.", 400);
+
+        /// <summary>File cannot be parsed due to structural error, unsupported format, or corruption.</summary>
+        public static BusinessException ImportFileParseFailed(string reason) =>
+            new("IMPORT_FILE_PARSE_FAILED", $"Failed to parse the import file: {reason}", 400);
+
+        /// <summary>File is syntactically valid but contains zero data rows after the header.</summary>
+        public static BusinessException ImportEmptyFile() =>
+            new("IMPORT_EMPTY_FILE",
+                "The import file contains no data rows. Ensure the file has at least one row below the header.", 400);
+
+        /// <summary>No file was attached to the request.</summary>
+        public static BusinessException ImportNoFile() =>
+            new("IMPORT_NO_FILE", "No file was provided. Please attach a .csv or .xlsx file.", 400);
+
+        /// <summary>Uploaded file exceeds the configured maximum size.</summary>
+        public static BusinessException ImportFileTooLarge(int maxMb) =>
+            new("IMPORT_FILE_TOO_LARGE",
+                $"The uploaded file exceeds the maximum allowed size of {maxMb} MB.", 413);
+
+        /// <summary>
+        /// The same idempotency key was already used for a prior import job.
+        /// The existing job ID is returned so the client can poll it instead.
+        /// </summary>
+        public static BusinessException ImportDuplicateRequest(int existingJobId) =>
+            new("IMPORT_DUPLICATE_REQUEST",
+                $"An import job with the same idempotency key already exists (job ID: {existingJobId}). " +
+                "Poll that job for results rather than submitting again.", 409);
+
+        /// <summary>Job is in a terminal state and cannot be cancelled.</summary>
+        public static BusinessException ImportJobNotCancellable(int jobId, string currentStatus) =>
+            new("IMPORT_JOB_NOT_CANCELLABLE",
+                $"Import job {jobId} cannot be cancelled because its status is '{currentStatus}'.", 409);
+
+        /// <summary>Background worker could not load the stored file — likely already cleaned up.</summary>
+        public static BusinessException ImportFileNotFound(int jobId) =>
+            new("IMPORT_FILE_NOT_FOUND",
+                $"The stored file for import job {jobId} could not be found. Please submit a new import.", 404);
+
+        /// <summary>File exceeds the maximum allowed row count.</summary>
+        public static BusinessException ImportTooManyRows(int actual, int max) =>
+            new("IMPORT_TOO_MANY_ROWS",
+                $"The file contains {actual:N0} rows which exceeds the maximum of {max:N0}.", 400);
     }
 }
