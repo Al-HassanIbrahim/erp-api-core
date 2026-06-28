@@ -1,11 +1,15 @@
-using ERPSystem.API.Extensions;
+﻿using ERPSystem.API.Extensions;
 using ERPSystem.API.Middleware;
+using ERPSystem.Application.DTOs.Import.Rows;
 using ERPSystem.Application.Interfaces;
 using ERPSystem.Application.Services.Contacts;
 using ERPSystem.Application.Services.Core;
 using ERPSystem.Application.Services.CRM;
 using ERPSystem.Application.Services.Expenses;
 using ERPSystem.Application.Services.Hr;
+using ERPSystem.Application.Services.Import;
+using ERPSystem.Application.Services.Import.Parsers;
+using ERPSystem.Application.Services.Import.Products;
 using ERPSystem.Application.Services.Inventory;
 using ERPSystem.Application.Services.Products;
 using ERPSystem.Application.Services.Purchasing;
@@ -19,9 +23,11 @@ using ERPSystem.Infrastructure.Repositories.Core;
 using ERPSystem.Infrastructure.Repositories.CRM;
 using ERPSystem.Infrastructure.Repositories.Expenses;
 using ERPSystem.Infrastructure.Repositories.Hr;
+using ERPSystem.Infrastructure.Repositories.Import;
 using ERPSystem.Infrastructure.Repositories.Inventory;
 using ERPSystem.Infrastructure.Repositories.Purchase;
 using ERPSystem.Infrastructure.Repositories.Sales;
+using ERPSystem.Infrastructure.Services.Import;
 using ERPSystem.Infrastructure.Shared;
 using ERPSystem.Infrastructure.Shared.PdfGeneration;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -31,6 +37,8 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
 using System.Text;
+using Hangfire;
+using Hangfire.SqlServer;
 
 namespace ERPSystem.API
 {
@@ -108,7 +116,7 @@ namespace ERPSystem.API
             builder.Services.AddScoped<ISalesReturnService, SalesReturnService>();
 
             // Purchasing
-            builder.Services.AddScoped<IUnitOfWork, PurchasingUnitOfWork>();
+            builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
             builder.Services.AddScoped<ISupplierRepository, SupplierRepository>();
             builder.Services.AddScoped<IPurchaseInvoiceRepository, PurchaseInvoiceRepository>();
             builder.Services.AddScoped<IPurchaseReturnRepository, PurchaseReturnRepository>();
@@ -148,6 +156,93 @@ namespace ERPSystem.API
             // Register PDF export service
             builder.Services.AddScoped<ERPSystem.Application.Interfaces.IPdfExportService,
                                         PdfExportService>();
+
+            #region Bulk-Import
+            // ─────────────────────────────────────────────────────────────────────────────
+            // 1. IMPORT FILE STORE
+            //    Binds appsettings.json section "ImportFileStore" → ImportFileStoreOptions.
+            //    Default: local disk. Swap LocalDiskImportFileStore for a cloud adapter
+            //    (Azure Blob, S3) without changing any application-layer code.
+            // ─────────────────────────────────────────────────────────────────────────────
+            builder.Services.Configure<ImportFileStoreOptions>(
+                builder.Configuration.GetSection("ImportFileStore"));
+
+            builder.Services.AddScoped<IImportFileStore, LocalDiskImportFileStore>();
+
+            // ─────────────────────────────────────────────────────────────────────────────
+            // 2. HANGFIRE  (background job infrastructure)
+            //    Uses the same SQL Server connection as AppDbContext.
+            //    Creates its own "HangFire" schema automatically on first run.
+            //    For high-volume production, extract AddHangfireServer to a dedicated
+            //    worker service project and remove it from the API host.
+            // ─────────────────────────────────────────────────────────────────────────────
+            builder.Services.AddHangfire(config => config
+                .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+                .UseSimpleAssemblyNameTypeSerializer()
+                .UseRecommendedSerializerSettings()
+                .UseSqlServerStorage(
+                    builder.Configuration.GetConnectionString("DefaultConnection"),
+                    new SqlServerStorageOptions
+                    {
+                        CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
+                        SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
+                        QueuePollInterval = TimeSpan.Zero,     // Push-mode; no polling delay
+                        UseRecommendedIsolationLevel = true,
+                        DisableGlobalLocks = true
+                    }));
+
+            builder.Services.AddHangfireServer(options =>
+            {
+                // One worker thread per CPU core; import jobs are I/O-bound so this is fine.
+                options.WorkerCount = Environment.ProcessorCount;
+
+                // Named queue so import jobs are isolated from other background work.
+                // If you run a dedicated worker, set options.Queues = ["import"] there
+                // and ["default"] here to avoid cross-host job theft.
+                options.Queues = ["import", "default"];
+                options.ServerName = $"erp-import-{Environment.MachineName}";
+            });
+
+            builder.Services.AddScoped<IImportBackgroundJobService, HangfireImportBackgroundJobService>();
+
+            // ─────────────────────────────────────────────────────────────────────────────
+            // 3. CORE IMPORT SERVICES
+            // ─────────────────────────────────────────────────────────────────────────────
+            builder.Services.AddScoped<IImportService, ImportService>();
+            builder.Services.AddScoped<IImportTemplateService, ImportTemplateService>();
+
+            // ─────────────────────────────────────────────────────────────────────────────
+            // 4. REPOSITORY
+            // ─────────────────────────────────────────────────────────────────────────────
+            builder.Services.AddScoped<IImportJobRepository, ImportJobRepository>();
+
+            // ─────────────────────────────────────────────────────────────────────────────
+            // 5. FILE PARSERS
+            //    Each concrete parser is registered against IFileParser<TRow> so
+            //    ImportService can resolve the correct parser at runtime via IServiceProvider.
+            // ─────────────────────────────────────────────────────────────────────────────
+            builder.Services.AddScoped<IFileParser<ProductImportRow>, ProductImportFileParser>();
+            builder.Services.AddScoped<IFileParser<CategoryImportRow>, CategoryImportFileParser>();
+            builder.Services.AddScoped<IFileParser<UnitOfMeasureImportRow>, UnitOfMeasureImportFileParser>();
+
+            // ─────────────────────────────────────────────────────────────────────────────
+            // 6. ROW VALIDATORS
+            //    Multiple validators per TRow are resolved as IEnumerable<IImportRowValidator<TRow>>
+            //    and executed sequentially (fail-fast) by ImportService.
+            // ─────────────────────────────────────────────────────────────────────────────
+            builder.Services.AddScoped<IImportRowValidator<ProductImportRow>, ProductImportRowValidator>();
+            builder.Services.AddScoped<IImportRowValidator<CategoryImportRow>, CategoryImportRowValidator>();
+            builder.Services.AddScoped<IImportRowValidator<UnitOfMeasureImportRow>, UnitOfMeasureImportRowValidator>();
+
+            // ─────────────────────────────────────────────────────────────────────────────
+            // 7. ROW PROCESSORS
+            //    Processors MUST NOT call SaveChangesAsync — ImportService owns the
+            //    per-row transaction (begin / SaveChanges / commit / rollback).
+            // ─────────────────────────────────────────────────────────────────────────────
+            builder.Services.AddScoped<IImportRowProcessor<ProductImportRow>, ProductImportRowProcessor>();
+            builder.Services.AddScoped<IImportRowProcessor<CategoryImportRow>, CategoryImportRowProcessor>();
+            builder.Services.AddScoped<IImportRowProcessor<UnitOfMeasureImportRow>, UnitOfMeasureImportRowProcessor>();
+            #endregion
 
             #region Swagger
             builder.Services.AddSwaggerGen(c =>
