@@ -26,6 +26,11 @@ namespace ERPSystem.API.Middleware
                 _logger.LogWarning(ex, "Business exception: {Code} - {Message}", ex.Code, ex.Message);
                 await HandleExceptionAsync(context, ex.HttpStatusCode, ex.Code, ex.Message);
             }
+            catch (DataConstraintException ex)
+            {
+                _logger.LogWarning(ex, "Data constraint violation.");
+                await HandleExceptionAsync(context, 422, "DATA_CONSTRAINT", ex.Message);
+            }
             catch (DbUpdateConcurrencyException ex)
             {
                 _logger.LogWarning(ex, "Concurrency conflict detected.");
