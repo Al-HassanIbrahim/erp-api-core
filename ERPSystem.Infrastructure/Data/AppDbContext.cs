@@ -4,6 +4,7 @@ using ERPSystem.Domain.Entities.Core;
 using ERPSystem.Domain.Entities.CRM;
 using ERPSystem.Domain.Entities.Expenses;
 using ERPSystem.Domain.Entities.HR;
+using ERPSystem.Domain.Entities.Import;
 using ERPSystem.Domain.Entities.Inventory;
 using ERPSystem.Domain.Entities.Products;
 using ERPSystem.Domain.Entities.Purchase;
@@ -85,6 +86,10 @@ namespace ERPSystem.Infrastructure.Data
         // CRM
         public DbSet<Lead> Leads => Set<Lead>();
         public DbSet<Pipeline> Pipelines => Set<Pipeline>();
+
+        // Bulk Import
+        public DbSet<ImportJob> ImportJobs => Set<ImportJob>();
+        public DbSet<ImportJobResult> ImportJobResults => Set<ImportJobResult>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -489,6 +494,74 @@ namespace ERPSystem.Infrastructure.Data
                 entity.Property(p => p.Amount).HasPrecision(18, 2);
             });
 
+            // ==========================================
+            // BULK IMPORT MODULE CONFIGURATIONS
+            // ==========================================
+            modelBuilder.Entity<ImportJob>(entity =>
+            {
+                entity.ToTable("ImportJobs");
+                entity.HasKey(j => j.Id);
+
+                entity.Property(j => j.CompanyId).IsRequired();
+                entity.Property(j => j.EntityType).IsRequired().HasMaxLength(50);
+
+                entity.Property(j => j.EntityTypeNormalised)
+                    .IsRequired().HasMaxLength(50)
+                    .HasComputedColumnSql("UPPER([EntityType])", stored: true);
+
+                entity.Property(j => j.FileName).IsRequired().HasMaxLength(260);
+                entity.Property(j => j.FileStorageKey).IsRequired(false).HasMaxLength(64);
+                entity.Property(j => j.IdempotencyKey).IsRequired(false).HasMaxLength(128);
+
+                entity.Property(j => j.TotalRows).IsRequired();
+                entity.Property(j => j.SuccessCount).IsRequired();
+                entity.Property(j => j.FailureCount).IsRequired();
+
+                entity.Property(j => j.Status).IsRequired().HasConversion<int>();
+
+                entity.Property(j => j.StartedAt).IsRequired(false);
+                entity.Property(j => j.CompletedAt).IsRequired(false);
+
+                entity.Property(j => j.ErrorSummary).IsRequired(false).HasMaxLength(2000);
+
+                // Audit / BaseEntity
+                entity.Property(j => j.CreatedAt).IsRequired();
+                entity.Property(j => j.IsDeleted).IsRequired().HasDefaultValue(false);
+                entity.Property(j => j.CreatedByUserId).IsRequired();
+                entity.Property(j => j.UpdatedByUserId).IsRequired(false);
+                entity.Property(j => j.DeletedByUserId).IsRequired(false);
+
+                entity.HasIndex(j => new { j.CompanyId, j.IsDeleted })
+                    .HasDatabaseName("IX_ImportJobs_CompanyId_IsDeleted");
+
+                entity.HasIndex(j => new { j.CompanyId, j.EntityTypeNormalised, j.IsDeleted })
+                    .HasDatabaseName("IX_ImportJobs_CompanyId_EntityTypeNormalised_IsDeleted");
+
+                entity.HasIndex(j => new { j.CompanyId, j.IdempotencyKey })
+                    .IsUnique()
+                    .HasFilter("[IdempotencyKey] IS NOT NULL AND [IsDeleted] = 0")
+                    .HasDatabaseName("UIX_ImportJobs_CompanyId_IdempotencyKey");
+            });
+
+            modelBuilder.Entity<ImportJobResult>(entity =>
+            {
+                entity.ToTable("ImportJobResults");
+                entity.HasKey(r => r.Id);
+
+                entity.Property(r => r.ImportJobId).IsRequired();
+                entity.Property(r => r.RowNumber).IsRequired();
+                entity.Property(r => r.IsSuccess).IsRequired();
+
+                entity.Property(r => r.ErrorMessage).IsRequired(false).HasMaxLength(2000);
+                entity.Property(r => r.RawData).IsRequired(false);
+
+                entity.Property(r => r.CreatedAt).IsRequired();
+                entity.Property(r => r.IsDeleted).IsRequired().HasDefaultValue(false);
+
+                entity.HasIndex(r => new { r.ImportJobId, r.RowNumber })
+                    .HasDatabaseName("IX_ImportJobResults_ImportJobId_RowNumber");
+            });
+
             // Unique Indexes
             modelBuilder.Entity<Branch>()
                 .HasIndex(b => new { b.CompanyId, b.Code }).IsUnique();
@@ -587,6 +660,13 @@ namespace ERPSystem.Infrastructure.Data
                 .WithMany(e => e.DirectReports)
                 .HasForeignKey(e => e.ReportsToId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // Import Configurations Relationships Override
+            modelBuilder.Entity<ImportJob>()
+                .HasMany(j => j.Results)
+                .WithOne(r => r.ImportJob)
+                .HasForeignKey(r => r.ImportJobId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             SeedData(modelBuilder);
             // ==========================================

@@ -164,6 +164,10 @@ public static class CompanyRoleSeeder
             Permissions.Purchasing.suppliers.Read,
             Permissions.Purchasing.suppliers.Write,
             Permissions.Purchasing.suppliers.Post,
+
+            // Bulk Importing
+            Permissions.Import.Jobs.Read,
+            Permissions.Import.Jobs.Manage
         },
 
         //["Admin"] = new[]
