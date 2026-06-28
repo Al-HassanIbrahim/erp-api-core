@@ -7,7 +7,7 @@ using ERPSystem.Domain.Abstractions;
 
 namespace ERPSystem.Domain.Entities.Products
 {
-    public class Product : BaseEntity, ICompanyEntity
+    public class Product : AuditableEntity, ICompanyEntity
     {
         // Internal product code (SKU). Used for quick search and unique identification.
         public string Code { get; set; } = default!;

@@ -50,7 +50,8 @@ namespace ERPSystem.Application.Services.Products
                 MinQuantity = dto.MinQuantity,
                 Barcode = dto.Barcode,
                 IsActive = true,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                CreatedByUserId = _currentUser.UserId
             };
 
             await _productRepository.AddAsync(product);
@@ -111,7 +112,8 @@ namespace ERPSystem.Application.Services.Products
                 MinQuantity = product.MinQuantity,
                 CategoryName = product.Category?.Name,
                 UnitOfMeasureName = product.UnitOfMeasure?.Name ?? string.Empty,
-                IsActive = product.IsActive
+                IsActive = product.IsActive,
+                createdBy = product.CreatedByUserId
             };
         }
     }

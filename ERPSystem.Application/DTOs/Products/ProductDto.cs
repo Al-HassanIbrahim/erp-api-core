@@ -12,6 +12,7 @@
         public string? CategoryName { get; set; }
         public string UnitOfMeasureName { get; set; } = default!;
 
+        public Guid createdBy { get; set; }
         public bool IsActive { get; set; }
     }
 }
