@@ -5,6 +5,7 @@ namespace ERPSystem.Application.DTOs.Products
         public int Id { get; set; }
         public string Name { get; set; } = default!;
         public string Symbol { get; set; } = default!;
+        public Guid? CreatedBy { get; set; }
     }
 
     public class CreateUnitOfMeasureRequest

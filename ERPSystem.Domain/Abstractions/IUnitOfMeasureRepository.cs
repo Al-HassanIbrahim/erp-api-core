@@ -16,5 +16,7 @@ namespace ERPSystem.Domain.Abstractions
         void Update(UnitOfMeasure unitOfMeasure);
         void Delete(UnitOfMeasure unitOfMeasure);
         Task SaveChangesAsync(CancellationToken cancellationToken = default);
+        Task<int?> GetIdByNameAsync(string name, int companyId, CancellationToken cancellationToken = default);
+        Task<bool> ExistsByNameAsync(string name, int companyId, CancellationToken cancellationToken = default);
     }
 }

@@ -26,7 +26,8 @@ namespace ERPSystem.Application.Services.Products
             {
                 Id = u.Id,
                 Name = u.Name,
-                Symbol = u.Symbol
+                Symbol = u.Symbol,
+                CreatedBy = _currentUser.UserId
             }).ToList();
         }
 
@@ -41,7 +42,8 @@ namespace ERPSystem.Application.Services.Products
             {
                 Id = item.Id,
                 Name = item.Name,
-                Symbol = item.Symbol
+                Symbol = item.Symbol,
+                CreatedBy = _currentUser.UserId
             };
         }
 
@@ -61,7 +63,8 @@ namespace ERPSystem.Application.Services.Products
             {
                 Id = entity.Id,
                 Name = entity.Name,
-                Symbol = entity.Symbol
+                Symbol = entity.Symbol,
+                CreatedBy = _currentUser.UserId
             };
         }
 
