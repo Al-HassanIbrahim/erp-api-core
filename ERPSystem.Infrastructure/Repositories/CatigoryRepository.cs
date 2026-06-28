@@ -56,5 +56,12 @@ namespace ERPSystem.Infrastructure.Repositories
         {
             await _context.SaveChangesAsync(cancellationToken);
         }
+        public async Task<int?> GetIdByNameAsync(string name, int companyId, CancellationToken cancellationToken = default)
+        {
+            return await _context.Categories
+                .Where(c => c.CompanyId == companyId && c.Name == name)
+                .Select(c => (int?)c.Id)
+                .FirstOrDefaultAsync(cancellationToken);
+        }
     }
 }

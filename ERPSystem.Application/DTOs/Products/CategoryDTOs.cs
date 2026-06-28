@@ -7,6 +7,7 @@ namespace ERPSystem.Application.DTOs.Products
         public string? Description { get; set; }
         public int? ParentCategoryId { get; set; }
         public string? ParentCategoryName { get; set; }
+        public Guid? CreatedBy { get; set; }
     }
 
     public class CreateCategoryRequest

@@ -45,7 +45,8 @@ namespace ERPSystem.Application.Services.Products
                 Name = item.Name,
                 Description = item.Description,
                 ParentCategoryId = item.ParentCategoryId,
-                ParentCategoryName = item.ParentCategory?.Name
+                ParentCategoryName = item.ParentCategory?.Name,
+                CreatedBy = _currentUser.UserId
             };
         }
 
@@ -75,7 +76,8 @@ namespace ERPSystem.Application.Services.Products
                 Id = entity.Id,
                 Name = entity.Name,
                 Description = entity.Description,
-                ParentCategoryId = entity.ParentCategoryId
+                ParentCategoryId = entity.ParentCategoryId,
+                CreatedBy = _currentUser.UserId
             };
         }
 

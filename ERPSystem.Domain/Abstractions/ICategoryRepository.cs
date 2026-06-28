@@ -15,5 +15,6 @@ namespace ERPSystem.Domain.Abstractions
         void Update(Category category);
         void Delete(Category category);
         Task SaveChangesAsync(CancellationToken cancellationToken = default);
+        Task<int?> GetIdByNameAsync(string name, int companyId, CancellationToken cancellationToken = default);
     }
 }
