@@ -1,5 +1,5 @@
-﻿using ERPSystem.Domain.Abstractions;
-using ERPSystem.Infrastructure.Data;
+﻿using ERPSystem.Application.Exceptions;
+using ERPSystem.Domain.Abstractions;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -7,13 +7,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ERPSystem.Infrastructure.Repositories.Purchase
+namespace ERPSystem.Infrastructure.Data
 {
-    public sealed class PurchasingUnitOfWork : IUnitOfWork
+    public sealed class UnitOfWork : IUnitOfWork
     {
         private readonly AppDbContext _db;
 
-        public PurchasingUnitOfWork(AppDbContext db) => _db = db;
+        public UnitOfWork(AppDbContext db) => _db = db;
 
         /// <inheritdoc/>
         public async Task ExecuteInTransactionAsync(
@@ -41,6 +41,15 @@ namespace ERPSystem.Infrastructure.Repositories.Purchase
                 // to a domain ConflictException (HTTP 409).
                 await tx.RollbackAsync(ct);
                 throw;
+            }
+            catch (DbUpdateException ex)         
+            {
+                // Translate EF exception to a domain type before it escapes
+                // Infrastructure. Application layer never sees DbUpdateException.
+                await tx.RollbackAsync(ct);
+                throw new DataConstraintException(
+                    "A database constraint was violated. " +
+                    "Check for duplicate values or invalid references.", ex);
             }
             catch
             {
