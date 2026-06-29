@@ -1,6 +1,6 @@
 # 🏢 ERP System API
 
-A comprehensive, multi-tenant **Enterprise Resource Planning (ERP)** backend built with **ASP.NET Core**, following **Clean Architecture** principles. This system provides a powerful REST API for managing the full lifecycle of a modern business — from HR and payroll to sales, purchasing, inventory, CRM, and accounting.
+A comprehensive, multi-tenant **Enterprise Resource Planning (ERP)** backend built with **ASP.NET Core**, following **Clean Architecture** principles. This system provides a powerful REST API for managing the full lifecycle of a modern business: sales, purchasing, inventory, HR and payroll, CRM, and accounting.
 
 ---
 
