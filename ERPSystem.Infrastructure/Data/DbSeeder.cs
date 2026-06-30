@@ -16,7 +16,8 @@ namespace ERPSystem.Infrastructure.Data
                 new() { Key = "CONTACT",  Name = "CONTACT",  Description = "Contacts management module",  IsActive = true },
                 new() { Key = "EXPENSES",  Name = "Expenses",  Description = "Expenses management module",  IsActive = true },
                 new() { Key = "HR",        Name = "HR",        Description = "Human Resources module",      IsActive = true },
-                new() { Key = "CRM",       Name = "CRM",       Description = "Customer Relationship Management module", IsActive = true }
+                new() { Key = "CRM",       Name = "CRM",       Description = "Customer Relationship Management module", IsActive = true },
+                new() { Key = "DASHBOARD",       Name = "Dashboard",       Description = "Over All System Analysis And Statistics", IsActive = true }
             };
 
             var existingKeys = await context.Modules
