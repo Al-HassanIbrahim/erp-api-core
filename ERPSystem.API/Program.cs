@@ -30,6 +30,8 @@ using ERPSystem.Infrastructure.Repositories.Sales;
 using ERPSystem.Infrastructure.Services.Import;
 using ERPSystem.Infrastructure.Shared;
 using ERPSystem.Infrastructure.Shared.PdfGeneration;
+using Hangfire;
+using Hangfire.SqlServer;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -37,8 +39,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
 using System.Text;
-using Hangfire;
-using Hangfire.SqlServer;
+using System.Threading;
 
 namespace ERPSystem.API
 {
@@ -48,6 +49,8 @@ namespace ERPSystem.API
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            Console.WriteLine(builder.Environment.EnvironmentName);
+            
             // Add services to the container.
             builder.Services.AddDbContext<AppDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -323,7 +326,7 @@ namespace ERPSystem.API
                 });
             });
 
-            var app = builder.Build();
+                var app = builder.Build();
 
             using (var scope = app.Services.CreateScope())
             {
@@ -332,11 +335,11 @@ namespace ERPSystem.API
             }
 
             // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
-            {
+            //if (app.Environment.IsDevelopment())
+            //{
                 app.UseSwagger();
                 app.UseSwaggerUI();
-            }
+            //}
 
             // Register embedded Arabic/Latin fonts for PDF generation
             PdfFontRegistrar.RegisterAll();
@@ -349,6 +352,18 @@ namespace ERPSystem.API
 
 
             app.MapControllers();
+            app.MapGet("/", () => Results.Ok(new
+            {
+                Name = "ERP System API",
+                Status = "Running",
+                Version = "1.0",
+                note = "This is the backend API for the ERP System. Use /swagger/index.html"
+            }));
+
+            app.MapGet("/env", (IWebHostEnvironment env) =>
+            {
+                return env.EnvironmentName;
+            });
 
             app.Run();
         }
