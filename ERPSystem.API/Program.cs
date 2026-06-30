@@ -296,7 +296,7 @@ namespace ERPSystem.API
             }).AddJwtBearer(options=> //check if verified token
             {
                 options.SaveToken = true;
-                //options.RequireHttpsMetadata = false;
+                options.RequireHttpsMetadata = true;
                 options.TokenValidationParameters = new TokenValidationParameters()
                 {
                    ValidateIssuer=true,
@@ -327,6 +327,8 @@ namespace ERPSystem.API
             });
 
                 var app = builder.Build();
+
+            app.UseHttpsRedirection();
 
             using (var scope = app.Services.CreateScope())
             {
