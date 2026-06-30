@@ -29,3 +29,9 @@
     }
   }
 }
+/*
+  * this file only work on VS ,on mosterfor ex it sets another configuration file for launch settings
+  *  "ASPNETCORE_ENVIRONMENT": "Development" make the appsettings.Development.json file to be used (instead of || after) the appsettings.json file
+  * if you created new enviroment  "ASPNETCORE_ENVIRONMENT": "Testing" it will use appsettings.Testing.json & appsettings.json 
+
+*/
